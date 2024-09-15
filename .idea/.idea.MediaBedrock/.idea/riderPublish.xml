@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="LocationsWithSilentDeleteHolder">
+    <option name="locations">
+      <list>
+        <option value="$PROJECT_DIR$/src/MediaBedrock.Cli/bin/Debug/net9.0/Plugins/MediaBedrock.Plugins.Core" />
+        <option value="$PROJECT_DIR$/src/MediaBedrock.Cli/bin/Debug/net9.0/Plugins/MediaBedrock.Plugins.Dolby" />
+      </list>
+    </option>
+  </component>
+</project>

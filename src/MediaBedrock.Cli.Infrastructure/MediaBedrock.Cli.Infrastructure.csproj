@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\MediaBedrock.Cli.Application\MediaBedrock.Cli.Application.csproj"/>
+        <ProjectReference Include="..\MediaBedrock.Cli.Domain\MediaBedrock.Cli.Domain.csproj"/>
+        <ProjectReference Include="..\MediaBedrock.Sdk\MediaBedrock.Sdk.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.3"/>
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.3"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.3"/>
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.3"/>
+        <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.1"/>
+        <PackageReference Include="Serilog.Settings.Configuration" Version="9.0.0"/>
+    </ItemGroup>
+
+</Project>

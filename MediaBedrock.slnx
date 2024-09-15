@@ -1,0 +1,27 @@
+﻿<Solution>
+    <Folder Name="/src/"/>
+    <Folder Name="/src/cli/">
+        <Project Path="src\MediaBedrock.Cli.Application\MediaBedrock.Cli.Application.csproj" Type="Classic C#"/>
+        <Project Path="src\MediaBedrock.Cli.Domain\MediaBedrock.Cli.Domain.csproj" Type="Classic C#"/>
+        <Project Path="src\MediaBedrock.Cli.Infrastructure\MediaBedrock.Cli.Infrastructure.csproj" Type="Classic C#"/>
+        <Project Path="src\MediaBedrock.Cli.Presentation\MediaBedrock.Cli.Presentation.csproj" Type="Classic C#"/>
+        <Project Path="src\MediaBedrock.Cli\MediaBedrock.Cli.csproj" Type="Classic C#"/>
+        <Project Path="src\MediaBedrock.Sdk\MediaBedrock.Sdk.csproj" Type="Classic C#"/>
+    </Folder>
+    <Folder Name="/src/libs/">
+        <Project
+                Path="src\MediaBedrock.Dolby.Extensions.DependencyInjection\MediaBedrock.Dolby.Extensions.DependencyInjection.csproj"
+                Type="Classic C#"/>
+        <Project Path="src\MediaBedrock.Dolby\MediaBedrock.Dolby.csproj" Type="Classic C#"/>
+    </Folder>
+    <Folder Name="/src/plugins/">
+        <Project Path="src\MediaBedrock.Plugins.Core\MediaBedrock.Plugins.Core.csproj" Type="Classic C#"/>
+        <Project Path="src\MediaBedrock.Plugins.Dolby\MediaBedrock.Plugins.Dolby.csproj" Type="Classic C#"/>
+    </Folder>
+    <Folder Name="/src/samples/">
+        <Project Path="src\MediaBedrock.Dolby.Example\MediaBedrock.Dolby.Example.csproj" Type="Classic C#"/>
+    </Folder>
+    <Folder Name="/tests/">
+        <Project Path="tests\MediaBedrock.UnitTests\MediaBedrock.UnitTests.csproj" Type="Classic C#"/>
+    </Folder>
+</Solution>

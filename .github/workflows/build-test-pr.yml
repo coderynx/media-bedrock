@@ -1,0 +1,31 @@
+name: Build and test on pull request
+
+on:
+  pull_request:
+    branches: [ '*' ]
+
+env:
+  DOTNET_VERSION: "9.x"
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        run: dotnet restore ./MediaBedrock.sln
+        env:
+          DOTNET_NOLOGO: "true"
+
+      - name: Build
+        run: dotnet build ./MediaBedrock.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test ./MediaBedrock.sln --configuration Release --no-build

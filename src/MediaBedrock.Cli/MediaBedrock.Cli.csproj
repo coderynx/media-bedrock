@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Cocona" Version="2.2.0"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.3"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="9.0.3"/>
+        <PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0"/>
+        <PackageReference Include="Spectre.Console" Version="0.49.1"/>
+        <PackageReference Include="Spectre.Console.Json" Version="0.49.1"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\MediaBedrock.Cli.Infrastructure\MediaBedrock.Cli.Infrastructure.csproj"/>
+        <ProjectReference Include="..\MediaBedrock.Cli.Presentation\MediaBedrock.Cli.Presentation.csproj"/>
+        <ProjectReference Include="..\MediaBedrock.Dolby.Extensions.DependencyInjection\MediaBedrock.Dolby.Extensions.DependencyInjection.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="appsettings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="appsettings.Development.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+</Project>
