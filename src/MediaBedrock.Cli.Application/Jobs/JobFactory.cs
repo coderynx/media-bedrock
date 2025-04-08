@@ -153,8 +153,14 @@ public sealed partial class JobFactory : IJobFactory
                 return createProcessorName.Error;
             }
 
+            var createJobStepName = JobStepName.Create(s.Name);
+            if (createJobStepName.IsFailure)
+            {
+                return createJobStepName.Error;
+            }
+
             generatedSteps.Add(JobStep.Create(
-                name: s.Name,
+                name: createJobStepName.Value,
                 processorName: createProcessorName.Value,
                 properties: stepProperties,
                 inputs: stepInputs,

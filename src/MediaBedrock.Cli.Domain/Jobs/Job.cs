@@ -19,7 +19,7 @@ public sealed class Job
             TemplateName = templateName,
             Inputs = inputs,
             Outputs = outputs,
-            Steps = steps,
+            Steps = steps
         };
     }
 }

@@ -63,6 +63,14 @@ public static class JobErrors
             Message: $"The job ID '{id}' is invalid. Please check the ID and try again.");
     }
 
+    public static Error InvalidStepName(string name)
+    {
+        return new Error(
+            ResultError: ResultError.InvalidInput,
+            Code: "Job.InvalidJobStepName",
+            Message: $"The job step name '{name}' is invalid. Please check the name and try again.");
+    }
+
     public static Error SerializationFailed(string message)
     {
         return new Error(

@@ -79,7 +79,7 @@ public sealed class JobContainerFactory(
             job.Id,
             processors,
             assetsPool);
-        
+
         return Result.Created(container);
     }
 }

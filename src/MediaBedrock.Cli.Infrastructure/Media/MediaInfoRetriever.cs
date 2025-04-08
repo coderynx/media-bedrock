@@ -32,7 +32,7 @@ public sealed class MediaInfoRetriever(ILogger<MediaInfoRetriever> logger) : IMe
         if (exitCode is not 0)
         {
             logger.LogError("Failed to retrieve media information for {Uri}", uri);
-            return MediaErrors.FailedToRetrieveInfo;
+            return MediaErrors.FailedToRetrieveInfo(uri);
         }
 
         var jsonNode = JsonSerializer.Deserialize<JsonElement>(output.ToString());

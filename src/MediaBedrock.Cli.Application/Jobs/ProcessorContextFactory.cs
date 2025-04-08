@@ -1,5 +1,4 @@
 using Coderynx.Functional.Result;
-using MediaBedrock.Cli.Application.Jobs.Errors;
 using MediaBedrock.Cli.Application.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs;
 using MediaBedrock.Cli.Domain.Jobs.Steps;
@@ -27,13 +26,13 @@ public sealed class ProcessorContextFactory(IProcessorProvider processorProvider
             var resolveAsset = assetsPool.ResolveAsset(input.AssetName);
             if (!resolveAsset.IsSome)
             {
-                return JobContainerErrors.AssetNotFound(input.AssetName);
+                return JobAssetErrors.AssetNotFound(input.AssetName);
             }
 
             var asset = resolveAsset.ValueOrThrow();
             if (asset.Uri is null)
             {
-                return JobContainerErrors.AssetNotAvailable(input.AssetName);
+                return JobAssetErrors.AssetNotAvailable(input.AssetName);
             }
 
             var processorInput = new ProcessorInput(input.Name, asset.Uri, asset.MediaInformation!);

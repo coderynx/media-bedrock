@@ -1,6 +1,5 @@
 using Coderynx.Functional.Result;
 using MediaBedrock.Cli.Application.Assets;
-using MediaBedrock.Cli.Application.Jobs.Errors;
 using MediaBedrock.Cli.Application.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs;
 using MediaBedrock.Cli.Domain.Jobs.Processors;
@@ -86,7 +85,7 @@ public sealed class JobRunner(
             var resolveAsset = container.AssetsPool.ResolveAsset(output.AssetName);
             if (!resolveAsset.IsSome)
             {
-                return JobContainerErrors.AssetNotFound(output.AssetName);
+                return JobAssetErrors.AssetNotFound(output.AssetName);
             }
 
             var getMediaInfo = await mediaInformationRetriever.GetMediaInfoAsync(output.GetAsFilePath());

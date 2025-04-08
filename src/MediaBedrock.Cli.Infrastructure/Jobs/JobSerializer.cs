@@ -13,7 +13,8 @@ public sealed class JobSerializer : IJobSerializer
         Converters =
         {
             new JobIdConverter(),
-            new JobTemplateNameConverter()
+            new JobTemplateNameConverter(),
+            new JobStepNameConverter()
         }
     };
 

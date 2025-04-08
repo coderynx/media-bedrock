@@ -1,5 +1,6 @@
 using MediaBedrock.Cli.Application.Jobs;
 using MediaBedrock.Cli.Domain.Jobs;
+using MediaBedrock.Cli.Domain.Jobs.Steps;
 using MediaBedrock.Cli.Domain.Jobs.Templates;
 using Shouldly;
 
@@ -34,7 +35,7 @@ public sealed class JobFactoryTests
         result.Value.TemplateName.ShouldBe(JobTemplateName.Create("TestTemplate").Value);
         result.Value.Inputs.ShouldHaveSingleItem().Name.ShouldBe("Input1");
         result.Value.Outputs.ShouldHaveSingleItem().Name.ShouldBe("Output1");
-        result.Value.Steps.ShouldHaveSingleItem().Name.ShouldBe("Step1");
+        result.Value.Steps.ShouldHaveSingleItem().Name.ShouldBe(JobStepName.Create("Step1").Value);
     }
 
     [Fact]

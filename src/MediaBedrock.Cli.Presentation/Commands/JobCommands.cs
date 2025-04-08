@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Cocona;
 using MediaBedrock.Cli.Application.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs;
@@ -59,14 +58,14 @@ public sealed class JobCommands(
 
         var job = createJob.Value;
 
-        
+
         var serializedJob = jobSerializer.Serialize(job);
         if (serializedJob.IsFailure)
         {
             AnsiConsole.MarkupLine($"[red]Failed to serialize job: {serializedJob.Error.Message}[/]");
             return;
         }
-        
+
         await File.WriteAllTextAsync(outputPath, serializedJob.Value);
 
         var result = await jobRunner.TakeAsync(job);

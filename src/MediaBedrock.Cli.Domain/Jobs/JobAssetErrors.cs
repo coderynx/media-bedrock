@@ -1,15 +1,15 @@
 using Coderynx.Functional;
 using Coderynx.Functional.Result;
 
-namespace MediaBedrock.Cli.Application.Jobs.Errors;
+namespace MediaBedrock.Cli.Domain.Jobs;
 
-public static class JobContainerErrors
+public static class JobAssetErrors
 {
     public static Error AssetNotFound(string name)
     {
         return new Error(
             ResultError: ResultError.NotFound,
-            Code: "JobContainer.AssetNotFound",
+            Code: "JobAsset.AssetNotFound",
             Message: $"Asset '{name}' not found in the job assets pool.");
     }
 
@@ -17,7 +17,7 @@ public static class JobContainerErrors
     {
         return new Error(
             ResultError: ResultError.NotFound,
-            Code: "JobContainer.AssetNotAvailable",
+            Code: "JobAsset.AssetNotAvailable",
             Message: $"Asset {name} not available in the job assets pool.");
     }
 }
