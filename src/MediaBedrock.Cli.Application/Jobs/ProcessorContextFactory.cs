@@ -1,6 +1,7 @@
-using Coderynx.Functional.Result;
+using Coderynx.Functional.Results;
 using MediaBedrock.Cli.Application.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs;
+using MediaBedrock.Cli.Domain.Jobs.Assets;
 using MediaBedrock.Cli.Domain.Jobs.Steps;
 using MediaBedrock.Sdk.Processors;
 
@@ -8,7 +9,7 @@ namespace MediaBedrock.Cli.Application.Jobs;
 
 public sealed class ProcessorContextFactory(IProcessorProvider processorProvider) : IProcessorContextFactory
 {
-    public Result<ProcessorContext> Create(JobStep step, JobAssetsPool assetsPool)
+    public Result<ProcessorContext> Create(JobId jobId, JobStep step, JobAssetsPool assetsPool)
     {
         var properties = step.Properties.Select(p => new ProcessorProperty(p.Name, p.Value)).ToList();
 
@@ -55,7 +56,7 @@ public sealed class ProcessorContextFactory(IProcessorProvider processorProvider
                 continue;
             }
 
-            var tempPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
+            var tempPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp", jobId.ToString());
             Directory.CreateDirectory(tempPath);
 
             var processorOutput = new ProcessorOutput(

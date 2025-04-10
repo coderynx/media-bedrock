@@ -1,3 +1,4 @@
+using MediaBedrock.Cli.Domain.Jobs.Assets;
 using MediaBedrock.Cli.Domain.Jobs.Steps;
 using MediaBedrock.Sdk.Processors;
 

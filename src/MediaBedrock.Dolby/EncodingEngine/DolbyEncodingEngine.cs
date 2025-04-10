@@ -7,15 +7,6 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBedrock.Dolby.EncodingEngine;
 
-public interface IDolbyEncodingEngine
-{
-    bool IsUsingWine { get; }
-    string Path { get; }
-    string ExecutablePath { get; }
-    string Version { get; }
-    Task ProcessJobAsync(JobDefinition job, Action<ProcessingStatus>? onStatusChange = null);
-}
-
 public sealed partial class DolbyEncodingEngine : IDolbyEncodingEngine
 {
     private readonly JsonSerializerOptions _jsonOptions = new()
@@ -47,7 +38,7 @@ public sealed partial class DolbyEncodingEngine : IDolbyEncodingEngine
     public string ExecutablePath => System.IO.Path.Combine(Path, "dee.exe");
     public string Version { get; private set; } = string.Empty;
 
-    public async Task ProcessJobAsync(JobDefinition job, Action<ProcessingStatus>? onStatusChange = null)
+    public async Task ProcessJobAsync(JobDefinition job, Action<DolbyEncodingEngineMessage>? onStatusChange = null)
     {
         if (!IsInitialized)
         {
@@ -63,11 +54,12 @@ public sealed partial class DolbyEncodingEngine : IDolbyEncodingEngine
         var tempPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
         Directory.CreateDirectory(tempPath);
 
-        var filePath = System.IO.Path.Combine(tempPath, "job.json");
+        var fileName = $"{Guid.CreateVersion7().ToString()}.json";
+        var filePath = System.IO.Path.Combine(tempPath, fileName);
 
         await File.WriteAllTextAsync(filePath, json);
 
-        var status = new ProcessingStatus("initializing");
+        var status = new DolbyEncodingEngineMessage("initializing");
 
         var process = CreateProcess($"--json {filePath} --progress", (_, args) =>
         {
@@ -76,7 +68,18 @@ public sealed partial class DolbyEncodingEngine : IDolbyEncodingEngine
                 return;
             }
 
-            LogLine(args.Data);
+            var logData = DolbyEncodingEngineLogLine.Create(args.Data);
+            if (logData is null)
+            {
+                return;
+            }
+
+            LogLine(logData);
+
+            if (logData.Level == DolbyEncodingEngineLogLevel.Error)
+            {
+                throw new DolbyEncodingEngineException(logData.Message);
+            }
 
             if (onStatusChange is null)
             {
@@ -90,7 +93,7 @@ public sealed partial class DolbyEncodingEngine : IDolbyEncodingEngine
                 return;
             }
 
-            status = new ProcessingStatus
+            status = new DolbyEncodingEngineMessage
             {
                 Stage = match.Groups["stage"].Value,
                 StageName = match.Groups["stageName"].Value,
@@ -113,20 +116,9 @@ public sealed partial class DolbyEncodingEngine : IDolbyEncodingEngine
         _logger?.LogInformation("Finished processing job {@Job}", job);
     }
 
-    private void LogLine(string line)
+    private void LogLine(DolbyEncodingEngineLogLine line)
     {
-        var logMatch = LogRegex().Match(line);
-
-        if (!logMatch.Success)
-        {
-            return;
-        }
-
-        var logLevel = logMatch.Groups["logLevel"].Value;
-        var category = logMatch.Groups["category"].Value;
-        var message = logMatch.Groups["message"].Value;
-
-        var logLevelType = logLevel switch
+        var logLevelType = line.Level.Value switch
         {
             "INFO" => LogLevel.Information,
             "INTERNAL_INFO" => LogLevel.Information,
@@ -135,7 +127,7 @@ public sealed partial class DolbyEncodingEngine : IDolbyEncodingEngine
             _ => LogLevel.None
         };
 
-        _logger?.Log(logLevelType, "Dolby Encoding Engine [{Category}]: {Message}", category, message);
+        _logger?.Log(logLevelType, "Dolby Encoding Engine [{Category}]: {Message}", line.Category, line.Message);
     }
 
     private Process CreateProcess(string arguments = "", DataReceivedEventHandler? outputHandler = null)
@@ -212,25 +204,4 @@ public sealed partial class DolbyEncodingEngine : IDolbyEncodingEngine
                     "Stage progress: (?<stageProgress>[0-9.]+)," +
                     "Overall progress: (?<overallProgress>[0-9.]+)(?=\\.)")]
     private static partial Regex ProgressRegex();
-
-    [GeneratedRegex(@"\[(?<timestamp>[^\]]+)\] (?<logLevel>\w+): (?<category>\w+): (?<message>.+)")]
-    private static partial Regex LogRegex();
-}
-
-public sealed record ProcessingStatus
-{
-    internal ProcessingStatus(string stage)
-    {
-        Stage = stage;
-    }
-
-    internal ProcessingStatus()
-    {
-    }
-
-    public string Stage { get; init; } = string.Empty;
-    public string StageName { get; init; } = string.Empty;
-    public string Step { get; init; } = string.Empty;
-    public double StageProgress { get; init; }
-    public double OverallProgress { get; init; }
 }

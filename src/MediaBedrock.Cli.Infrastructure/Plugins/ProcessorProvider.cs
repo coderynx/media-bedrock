@@ -1,4 +1,4 @@
-using Coderynx.Functional.Result;
+using Coderynx.Functional.Results;
 using MediaBedrock.Cli.Application.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs.Processors;
 using MediaBedrock.Cli.Infrastructure.Plugins.Interfaces;

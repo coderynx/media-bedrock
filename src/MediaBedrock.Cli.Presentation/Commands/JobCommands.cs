@@ -1,6 +1,6 @@
 using Cocona;
 using MediaBedrock.Cli.Application.Jobs.Interfaces;
-using MediaBedrock.Cli.Domain.Jobs;
+using MediaBedrock.Cli.Domain.Jobs.Parameters;
 using Spectre.Console;
 
 namespace MediaBedrock.Cli.Presentation.Commands;
@@ -44,12 +44,9 @@ public sealed class JobCommands(
             return;
         }
 
-        var createJob = jobFactory.Create(
-            template: template,
-            inputs: createInputs.Value,
-            outputs: createOutputs.Value,
-            properties: createProperties.Value);
+        var jobParameters = new JobParameters(createInputs.Value, createOutputs.Value, createProperties.Value);
 
+        var createJob = jobFactory.Create(template, jobParameters);
         if (createJob.IsFailure)
         {
             AnsiConsole.MarkupLine($"[red]Failed to create job: {createJob.Error.Message}[/]");
@@ -57,7 +54,6 @@ public sealed class JobCommands(
         }
 
         var job = createJob.Value;
-
 
         var serializedJob = jobSerializer.Serialize(job);
         if (serializedJob.IsFailure)

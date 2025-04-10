@@ -49,8 +49,11 @@ public sealed class DolbyDigitalPlusEncoder(
             return ProcessorResult.Failure("Input track must be an Atmos mezzanine");
         }
 
-        var lineDrc = context.GetPropertyRequired("LineDrcProfile").GetValue(DrcProfile.MusicStandard);
-        var rightLeftDrc = context.GetPropertyRequired("RightLeftDrcProfile").GetValue(DrcProfile.MusicStandard);
+        var lineDrc = context.GetPropertyRequired("LineDrcProfile")
+            .Transform(input => Enum.TryParse<DrcProfile>(input, out var profile) ? profile : DrcProfile.MusicStandard);
+
+        var rightLeftDrc = context.GetPropertyRequired("RightLeftDrcProfile")
+            .Transform(input => Enum.TryParse<DrcProfile>(input, out var profile) ? profile : DrcProfile.MusicStandard);
 
         job.WithFilter(
             EncodeToAtmosDolbyDigitalPlus.CreateBuilder()
@@ -65,9 +68,19 @@ public sealed class DolbyDigitalPlusEncoder(
 
         var jobDefinition = job.Build();
 
+        var enginePath = context.GetProperty("EnginePath")?.GetValue();
+        if (string.IsNullOrEmpty(enginePath))
+        {
+            return ProcessorResult.Failure("Engine path is not set");
+        }
+
+        var useWine = context.GetPropertyRequired("UseWine")
+            .GetValue("true")
+            .Equals("true", StringComparison.OrdinalIgnoreCase);
+
         var engine = new DolbyEncodingEngine(
-            path: context.GetPropertyRequired("EnginePath").GetValue<string>(),
-            useWine: context.GetPropertyRequired("UseWine").GetValue<bool>(),
+            path: enginePath,
+            useWine: useWine,
             loggerFactory: loggerFactory);
 
         await engine.ProcessJobAsync(jobDefinition);

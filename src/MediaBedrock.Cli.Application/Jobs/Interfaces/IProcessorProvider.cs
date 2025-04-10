@@ -1,4 +1,4 @@
-using Coderynx.Functional.Result;
+using Coderynx.Functional.Results;
 using MediaBedrock.Cli.Domain.Jobs.Processors;
 using MediaBedrock.Sdk.Processors;
 

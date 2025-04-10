@@ -1,4 +1,4 @@
-using MediaBedrock.Cli.Domain.Jobs;
+using MediaBedrock.Cli.Domain.Jobs.Parameters;
 using Shouldly;
 
 namespace MediaBedrock.UnitTests.Jobs;
@@ -34,7 +34,7 @@ public sealed class JobInputParameterTests
 
         // Assert
         result.IsSuccess.ShouldBeFalse();
-        result.Error.ShouldBe(JobErrors.InvalidInputString(input));
+        result.Error.ShouldBe(JobParameterErrors.InvalidInputParameter(input));
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public sealed class JobInputParameterTests
 
         // Assert
         result.IsSuccess.ShouldBeFalse();
-        result.Error.ShouldBe(JobErrors.InvalidOutputString(input));
+        result.Error.ShouldBe(JobParameterErrors.InvalidOutputParameter(input));
     }
 
     [Fact]
@@ -98,6 +98,6 @@ public sealed class JobInputParameterTests
 
         // Assert
         result.IsSuccess.ShouldBeFalse();
-        result.Error.ShouldBe(JobErrors.InvalidPropertyString(input));
+        result.Error.ShouldBe(JobParameterErrors.InvalidPropertyParameter(input));
     }
 }

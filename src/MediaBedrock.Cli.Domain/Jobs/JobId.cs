@@ -1,4 +1,4 @@
-using Coderynx.Functional.Result;
+using Coderynx.Functional.Results;
 
 namespace MediaBedrock.Cli.Domain.Jobs;
 
@@ -33,7 +33,7 @@ public sealed record JobId
     /// </summary>
     /// <param name="id">The identifier to use.</param>
     /// <returns>
-    ///     A <see cref="Result{T}" /> containing the <see cref="JobId" /> instance if the identifier is valid; otherwise,
+    ///     A <see cref="Result" /> containing the <see cref="JobId" /> instance if the identifier is valid; otherwise,
     ///     an error result indicating the identifier is invalid.
     /// </returns>
     public static Result<JobId> Create(Guid id)

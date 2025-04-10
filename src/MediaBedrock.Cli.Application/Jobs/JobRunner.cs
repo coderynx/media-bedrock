@@ -1,7 +1,9 @@
-using Coderynx.Functional.Result;
+using Coderynx.Functional.Results;
 using MediaBedrock.Cli.Application.Assets;
 using MediaBedrock.Cli.Application.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs;
+using MediaBedrock.Cli.Domain.Jobs.Assets;
+using MediaBedrock.Cli.Domain.Jobs.Batches;
 using MediaBedrock.Cli.Domain.Jobs.Processors;
 using MediaBedrock.Sdk.Processors;
 using Microsoft.Extensions.Logging;
@@ -31,7 +33,7 @@ public sealed class JobRunner(
         var container = createContainer.Value;
         foreach (var (step, processor) in container.Processors)
         {
-            var createContext = processorContextFactory.Create(step, container.AssetsPool);
+            var createContext = processorContextFactory.Create(job.Id, step, container.AssetsPool);
             if (createContext.IsFailure)
             {
                 return createContext.Error;
@@ -54,7 +56,7 @@ public sealed class JobRunner(
             logger.LogInformation("Successfully processed step {StepName} of job {JobId}", step.Name, job.Id);
         }
 
-        var tempFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
+        var tempFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp", job.Id.ToString());
         Directory.Delete(tempFolder, true);
 
         logger.LogInformation("Successfully processed job {JobId}", job.Id);
@@ -63,19 +65,24 @@ public sealed class JobRunner(
     }
 
     /// <inheritdoc />
-    public async Task<Result> TakeAsync(List<Job> jobs, CancellationToken ct = default)
+    public async Task<Result> TakeAsync(BatchJob batchJob, CancellationToken ct = default)
     {
-        var tasks = jobs.Select(job => TakeAsync(job, ct));
+        var tasks = batchJob.Jobs.Select(job => TakeAsync(job, ct));
 
-        logger.LogInformation("Starting batch job execution for {JobCount} jobs", jobs.Count);
+        logger.LogInformation("Starting batch job execution for {JobCount} jobs", batchJob.Jobs.Count());
 
         var results = await Task.WhenAll(tasks);
 
-        logger.LogInformation("Batch job execution completed for {JobCount} jobs", jobs.Count);
+        var errors = results.Where(result => !result.IsSuccess).ToList();
+        if (errors.Count is not 0)
+        {
+            logger.LogError("Batch job execution failed for {JobCount} jobs", errors.Count);
+            return Result.Failure(errors.First().Error);
+        }
 
-        return results.Any(result => !result.IsSuccess)
-            ? results.First(result => !result.IsSuccess)
-            : Result.Accepted();
+        logger.LogInformation("Batch job execution completed for {JobCount} jobs", batchJob.Jobs.Count());
+
+        return Result.Accepted();
     }
 
     private async Task<Result> UpdateAssetPoolAsync(JobContainer container, ProcessorContext context)

@@ -1,4 +1,4 @@
-using Coderynx.Functional.Result;
+using Coderynx.Functional.Results;
 
 namespace MediaBedrock.Cli.Domain.Jobs.Templates;
 
@@ -26,7 +26,7 @@ public sealed record JobTemplateName
     /// </summary>
     /// <param name="name">The name of the job template.</param>
     /// <returns>
-    ///     A <see cref="Result{T}" /> containing the <see cref="JobTemplateName" /> instance if the name is valid;
+    ///     A <see cref="Result" /> containing the <see cref="JobTemplateName" /> instance if the name is valid;
     ///     otherwise, an error result indicating the name is invalid.
     /// </returns>
     public static Result<JobTemplateName> Create(string name)

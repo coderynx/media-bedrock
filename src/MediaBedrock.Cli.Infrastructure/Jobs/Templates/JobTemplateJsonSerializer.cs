@@ -1,11 +1,11 @@
 using System.Text.Json;
-using Coderynx.Functional.Result;
+using Coderynx.Functional.Results;
 using MediaBedrock.Cli.Application.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs.Templates;
 
 namespace MediaBedrock.Cli.Infrastructure.Jobs.Templates;
 
-public sealed class JobTemplateSerializer : IJobTemplateSerializer
+public sealed class JobTemplateJsonSerializer : IJobTemplateSerializer
 {
     private readonly JsonSerializerOptions _serializerOptions = new()
     {

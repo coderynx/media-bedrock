@@ -1,24 +1,31 @@
 namespace MediaBedrock.Sdk.Processors;
 
-public sealed record ProcessorProperty(string Name, object? Value)
+public sealed record ProcessorProperty(string Name, string? Value)
 {
-    public T GetValue<T>()
+    public string? GetValue()
     {
-        if (Value is T value)
-        {
-            return value;
-        }
-
-        throw new InvalidOperationException($"Property {Name} is not of type {typeof(T).Name}");
+        return Value;
     }
 
-    public T GetValue<T>(T defaultValue)
+    public string GetValue(string defaultValue)
     {
-        if (Value is T value)
+        return Value ?? defaultValue;
+    }
+
+    public T? Transform<T>(Func<string?, T> func)
+    {
+        if (Value is null)
         {
-            return value;
+            return default;
         }
 
-        return defaultValue;
+        try
+        {
+            return func(Value);
+        }
+        catch (Exception)
+        {
+            return default;
+        }
     }
 }

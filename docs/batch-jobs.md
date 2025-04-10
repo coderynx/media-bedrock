@@ -9,8 +9,8 @@ job. This is useful for tasks such as transcoding, analysis, or applying effects
 
 ```json
 {
-  "JobName": "package-audio",
-  "Jobs": [
+  "TemplateName": "encode-to-ddp",
+  "Parameters": [
     {
       "Inputs": [
         {

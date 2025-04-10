@@ -1,5 +1,5 @@
 using MediaBedrock.Cli.Application.Jobs;
-using MediaBedrock.Cli.Domain.Jobs;
+using MediaBedrock.Cli.Domain.Jobs.Parameters;
 using MediaBedrock.Cli.Domain.Jobs.Steps;
 using MediaBedrock.Cli.Domain.Jobs.Templates;
 using Shouldly;
@@ -23,12 +23,13 @@ public sealed class JobFactoryTests
             Steps = [new JobTemplateStep { Name = "Step1", ProcessorName = "namespace/processor" }]
         };
 
-        var inputs = new[] { new JobInputParameter("Input1", "uri1") };
-        var outputs = new[] { new JobOutputParameter("Output1", "uri2") };
-        var properties = new[] { new JobPropertyParameter("Property1", "Value1") };
+        var parameters = new JobParameters(
+            Inputs: [new JobInputParameter("Input1", "uri1")],
+            Outputs: [new JobOutputParameter("Output1", "uri2")],
+            Properties: [new JobPropertyParameter("Property1", "Value1")]);
 
         // Act
-        var result = _jobFactory.Create(template, inputs, outputs, properties);
+        var result = _jobFactory.Create(template, parameters);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -49,16 +50,17 @@ public sealed class JobFactoryTests
             Inputs = [new JobTemplateInput { Name = "Input1" }]
         };
 
-        var inputs = new[] { new JobInputParameter("InvalidInput", "uri1") };
-        var outputs = Array.Empty<JobOutputParameter>();
-        var properties = Array.Empty<JobPropertyParameter>();
+        var parameters = new JobParameters(
+            Inputs: [new JobInputParameter("InvalidInput", "uri1")],
+            Outputs: [],
+            Properties: []);
 
         // Act
-        var result = _jobFactory.Create(template, inputs, outputs, properties);
+        var result = _jobFactory.Create(template, parameters);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        result.Error.ShouldBe(JobErrors.InputParameterNotFound("InvalidInput"));
+        result.Error.ShouldBe(JobParameterErrors.InputParameterNotFound("InvalidInput"));
     }
 
     [Fact]
@@ -72,15 +74,16 @@ public sealed class JobFactoryTests
             Outputs = [new JobTemplateOutput { Name = "Output1" }]
         };
 
-        var inputs = Array.Empty<JobInputParameter>();
-        var outputs = new[] { new JobOutputParameter("InvalidOutput", "uri2") };
-        var properties = Array.Empty<JobPropertyParameter>();
+        var parameters = new JobParameters(
+            Inputs: [],
+            Outputs: [new JobOutputParameter("InvalidOutput", "uri2")],
+            Properties: []);
 
         // Act
-        var result = _jobFactory.Create(template, inputs, outputs, properties);
+        var result = _jobFactory.Create(template, parameters);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        result.Error.ShouldBe(JobErrors.OutputParameterNotFound("InvalidOutput"));
+        result.Error.ShouldBe(JobParameterErrors.OutputParameterNotFound("InvalidOutput"));
     }
 }

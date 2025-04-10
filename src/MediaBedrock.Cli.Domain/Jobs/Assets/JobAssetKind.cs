@@ -1,4 +1,4 @@
-namespace MediaBedrock.Cli.Domain.Jobs;
+namespace MediaBedrock.Cli.Domain.Jobs.Assets;
 
 public enum JobAssetKind
 {

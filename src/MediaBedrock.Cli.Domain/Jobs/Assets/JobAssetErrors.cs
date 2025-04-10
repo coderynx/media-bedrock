@@ -1,7 +1,7 @@
 using Coderynx.Functional;
-using Coderynx.Functional.Result;
+using Coderynx.Functional.Results;
 
-namespace MediaBedrock.Cli.Domain.Jobs;
+namespace MediaBedrock.Cli.Domain.Jobs.Assets;
 
 public static class JobAssetErrors
 {

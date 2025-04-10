@@ -1,8 +1,9 @@
 using System.Text.RegularExpressions;
-using Coderynx.Functional.Result;
+using Coderynx.Functional.Results;
 using MediaBedrock.Cli.Application.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs;
-using MediaBedrock.Cli.Domain.Jobs.Batch;
+using MediaBedrock.Cli.Domain.Jobs.Batches;
+using MediaBedrock.Cli.Domain.Jobs.Parameters;
 using MediaBedrock.Cli.Domain.Jobs.Processors;
 using MediaBedrock.Cli.Domain.Jobs.Steps;
 using MediaBedrock.Cli.Domain.Jobs.Templates;
@@ -13,25 +14,21 @@ namespace MediaBedrock.Cli.Application.Jobs;
 public sealed partial class JobFactory : IJobFactory
 {
     /// <inheritdoc />
-    public Result<Job> Create(
-        JobTemplate template,
-        JobInputParameter[] inputs,
-        JobOutputParameter[] outputs,
-        JobPropertyParameter[] properties)
+    public Result<Job> Create(JobTemplate template, JobParameters parameters)
     {
-        var createInputs = CreateInputs(template, inputs);
+        var createInputs = CreateInputs(template, parameters.Inputs);
         if (createInputs.IsFailure)
         {
             return createInputs.Error;
         }
 
-        var createOutputs = CreateOutputs(template, outputs);
+        var createOutputs = CreateOutputs(template, parameters.Outputs);
         if (createOutputs.IsFailure)
         {
             return createOutputs.Error;
         }
 
-        var createSteps = CreateSteps(template, properties);
+        var createSteps = CreateSteps(template, parameters.Properties);
         if (createSteps.IsFailure)
         {
             return createSteps.Error;
@@ -47,16 +44,12 @@ public sealed partial class JobFactory : IJobFactory
     }
 
     /// <inheritdoc />
-    public Result<IEnumerable<Job>> Create(JobTemplate template, BatchJob batchJob)
+    public Result<BatchJob> Create(JobTemplate template, JobParameters[] parameters)
     {
         var jobs = new List<Job>();
-        foreach (var entry in batchJob.Entries)
+        foreach (var jobParameters in parameters)
         {
-            var createJob = Create(
-                template: template,
-                inputs: entry.Inputs.Select(i => i.ToJobInputParameter()).ToArray(),
-                outputs: entry.Outputs.Select(o => o.ToJobOutputParameter()).ToArray(),
-                properties: entry.Properties.Select(p => p.ToJobPropertyParameter()).ToArray());
+            var createJob = Create(template, jobParameters);
 
             if (createJob.IsFailure)
             {
@@ -66,7 +59,7 @@ public sealed partial class JobFactory : IJobFactory
             jobs.Add(createJob.Value);
         }
 
-        return Result.Created(jobs.AsEnumerable());
+        return BatchJob.Create(jobs);
     }
 
     private static Result<List<JobInput>> CreateInputs(JobTemplate template, JobInputParameter[] inputs)
@@ -76,7 +69,7 @@ public sealed partial class JobFactory : IJobFactory
         {
             if (!template.Inputs.Any(tp => tp.Name.Equals(i.Name)))
             {
-                return JobErrors.InputParameterNotFound(i.Name);
+                return JobParameterErrors.InputParameterNotFound(i.Name);
             }
 
             generatedInputs.Add(JobInput.Create(i.Name, i.Uri));
@@ -92,7 +85,7 @@ public sealed partial class JobFactory : IJobFactory
         {
             if (!template.Outputs.Any(tp => tp.Name.Equals(o.Name)))
             {
-                return JobErrors.OutputParameterNotFound(o.Name);
+                return JobParameterErrors.OutputParameterNotFound(o.Name);
             }
 
             generatedOutputs.Add(JobOutput.Create(o.Name, o.Uri));

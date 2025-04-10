@@ -1,6 +1,6 @@
 using MediaBedrock.Sdk.Processors;
 
-namespace MediaBedrock.Cli.Domain.Jobs;
+namespace MediaBedrock.Cli.Domain.Jobs.Assets;
 
 public sealed class JobAsset(
     string name,

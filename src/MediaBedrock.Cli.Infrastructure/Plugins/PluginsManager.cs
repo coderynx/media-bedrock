@@ -3,7 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using Coderynx.Functional.Result;
+using Coderynx.Functional.Results;
 using MediaBedrock.Cli.Domain.Jobs.Processors;
 using MediaBedrock.Cli.Infrastructure.Plugins.Interfaces;
 using MediaBedrock.Sdk.Processors;
@@ -27,12 +27,11 @@ public sealed class PluginsManager(ILogger<PluginsManager> logger, IConfiguratio
     {
         Converters =
         {
-            new DictionaryStringObjectJsonConverter(),
             new JsonStringEnumConverter()
         }
     };
 
-    private IContainer _container = null!;
+    private IContainer? _container;
 
     public void Initialize()
     {
@@ -73,6 +72,11 @@ public sealed class PluginsManager(ILogger<PluginsManager> logger, IConfiguratio
 
     public Result<TComponent> ResolveComponent<TComponent>(string componentName) where TComponent : class
     {
+        if (_container is null)
+        {
+            return PluginErrors.ContainerNotInitialized;
+        }
+
         return _container.TryResolveNamed<TComponent>(componentName, out var adapter)
             ? Result.Found(adapter)
             : ProcessorErrors.NotFound(componentName);
@@ -80,7 +84,10 @@ public sealed class PluginsManager(ILogger<PluginsManager> logger, IConfiguratio
 
     public async ValueTask DisposeAsync()
     {
-        await _container.DisposeAsync();
+        if (_container is not null)
+        {
+            await _container.DisposeAsync();
+        }
     }
 
     private static (string Namespace, string Name) GetProcessorInfo(Type type)

@@ -1,12 +1,16 @@
 using System.Text.Json;
-using Coderynx.Functional.Result;
+using Coderynx.Functional.Results;
 using MediaBedrock.Cli.Application.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs;
 using MediaBedrock.Cli.Infrastructure.Jobs.Templates;
 
 namespace MediaBedrock.Cli.Infrastructure.Jobs;
 
-public sealed class JobSerializer : IJobSerializer
+/// <summary>
+///     Provides functionality to serialize and deserialize <see cref="Job" /> objects to and from JSON format.
+///     Implements the <see cref="IJobSerializer" /> interface.
+/// </summary>
+public sealed class JobJsonSerializer : IJobSerializer
 {
     private readonly JsonSerializerOptions _serializerOptions = new()
     {
@@ -15,9 +19,11 @@ public sealed class JobSerializer : IJobSerializer
             new JobIdConverter(),
             new JobTemplateNameConverter(),
             new JobStepNameConverter()
-        }
+        },
+        WriteIndented = true
     };
 
+    /// <inheritdoc />
     public Result<string> Serialize(Job job)
     {
         try
@@ -31,6 +37,7 @@ public sealed class JobSerializer : IJobSerializer
         }
     }
 
+    /// <inheritdoc />
     public Result<Job> Deserialize(string serialized)
     {
         var job = JsonSerializer.Deserialize<Job>(serialized, _serializerOptions);

@@ -1,6 +1,6 @@
-using Coderynx.Functional.Option;
+using Coderynx.Functional.Options;
 
-namespace MediaBedrock.Cli.Domain.Jobs;
+namespace MediaBedrock.Cli.Domain.Jobs.Assets;
 
 public sealed class JobAssetsPool
 {

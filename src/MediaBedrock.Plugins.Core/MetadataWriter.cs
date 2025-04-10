@@ -32,15 +32,12 @@ public sealed class MetadataWriter(ILogger<MetadataWriter> logger) : IProcessor
             Artist = context.GetProperty("Artist")?.GetValue(string.Empty),
             Album = context.GetProperty("Album")?.GetValue(string.Empty),
             Genre = context.GetProperty("Genre")?.GetValue(string.Empty),
-            Comment = context.GetProperty("Comment")?.GetValue(string.Empty)
+            Comment = context.GetProperty("Comment")?.GetValue(string.Empty),
+            Year = context.GetProperty("Year")?
+                .Transform<int?>(input => int.TryParse(input, out var year) ? year : null)
         };
 
-        if (int.TryParse(context.GetProperty("Year")?.GetValue<string>(), out var year))
-        {
-            track.Year = year;
-        }
-
-        if (int.TryParse(context.GetProperty("TrackNumber")?.GetValue<string>(), out var trackNumber))
+        if (int.TryParse(context.GetProperty("TrackNumber")?.GetValue(), out var trackNumber))
         {
             track.TrackNumber = trackNumber;
         }

@@ -8,7 +8,8 @@ internal static class DependencyInjection
 {
     internal static void AddJobs(this IServiceCollection services)
     {
-        services.AddSingleton<IJobSerializer, JobSerializer>();
-        services.AddSingleton<IJobTemplateSerializer, JobTemplateSerializer>();
+        services.AddSingleton<IJobSerializer, JobJsonSerializer>();
+        services.AddSingleton<IJobTemplateSerializer, JobTemplateJsonSerializer>();
+        services.AddSingleton<IBatchJobSerializer, BatchJobJsonSerializer>();
     }
 }
