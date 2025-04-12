@@ -91,7 +91,7 @@ public sealed class ProcessJobStepHandler(
 
         logger.LogInformation("Successfully processed step {StepName} of job {JobId}",
             context.JobMessage.StepName,
-            context.JobMessage.Id);
+            context.JobMessage.JobId);
 
         var isJobCompleted = !context.JobStateMachine.JobActivities
             .Any(ja => ja.Status.Equals(JobActivityStatus.Running) || ja.Status.Equals(JobActivityStatus.Pending));
