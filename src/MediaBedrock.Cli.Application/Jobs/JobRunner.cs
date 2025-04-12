@@ -11,7 +11,7 @@ namespace MediaBedrock.Cli.Application.Jobs;
 public sealed class JobRunner(
     IJobWorkflowFactory jobWorkflowFactory,
     IJobMessageBus messageBus,
-    IJobWorkflowRepository jobWorkflowRepository,
+    IJobStateMachineRepository jobStateMachineRepository,
     ILogger<JobRunner> logger) : IJobRunner
 {
     /// <inheritdoc />
@@ -29,7 +29,7 @@ public sealed class JobRunner(
 
         var workflow = createContainer.Value;
 
-        jobWorkflowRepository.Store(workflow);
+        jobStateMachineRepository.Store(workflow);
 
         var startJob = RunJob.Create(workflow);
         await messageBus.PublishAsync(startJob, ct);

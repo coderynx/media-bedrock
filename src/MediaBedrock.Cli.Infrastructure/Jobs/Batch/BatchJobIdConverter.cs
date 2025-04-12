@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using MediaBedrock.Cli.Domain.Jobs.Batches;
 
-namespace MediaBedrock.Cli.Infrastructure.Jobs;
+namespace MediaBedrock.Cli.Infrastructure.Jobs.Batch;
 
 public sealed class BatchJobIdConverter : JsonConverter<BatchJobId>
 {

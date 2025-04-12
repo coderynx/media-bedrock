@@ -9,7 +9,7 @@ namespace MediaBedrock.Cli.Infrastructure.Jobs;
 internal sealed class JobEventProcessorBackgroundService(
     IServiceScopeFactory serviceScopeFactory,
     JobMessageQueue queue,
-    IJobWorkflowRepository jobWorkflowRepository,
+    IJobStateMachineRepository jobStateMachineRepository,
     ILogger<JobEventProcessorBackgroundService> logger)
     : BackgroundService
 {
@@ -19,7 +19,7 @@ internal sealed class JobEventProcessorBackgroundService(
         {
             using var scope = serviceScopeFactory.CreateScope();
 
-            var jobWorkflow = jobWorkflowRepository.Get(message.JobId);
+            var jobWorkflow = jobStateMachineRepository.Get(message.JobId);
             if (!jobWorkflow.IsSome)
             {
                 logger.LogError("Failed to get job workflow for {JobId}", message.JobId);

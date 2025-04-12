@@ -1,4 +1,6 @@
 using MediaBedrock.Cli.Application.Jobs.Interfaces;
+using MediaBedrock.Cli.Domain.Jobs.Interfaces;
+using MediaBedrock.Cli.Infrastructure.Jobs.Batch;
 using MediaBedrock.Cli.Infrastructure.Jobs.Templates;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,7 +14,8 @@ internal static class DependencyInjection
         services.AddSingleton<IJobTemplateSerializer, JobTemplateJsonSerializer>();
         services.AddSingleton<IBatchJobSerializer, BatchJobJsonSerializer>();
 
-        services.AddSingleton<IJobWorkflowRepository, InMemoryJobWorkflowRepository>();
+        services.AddScoped<IJobTemplatesRepository, JobTemplatesFileSystemRepository>();
+        services.AddSingleton<IJobStateMachineRepository, InMemoryJobStateMachineRepository>();
 
         services.AddSingleton<JobMessageQueue>();
         services.AddSingleton<IJobMessageBus, JobMessageBus>();

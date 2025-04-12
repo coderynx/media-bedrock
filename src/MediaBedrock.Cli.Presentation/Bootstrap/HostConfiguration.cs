@@ -8,7 +8,8 @@ public static class HostConfiguration
 {
     public static void UsePresentation(this ICoconaCommandsBuilder builder)
     {
-        builder.AddSubCommand("job", command => { command.AddCommands<JobCommands>(); });
-        builder.AddSubCommand("batch-job", command => { command.AddCommands<BatchJobCommands>(); });
+        builder.AddSubCommand("jobs", command => { command.AddCommands<JobsCommands>(); });
+        builder.AddSubCommand("batch-jobs", command => { command.AddCommands<BatchJobsCommands>(); });
+        builder.AddSubCommand("job-templates", command => { command.AddCommands<JobTemplatesCommands>(); });
     }
 }

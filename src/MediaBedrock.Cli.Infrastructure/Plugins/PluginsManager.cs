@@ -70,16 +70,16 @@ public sealed class PluginsManager(ILogger<PluginsManager> logger, IConfiguratio
         logger.LogInformation("Plugins loaded");
     }
 
-    public Result<TComponent> ResolveComponent<TComponent>(string componentName) where TComponent : class
+    public Result<TComponent> ResolveComponent<TComponent>(string name) where TComponent : class
     {
         if (_container is null)
         {
             return PluginErrors.ContainerNotInitialized;
         }
 
-        return _container.TryResolveNamed<TComponent>(componentName, out var adapter)
+        return _container.TryResolveNamed<TComponent>(name, out var adapter)
             ? Result.Found(adapter)
-            : ProcessorErrors.NotFound(componentName);
+            : ProcessorErrors.NotFound(name);
     }
 
     public async ValueTask DisposeAsync()
