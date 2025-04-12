@@ -7,7 +7,7 @@ namespace MediaBedrock.Cli.Application.Jobs.Interfaces;
 /// <summary>
 ///     Interface for storing and retrieving job containers.
 /// </summary>
-public interface IJobWorkflowRepository
+public interface IJobStateMachineRepository
 {
     Result Store(JobStateMachine jobStateMachine);
     Option<JobStateMachine> Get(JobId jobId);

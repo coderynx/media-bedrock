@@ -5,11 +5,23 @@ namespace MediaBedrock.Cli.Domain.Jobs;
 
 public static class JobErrors
 {
+    public const string PropertyNotFoundCode = "Job.PropertyNotFound";
+
+    public const string InvalidIdCode = "Job.InvalidId";
+
+    public const string InvalidStepNameCode = "Job.InvalidStepName";
+
+    public const string DeserializationFailedCode = "Job.DeserializationFailed";
+
+    public const string ContainerConflictCode = "Job.ContainerConflict";
+
+    public const string ContainerRemovalFailedCode = "Job.ContainerRemovalFailed";
+
     public static Error PropertyNotFound(string key)
     {
         return new Error(
             ResultError: ResultError.InvalidInput,
-            Code: "Job.PropertyNotFound",
+            Code: PropertyNotFoundCode,
             Message: $"The job property '{key}' was not found. Please check the property name and try again.");
     }
 
@@ -17,7 +29,7 @@ public static class JobErrors
     {
         return new Error(
             ResultError: ResultError.InvalidInput,
-            Code: "Job.InvalidId",
+            Code: InvalidIdCode,
             Message: $"The job ID '{id}' is invalid. Please check the ID and try again.");
     }
 
@@ -25,7 +37,7 @@ public static class JobErrors
     {
         return new Error(
             ResultError: ResultError.InvalidInput,
-            Code: "Job.InvalidJobStepName",
+            Code: InvalidStepNameCode,
             Message: $"The job step name '{name}' is invalid. Please check the name and try again.");
     }
 
@@ -41,7 +53,7 @@ public static class JobErrors
     {
         return new Error(
             ResultError: ResultError.InvalidInput,
-            Code: "Job.DeserializationFailed",
+            Code: DeserializationFailedCode,
             Message: $"The job deserialization failed for the serialized job: {serialized}");
     }
 
@@ -49,7 +61,7 @@ public static class JobErrors
     {
         return new Error(
             ResultError: ResultError.InvalidInput,
-            Code: "Job.ContainerConflict",
+            Code: ContainerConflictCode,
             Message: $"A job container with ID '{jobId}' already exists. Please check the job ID and try again.");
     }
 
@@ -57,7 +69,7 @@ public static class JobErrors
     {
         return new Error(
             ResultError: ResultError.InvalidInput,
-            Code: "Job.ContainerRemovalFailed",
+            Code: ContainerRemovalFailedCode,
             Message: $"Failed to remove the job container with ID '{jobId}'. Please check the job ID and try again.");
     }
 }

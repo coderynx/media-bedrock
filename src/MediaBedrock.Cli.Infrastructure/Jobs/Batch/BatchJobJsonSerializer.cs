@@ -5,7 +5,7 @@ using MediaBedrock.Cli.Domain.Jobs;
 using MediaBedrock.Cli.Domain.Jobs.Batches;
 using MediaBedrock.Cli.Infrastructure.Jobs.Templates;
 
-namespace MediaBedrock.Cli.Infrastructure.Jobs;
+namespace MediaBedrock.Cli.Infrastructure.Jobs.Batch;
 
 /// <summary>
 ///     Provides functionality to serialize and deserialize <see cref="BatchJob" /> objects to and from JSON format.

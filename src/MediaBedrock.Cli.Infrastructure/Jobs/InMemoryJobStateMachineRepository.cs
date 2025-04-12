@@ -6,7 +6,7 @@ using MediaBedrock.Cli.Domain.Jobs;
 
 namespace MediaBedrock.Cli.Infrastructure.Jobs;
 
-public sealed class InMemoryJobWorkflowRepository : IJobWorkflowRepository
+public sealed class InMemoryJobStateMachineRepository : IJobStateMachineRepository
 {
     private readonly ConcurrentDictionary<JobId, JobStateMachine> _jobContainers = new();
 
