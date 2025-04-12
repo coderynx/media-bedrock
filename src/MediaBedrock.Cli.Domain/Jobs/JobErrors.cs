@@ -44,4 +44,20 @@ public static class JobErrors
             Code: "Job.DeserializationFailed",
             Message: $"The job deserialization failed for the serialized job: {serialized}");
     }
+
+    public static Error ContainerConflict(JobId jobId)
+    {
+        return new Error(
+            ResultError: ResultError.InvalidInput,
+            Code: "Job.ContainerConflict",
+            Message: $"A job container with ID '{jobId}' already exists. Please check the job ID and try again.");
+    }
+
+    public static Error ContainerRemovalFailed(JobId jobId)
+    {
+        return new Error(
+            ResultError: ResultError.InvalidInput,
+            Code: "Job.ContainerRemovalFailed",
+            Message: $"Failed to remove the job container with ID '{jobId}'. Please check the job ID and try again.");
+    }
 }

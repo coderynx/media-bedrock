@@ -11,5 +11,11 @@ internal static class DependencyInjection
         services.AddSingleton<IJobSerializer, JobJsonSerializer>();
         services.AddSingleton<IJobTemplateSerializer, JobTemplateJsonSerializer>();
         services.AddSingleton<IBatchJobSerializer, BatchJobJsonSerializer>();
+
+        services.AddSingleton<IJobWorkflowRepository, InMemoryJobWorkflowRepository>();
+
+        services.AddSingleton<JobMessageQueue>();
+        services.AddSingleton<IJobMessageBus, JobMessageBus>();
+        services.AddHostedService<JobEventProcessorBackgroundService>();
     }
 }

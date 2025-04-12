@@ -16,6 +16,11 @@ public sealed class JobAssetsPool
         _assets.Add(asset);
     }
 
+    public List<JobAsset> ResolveAssets(JobAssetKind kind)
+    {
+        return _assets.Where(a => a.Kind.Equals(kind)).ToList();
+    }
+
     public Option<JobAsset> ResolveAsset(string name)
     {
         var asset = _assets.FirstOrDefault(a => a.Name.Equals(name));
