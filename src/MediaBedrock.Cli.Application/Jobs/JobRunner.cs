@@ -1,20 +1,17 @@
 using Coderynx.Functional.Results;
-using MediaBedrock.Cli.Application.Assets;
+using MediaBedrock.Cli.Application.Jobs.Handlers;
 using MediaBedrock.Cli.Application.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs;
-using MediaBedrock.Cli.Domain.Jobs.Assets;
 using MediaBedrock.Cli.Domain.Jobs.Batches;
-using MediaBedrock.Cli.Domain.Jobs.Processors;
-using MediaBedrock.Sdk.Processors;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBedrock.Cli.Application.Jobs;
 
 /// <inheritdoc />
 public sealed class JobRunner(
-    IJobContainerFactory jobContainerFactory,
-    IProcessorContextFactory processorContextFactory,
-    IMediaInformationRetriever mediaInformationRetriever,
+    IJobWorkflowFactory jobWorkflowFactory,
+    IJobMessageBus messageBus,
+    IJobWorkflowRepository jobWorkflowRepository,
     ILogger<JobRunner> logger) : IJobRunner
 {
     /// <inheritdoc />
@@ -22,7 +19,7 @@ public sealed class JobRunner(
     {
         logger.LogInformation("Starting job execution for {JobId}", job.Id);
 
-        var createContainer = await jobContainerFactory.CreateAsync(job);
+        var createContainer = await jobWorkflowFactory.CreateAsync(job);
         if (createContainer.IsFailure)
         {
             return createContainer.Error;
@@ -30,34 +27,29 @@ public sealed class JobRunner(
 
         logger.LogInformation("Successfully initialized job {JobId} execution", job.Id);
 
-        var container = createContainer.Value;
-        foreach (var (step, processor) in container.Processors)
+        var workflow = createContainer.Value;
+
+        jobWorkflowRepository.Store(workflow);
+
+        var startJob = RunJob.Create(workflow);
+        await messageBus.PublishAsync(startJob, ct);
+
+        while (workflow.Status is not JobWorkflowStatus.Completed)
         {
-            var createContext = processorContextFactory.Create(job.Id, step, container.AssetsPool);
-            if (createContext.IsFailure)
+            if (ct.IsCancellationRequested)
             {
-                return createContext.Error;
+                logger.LogWarning("Job execution for {JobId} was canceled", job.Id);
+                return Result.Accepted();
             }
 
-            var context = createContext.Value;
-
-            var processResult = await processor.ProcessAsync(context, ct);
-            if (!processResult.IsSuccess)
+            if (workflow.Status is JobWorkflowStatus.Failed)
             {
-                return ProcessorErrors.ProcessingFailed(job.Id, step.ProcessorName);
+                logger.LogError("Job execution for {JobId} failed", job.Id);
+                return Result.Accepted();
             }
 
-            var updateAssetPool = await UpdateAssetPoolAsync(container, context);
-            if (updateAssetPool.IsFailure)
-            {
-                return updateAssetPool.Error;
-            }
-
-            logger.LogInformation("Successfully processed step {StepName} of job {JobId}", step.Name, job.Id);
+            await Task.Delay(500, ct);
         }
-
-        var tempFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp", job.Id.ToString());
-        Directory.Delete(tempFolder, true);
 
         logger.LogInformation("Successfully processed job {JobId}", job.Id);
 
@@ -83,30 +75,5 @@ public sealed class JobRunner(
         logger.LogInformation("Batch job execution completed for {JobCount} jobs", batchJob.Jobs.Count());
 
         return Result.Accepted();
-    }
-
-    private async Task<Result> UpdateAssetPoolAsync(JobContainer container, ProcessorContext context)
-    {
-        foreach (var output in context.Outputs)
-        {
-            var resolveAsset = container.AssetsPool.ResolveAsset(output.AssetName);
-            if (!resolveAsset.IsSome)
-            {
-                return JobAssetErrors.AssetNotFound(output.AssetName);
-            }
-
-            var getMediaInfo = await mediaInformationRetriever.GetMediaInfoAsync(output.GetAsFilePath());
-            if (getMediaInfo.IsFailure)
-            {
-                return getMediaInfo.Error;
-            }
-
-            var asset = resolveAsset.ValueOrThrow();
-            asset.UpdateUri(output.GetAsFilePath());
-
-            logger.LogInformation("Asset {AssetName} became available", output.AssetName);
-        }
-
-        return Result.Updated();
     }
 }

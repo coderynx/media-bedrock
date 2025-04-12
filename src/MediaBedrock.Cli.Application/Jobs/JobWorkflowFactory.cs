@@ -4,19 +4,17 @@ using MediaBedrock.Cli.Application.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs;
 using MediaBedrock.Cli.Domain.Jobs.Assets;
 using MediaBedrock.Cli.Domain.Jobs.Steps;
-using MediaBedrock.Sdk.Processors;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBedrock.Cli.Application.Jobs;
 
 /// <inheritdoc />
-public sealed class JobContainerFactory(
+public sealed class JobWorkflowFactory(
     IMediaInformationRetriever mediaInformationRetriever,
-    IProcessorProvider processorProvider,
-    ILogger<JobContainerFactory> logger) : IJobContainerFactory
+    ILogger<JobWorkflowFactory> logger) : IJobWorkflowFactory
 {
     /// <inheritdoc />
-    public async Task<Result<JobContainer>> CreateAsync(Job job)
+    public async Task<Result<JobStateMachine>> CreateAsync(Job job)
     {
         JobAssetsPool assetsPool = new();
 
@@ -39,18 +37,9 @@ public sealed class JobContainerFactory(
             assetsPool.AddAsset(asset);
         }
 
-        var processors = new Dictionary<JobStep, IProcessor>();
+        var steps = new List<JobStep>();
         foreach (var step in job.Steps)
         {
-            var resolveProcessor = processorProvider.ResolveProcessor(step.ProcessorName);
-            if (resolveProcessor.IsFailure)
-            {
-                logger.LogError("Failed to resolve {ProcessorName} processor", step.ProcessorName);
-                return resolveProcessor.Error;
-            }
-
-            processors.Add(step, resolveProcessor.Value);
-
             foreach (var input in step.Sinks)
             {
                 if (assetsPool.DoesAssetExist(input.Name))
@@ -73,13 +62,13 @@ public sealed class JobContainerFactory(
                 assetsPool.AddAsset(asset);
             }
 
-            logger.LogInformation("Successfully resolved {ProcessorName} processor", step.ProcessorName);
+            steps.Add(step);
         }
 
-        var container = new JobContainer(
-            job.Id,
-            processors,
-            assetsPool);
+        var container = new JobStateMachine(
+            jobId: job.Id,
+            activities: steps.Select(JobActivity.Create).ToList(),
+            assetsPool: assetsPool);
 
         return Result.Created(container);
     }

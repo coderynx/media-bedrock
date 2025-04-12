@@ -6,7 +6,7 @@ namespace MediaBedrock.Cli.Application.Jobs.Interfaces;
 /// <summary>
 ///     Interface for creating job containers.
 /// </summary>
-public interface IJobContainerFactory
+public interface IJobWorkflowFactory
 {
     /// <summary>
     ///     Asynchronously creates a job container for the specified job.
@@ -16,5 +16,5 @@ public interface IJobContainerFactory
     ///     A task that represents the asynchronous operation. The task result contains a
     ///     <see cref="Result" />.
     /// </returns>
-    Task<Result<JobContainer>> CreateAsync(Job job);
+    Task<Result<JobStateMachine>> CreateAsync(Job job);
 }
