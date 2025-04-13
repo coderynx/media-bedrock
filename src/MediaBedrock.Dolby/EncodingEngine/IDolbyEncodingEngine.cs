@@ -1,3 +1,4 @@
+using MediaBedrock.Dolby.EncodingEngine.Messages;
 using MediaBedrock.Dolby.Jobs.Models;
 
 namespace MediaBedrock.Dolby.EncodingEngine;
