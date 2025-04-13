@@ -1,4 +1,5 @@
 using MediaBedrock.Dolby.EncodingEngine;
+using MediaBedrock.Dolby.EncodingEngine.Messages;
 using MediaBedrock.Dolby.Jobs.Models;
 using MediaBedrock.Dolby.Jobs.Models.Filters;
 using MediaBedrock.Dolby.Jobs.Models.Inputs;
@@ -76,15 +77,44 @@ public sealed class DolbyDigitalPlusEncoder
             .GetValue("true")
             .Equals("true", StringComparison.OrdinalIgnoreCase);
 
-        var engine = new DolbyEncodingEngine(
-            path: enginePath,
-            useWine: useWine,
-            logger: context.Logger);
+        try
+        {
+            var engine = new DolbyEncodingEngine(enginePath, useWine);
 
-        await engine.ProcessJobAsync(jobDefinition);
+            await engine.ProcessJobAsync(jobDefinition, OnStatusChange);
+        }
+        catch (Exception exception)
+        {
+            context.Logger.LogError(exception, "Failed to process job");
+            return ProcessorResult.Failure("Failed to process job", exception);
+        }
 
         context.Logger.LogInformation("Successfully encoded {Input} to {Output}", inputUri, outputUri);
 
         return ProcessorResult.Success();
+
+        void OnStatusChange(DolbyEncodingEngineMessage message)
+        {
+            switch (message)
+            {
+                case DolbyEncodingEngineErrorMessage errorMessage:
+                    context.Logger.LogError("Received error: {Error}", errorMessage.Message);
+                    break;
+
+                case DolbyEncodingEngineProgressMessage progressMessage:
+                    context.Logger.LogInformation(
+                        "Stage: {Stage}, Step: {Step}, Stage Progress: {StageProgress}, Overall Progress: {OverallProgress}",
+                        progressMessage.Stage,
+                        progressMessage.Step,
+                        progressMessage.StageProgress,
+                        progressMessage.OverallProgress);
+
+                    break;
+
+                default:
+                    context.Logger.LogInformation("Received message {Message}", message.ToString());
+                    break;
+            }
+        }
     }
 }

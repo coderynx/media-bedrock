@@ -1,39 +1,19 @@
 using System.Diagnostics;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
+using System.Text;
+using MediaBedrock.Dolby.EncodingEngine.Messages;
 using MediaBedrock.Dolby.Jobs.Models;
-using Microsoft.Extensions.Logging;
+using MediaBedrock.Dolby.Jobs.Serializers;
 
 namespace MediaBedrock.Dolby.EncodingEngine;
 
-public sealed partial class DolbyEncodingEngine : IDolbyEncodingEngine
+public sealed class DolbyEncodingEngine : IDolbyEncodingEngine
 {
-    private readonly JsonSerializerOptions _jsonOptions = new()
-    {
-        WriteIndented = true,
-        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-    };
-
-    private readonly ILogger? _logger;
-
     public DolbyEncodingEngine(string path, bool useWine = false)
     {
         IsUsingWine = useWine;
         Path = path;
 
         Initialize();
-    }
-
-    public DolbyEncodingEngine(string path, bool useWine, ILoggerFactory loggerFactory) : this(path, useWine)
-    {
-        _logger = loggerFactory.CreateLogger<DolbyEncodingEngine>();
-    }
-
-    public DolbyEncodingEngine(string path, bool useWine, ILogger logger) : this(path, useWine)
-    {
-        _logger = logger;
     }
 
     private bool IsInitialized => !string.IsNullOrEmpty(Version);
@@ -47,14 +27,11 @@ public sealed partial class DolbyEncodingEngine : IDolbyEncodingEngine
     {
         if (!IsInitialized)
         {
-            _logger?.LogError("The encoding engine is not initialized.");
             throw new DolbyEncodingEngineException("The encoding engine is not initialized.");
         }
 
-        _logger?.LogInformation("Start processing job {@Job}", job);
-
         var dto = job.ToDto();
-        var json = JsonSerializer.Serialize(dto, _jsonOptions);
+        var json = JobDefinitionDtoSerializer.Serialize(dto);
 
         var tempPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
         Directory.CreateDirectory(tempPath);
@@ -63,8 +40,6 @@ public sealed partial class DolbyEncodingEngine : IDolbyEncodingEngine
         var filePath = System.IO.Path.Combine(tempPath, fileName);
 
         await File.WriteAllTextAsync(filePath, json);
-
-        var status = new DolbyEncodingEngineMessage("initializing");
 
         var process = CreateProcess($"--json {filePath} --progress", (_, args) =>
         {
@@ -79,35 +54,8 @@ public sealed partial class DolbyEncodingEngine : IDolbyEncodingEngine
                 return;
             }
 
-            LogLine(logData);
-
-            if (logData.Level == DolbyEncodingEngineLogLevel.Error)
-            {
-                throw new DolbyEncodingEngineException(logData.Message);
-            }
-
-            if (onStatusChange is null)
-            {
-                return;
-            }
-
-            var match = ProgressRegex().Match(args.Data);
-            if (!match.Success)
-            {
-                onStatusChange(status);
-                return;
-            }
-
-            status = new DolbyEncodingEngineMessage
-            {
-                Stage = match.Groups["stage"].Value,
-                StageName = match.Groups["stageName"].Value,
-                Step = match.Groups["step"].Value,
-                StageProgress = double.Parse(match.Groups["stageProgress"].Value),
-                OverallProgress = double.Parse(match.Groups["overallProgress"].Value)
-            };
-
-            onStatusChange(status);
+            var message = DolbyEncodingEngineMessageFactory.Create(logData);
+            onStatusChange?.Invoke(message);
         });
 
         process.Start();
@@ -117,22 +65,6 @@ public sealed partial class DolbyEncodingEngine : IDolbyEncodingEngine
 #if !DEBUG
       File.Delete(filePath);
 #endif
-
-        _logger?.LogInformation("Finished processing job {@Job}", job);
-    }
-
-    private void LogLine(DolbyEncodingEngineLogLine line)
-    {
-        var logLevelType = line.Level.Value switch
-        {
-            "INFO" => LogLevel.Information,
-            "INTERNAL_INFO" => LogLevel.Information,
-            "WARNING" => LogLevel.Warning,
-            "ERROR" => LogLevel.Error,
-            _ => LogLevel.None
-        };
-
-        _logger?.Log(logLevelType, "Dolby Encoding Engine [{Category}]: {Message}", line.Category, line.Message);
     }
 
     private Process CreateProcess(string arguments = "", DataReceivedEventHandler? outputHandler = null)
@@ -161,26 +93,22 @@ public sealed partial class DolbyEncodingEngine : IDolbyEncodingEngine
     {
         if (!Directory.Exists(Path))
         {
-            var exception = new DolbyEncodingEngineException("The specified encoding engine path does not exist.");
-            _logger?.LogError(exception, "The specified encoding engine path does not exist.");
+            throw new DolbyEncodingEngineException($"The specified encoding engine path {Path} does not exist.");
         }
 
         if (!File.Exists(ExecutablePath))
         {
-            var exception = new DolbyEncodingEngineException(
-                message: "The specified encoding engine path does not contain the required executable.");
-            _logger?.LogError(
-                exception,
-                "The specified encoding engine path does not contain the required executable.");
+            throw new DolbyEncodingEngineException(
+                $"The specified encoding engine path {ExecutablePath} does not contain the required executable.");
         }
 
-        var output = string.Empty;
+        var outputBuilder = new StringBuilder();
 
         var process = CreateProcess(outputHandler: (_, args) =>
         {
             if (args.Data is not null)
             {
-                output += args.Data;
+                outputBuilder.AppendLine(args.Data);
             }
         });
 
@@ -190,23 +118,20 @@ public sealed partial class DolbyEncodingEngine : IDolbyEncodingEngine
 
         try
         {
-            Version = output.Split(",")[1]
+            var output = outputBuilder.ToString();
+            var parts = output.Split(',');
+            if (parts.Length <= 1)
+            {
+                throw new DolbyEncodingEngineException(
+                    "Failed to parse the encoding engine version. The output format is invalid.");
+            }
+            Version = parts[1]
                 .Replace("Version", string.Empty)
                 .Trim();
         }
         catch (Exception e)
         {
-            _logger?.LogError(e, "Failed to initialize the encoding engine.");
             throw new DolbyEncodingEngineException("Failed to initialize the encoding engine.", e);
         }
-
-        _logger?.LogInformation("Initialized Dolby Encoding Engine version {Version}", Version);
     }
-
-    [GeneratedRegex("Stage: (?<stage>.*?)," +
-                    "Stage name: (?<stageName>.*?)," +
-                    "Step: (?<step>.*?)," +
-                    "Stage progress: (?<stageProgress>[0-9.]+)," +
-                    "Overall progress: (?<overallProgress>[0-9.]+)(?=\\.)")]
-    private static partial Regex ProgressRegex();
 }
