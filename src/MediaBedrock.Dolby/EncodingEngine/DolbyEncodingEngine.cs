@@ -118,8 +118,14 @@ public sealed class DolbyEncodingEngine : IDolbyEncodingEngine
 
         try
         {
-            Version = outputBuilder.ToString()
-                .Split(',')[1]
+            var output = outputBuilder.ToString();
+            var parts = output.Split(',');
+            if (parts.Length <= 1)
+            {
+                throw new DolbyEncodingEngineException(
+                    "Failed to parse the encoding engine version. The output format is invalid.");
+            }
+            Version = parts[1]
                 .Replace("Version", string.Empty)
                 .Trim();
         }
