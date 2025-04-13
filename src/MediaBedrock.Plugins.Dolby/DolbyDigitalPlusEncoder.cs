@@ -9,31 +9,31 @@ using Microsoft.Extensions.Logging;
 namespace MediaBedrock.Plugins.Dolby;
 
 [Processor("dolby", "ddp-encoder")]
-public sealed class DolbyDigitalPlusEncoder(
-    ILogger<DolbyDigitalPlusEncoder> logger,
-    ILoggerFactory loggerFactory)
+public sealed class DolbyDigitalPlusEncoder
     : IProcessor
 {
     public async Task<ProcessorResult> ProcessAsync(ProcessorContext context, CancellationToken ct = default)
     {
+        context.Logger.LogDebug("Processing Dolby Digital Plus encoder {JobId}", "11");
+
         var inputTrack = context.GetInput("input");
         if (inputTrack is null)
         {
-            logger.LogError("Input track not found");
+            context.Logger.LogError("Input track not found");
             return ProcessorResult.Failure("Input track not found");
         }
 
         var outputTrack = context.GetOutput("output");
         if (outputTrack is null)
         {
-            logger.LogError("Output track not found");
+            context.Logger.LogError("Output track not found");
             return ProcessorResult.Failure("Output track not found");
         }
 
         var inputUri = inputTrack.GetAsFilePath();
         var outputUri = outputTrack.GetAsFilePath();
 
-        logger.LogInformation("Encoding {Input} to {Output}", inputUri, outputUri);
+        context.Logger.LogInformation("Encoding {Input} to {Output}", inputUri, outputUri);
 
         var job = JobDefinition.CreateBuilder();
 
@@ -81,11 +81,11 @@ public sealed class DolbyDigitalPlusEncoder(
         var engine = new DolbyEncodingEngine(
             path: enginePath,
             useWine: useWine,
-            loggerFactory: loggerFactory);
+            logger: context.Logger);
 
         await engine.ProcessJobAsync(jobDefinition);
 
-        logger.LogInformation("Successfully encoded {Input} to {Output}", inputUri, outputUri);
+        context.Logger.LogInformation("Successfully encoded {Input} to {Output}", inputUri, outputUri);
 
         return ProcessorResult.Success();
     }

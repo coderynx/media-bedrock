@@ -1,16 +1,12 @@
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Autofac;
-using Autofac.Extensions.DependencyInjection;
 using Coderynx.Functional.Results;
 using MediaBedrock.Cli.Domain.Jobs.Processors;
 using MediaBedrock.Cli.Infrastructure.Plugins.Interfaces;
 using MediaBedrock.Sdk.Processors;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Serilog;
 
 namespace MediaBedrock.Cli.Infrastructure.Plugins;
 
@@ -21,7 +17,7 @@ public sealed record PluginConfiguration
 
 internal sealed record PluginEntry(Assembly Assembly, PluginConfiguration Configuration);
 
-public sealed class PluginsManager(ILogger<PluginsManager> logger, IConfiguration configuration) : IPluginsManager
+public sealed class PluginsManager(ILogger<PluginsManager> logger) : IPluginsManager
 {
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -31,14 +27,11 @@ public sealed class PluginsManager(ILogger<PluginsManager> logger, IConfiguratio
         }
     };
 
-    private IContainer? _container;
+    private IServiceProvider? _serviceProvider;
 
     public void Initialize()
     {
-        var builder = new ContainerBuilder();
-
-        var coreServices = AddCoreServices();
-        builder.Populate(coreServices);
+        var serviceCollection = new ServiceCollection();
 
         var plugins = LoadPlugins();
 
@@ -52,41 +45,52 @@ public sealed class PluginsManager(ILogger<PluginsManager> logger, IConfiguratio
                 var processorInfo = GetProcessorInfo(type);
                 var fullName = $"{processorInfo.Namespace}/{processorInfo.Name}";
 
-                builder.RegisterType(type).Named<IProcessor>(fullName);
+                serviceCollection.AddKeyedTransient(fullName, (sp, _) =>
+                    (IProcessor)ActivatorUtilities.CreateInstance(sp, type));
+
                 logger.LogInformation("Registered processor {ProcessorFullName}", fullName);
             }
 
             foreach (var processorConfiguration in plugin.Configuration.Processors)
             {
-                builder.RegisterInstance(processorConfiguration)
-                    .Named<ProcessorConfiguration>(processorConfiguration.Name);
+                serviceCollection.AddKeyedSingleton(processorConfiguration.Name, processorConfiguration);
                 logger.LogInformation("Registered processor configuration {ProcessorConfigurationName}",
                     processorConfiguration.Name);
             }
         }
 
-        _container = builder.Build();
+        _serviceProvider = serviceCollection.BuildServiceProvider();
 
         logger.LogInformation("Plugins loaded");
     }
 
     public Result<TComponent> ResolveComponent<TComponent>(string name) where TComponent : class
     {
-        if (_container is null)
+        if (_serviceProvider is null)
         {
             return PluginErrors.ContainerNotInitialized;
         }
 
-        return _container.TryResolveNamed<TComponent>(name, out var adapter)
-            ? Result.Found(adapter)
-            : ProcessorErrors.NotFound(name);
+        var service = _serviceProvider.GetKeyedService<TComponent>(name);
+
+        return service is null
+            ? ProcessorErrors.NotFound(name)
+            : Result.Found(service);
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (_container is not null)
+        if (_serviceProvider is not null)
         {
-            await _container.DisposeAsync();
+            switch (_serviceProvider)
+            {
+                case IAsyncDisposable asyncDisposable:
+                    await asyncDisposable.DisposeAsync();
+                    break;
+                case IDisposable disposable:
+                    disposable.Dispose();
+                    break;
+            }
         }
     }
 
@@ -100,22 +104,6 @@ public sealed class PluginsManager(ILogger<PluginsManager> logger, IConfiguratio
         }
 
         return (attribute.Namespace, attribute.Name);
-    }
-
-    private ServiceCollection AddCoreServices()
-    {
-        var collection = new ServiceCollection();
-
-        collection.AddLogging(loggingBuilder =>
-        {
-            var serilog = new LoggerConfiguration()
-                .ReadFrom.Configuration(configuration)
-                .CreateLogger();
-
-            loggingBuilder.AddSerilog(serilog);
-        });
-
-        return collection;
     }
 
     private List<PluginEntry> LoadPlugins()

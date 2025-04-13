@@ -8,5 +8,5 @@ namespace MediaBedrock.Cli.Application.Jobs.Interfaces;
 
 public interface IProcessorContextFactory
 {
-    Result<ProcessorContext> Create(JobId jobId, JobStep step, JobAssetsPool assetsPool);
+    Result<ProcessorContext> Create(Type processorType, JobId jobId, JobStep step, JobAssetsPool assetsPool);
 }

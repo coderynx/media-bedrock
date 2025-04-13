@@ -5,21 +5,21 @@ using Microsoft.Extensions.Logging;
 namespace MediaBedrock.Plugins.Core;
 
 [Processor("core", "metadata-writer")]
-public sealed class MetadataWriter(ILogger<MetadataWriter> logger) : IProcessor
+public sealed class MetadataWriter : IProcessor
 {
     public async Task<ProcessorResult> ProcessAsync(ProcessorContext context, CancellationToken ct = default)
     {
         var inputTrack = context.GetInput("input");
         if (inputTrack is null)
         {
-            logger.LogError("Input track not found");
+            context.Logger.LogError("Input track not found");
             return ProcessorResult.Failure("Input track not found");
         }
 
         var outputTrack = context.GetOutput("output");
         if (outputTrack is null)
         {
-            logger.LogError("Output track not found");
+            context.Logger.LogError("Output track not found");
             return ProcessorResult.Failure("Output track not found");
         }
 
@@ -44,7 +44,7 @@ public sealed class MetadataWriter(ILogger<MetadataWriter> logger) : IProcessor
 
         await track.SaveToAsync(outputStream);
 
-        logger.LogInformation("Metadata written to {Input}", inputTrack);
+        context.Logger.LogInformation("Metadata written to {Input}", inputTrack);
         return ProcessorResult.Success();
     }
 }

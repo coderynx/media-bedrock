@@ -25,6 +25,7 @@ public sealed class JobActivity
     {
     }
 
+    public required Guid Id { get; init; }
     public required JobStep Step { get; init; }
     public JobActivityStatus Status { get; private set; }
 
@@ -32,6 +33,7 @@ public sealed class JobActivity
     {
         return new JobActivity
         {
+            Id = Guid.CreateVersion7(),
             Step = step,
             Status = JobActivityStatus.Pending
         };
