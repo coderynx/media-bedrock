@@ -6,6 +6,7 @@ using MediaBedrock.Cli.Domain.Jobs.Assets;
 using MediaBedrock.Cli.Domain.Jobs.Steps;
 using MediaBedrock.Sdk.Processors;
 using Microsoft.Extensions.Logging;
+using Serilog.Context;
 
 namespace MediaBedrock.Cli.Application.Jobs.Handlers;
 
@@ -24,6 +25,15 @@ public sealed class ProcessJobStepHandler(
 {
     public async Task HandleAsync(JobMessageContext<ProcessJobStep> context, CancellationToken ct = default)
     {
+        const string jobIdPropertyName = "JobId";
+        const string jobStepNamePropertyName = "JobStepName";
+        const string jobActivityIdPropertyName = "JobActivityId";
+        const string processorNamePropertyName = "ProcessorName";
+
+        logger.LogInformation("Processing job step {StepName} for job {JobId}",
+            context.JobMessage.StepName,
+            context.JobMessage.JobId);
+
         var jobActivity = context.JobStateMachine.JobActivities
             .SingleOrDefault(ja => ja.Step.Name.Equals(context.JobMessage.StepName));
 
@@ -32,17 +42,6 @@ public sealed class ProcessJobStepHandler(
             logger.LogError("Job step {StepName} not found in job {JobId}",
                 context.JobMessage.StepName,
                 context.JobMessage.JobId);
-            return;
-        }
-
-        var createContext = processorContextFactory.Create(
-            jobId: context.JobMessage.JobId,
-            step: jobActivity.Step,
-            assetsPool: context.JobStateMachine.AssetsPool);
-
-        if (createContext.IsFailure)
-        {
-            logger.LogError("Failed to create job {JobId}", createContext.Error.Message);
             return;
         }
 
@@ -55,28 +54,46 @@ public sealed class ProcessJobStepHandler(
             return;
         }
 
+        var createContext = processorContextFactory.Create(
+            processorType: resolveProcessor.Value.GetType(),
+            jobId: context.JobMessage.JobId,
+            step: jobActivity.Step,
+            assetsPool: context.JobStateMachine.AssetsPool);
+
+        if (createContext.IsFailure)
+        {
+            logger.LogError("Failed to create job {JobId}", createContext.Error.Message);
+            return;
+        }
+
         jobActivity.UpdateStatus(JobActivityStatus.Running);
 
-        try
+        using (LogContext.PushProperty(jobIdPropertyName, context.JobStateMachine.JobId))
+        using (LogContext.PushProperty(jobStepNamePropertyName, context.JobMessage.StepName))
+        using (LogContext.PushProperty(jobActivityIdPropertyName, jobActivity.Id))
+        using (LogContext.PushProperty(processorNamePropertyName, jobActivity.Step.ProcessorName))
         {
-            var processResult = await resolveProcessor.Value.ProcessAsync(createContext.Value, ct);
-            if (!processResult.IsSuccess)
+            try
+            {
+                var processResult = await resolveProcessor.Value.ProcessAsync(createContext.Value, ct);
+                if (!processResult.IsSuccess)
+                {
+                    jobActivity.UpdateStatus(JobActivityStatus.Failed);
+                    logger.LogError("Failed to process job step {StepName} for job {JobId}: {ErrorMessage}",
+                        context.JobMessage.StepName,
+                        context.JobMessage.JobId,
+                        processResult.Message);
+                    return;
+                }
+            }
+            catch (Exception e)
             {
                 jobActivity.UpdateStatus(JobActivityStatus.Failed);
-                logger.LogError("Failed to process job step {StepName} for job {JobId}: {ErrorMessage}",
+                logger.LogError(e, "Failed to process job step {StepName} for job {JobId}",
                     context.JobMessage.StepName,
-                    context.JobMessage.JobId,
-                    processResult.Message);
+                    context.JobMessage.JobId);
                 return;
             }
-        }
-        catch (Exception e)
-        {
-            jobActivity.UpdateStatus(JobActivityStatus.Failed);
-            logger.LogError(e, "Failed to process job step {StepName} for job {JobId}",
-                context.JobMessage.StepName,
-                context.JobMessage.JobId);
-            return;
         }
 
         var updateAssetPool = await UpdateAssetPoolAsync(context.JobStateMachine, createContext.Value);

@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 namespace MediaBedrock.Sdk.Processors;
 
 public sealed record ProcessorContext
@@ -7,6 +9,8 @@ public sealed record ProcessorContext
     private IEnumerable<ProcessorProperty> _properties = [];
 
     public IReadOnlyCollection<ProcessorOutput> Outputs => _outputs.ToArray();
+
+    public required ILogger Logger { get; init; }
 
     public ProcessorInput GetInputRequired(string name)
     {
@@ -42,12 +46,14 @@ public sealed record ProcessorContext
     }
 
     public static ProcessorContext Create(
+        ILogger logger,
         IEnumerable<ProcessorInput> inputs,
         IEnumerable<ProcessorOutput> outputs,
         IEnumerable<ProcessorProperty> properties)
     {
         return new ProcessorContext
         {
+            Logger = logger,
             _inputs = inputs,
             _outputs = outputs,
             _properties = properties

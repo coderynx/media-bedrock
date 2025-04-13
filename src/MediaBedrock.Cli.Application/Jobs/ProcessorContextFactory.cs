@@ -4,12 +4,15 @@ using MediaBedrock.Cli.Domain.Jobs;
 using MediaBedrock.Cli.Domain.Jobs.Assets;
 using MediaBedrock.Cli.Domain.Jobs.Steps;
 using MediaBedrock.Sdk.Processors;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBedrock.Cli.Application.Jobs;
 
-public sealed class ProcessorContextFactory(IProcessorProvider processorProvider) : IProcessorContextFactory
+public sealed class ProcessorContextFactory(
+    IProcessorProvider processorProvider,
+    ILoggerFactory loggerFactory) : IProcessorContextFactory
 {
-    public Result<ProcessorContext> Create(JobId jobId, JobStep step, JobAssetsPool assetsPool)
+    public Result<ProcessorContext> Create(Type processorType, JobId jobId, JobStep step, JobAssetsPool assetsPool)
     {
         var properties = step.Properties.Select(p => new ProcessorProperty(p.Name, p.Value)).ToList();
 
@@ -67,7 +70,11 @@ public sealed class ProcessorContextFactory(IProcessorProvider processorProvider
             processorOutputs.Add(processorOutput);
         }
 
-        var context = ProcessorContext.Create(processorInputs, processorOutputs, properties);
+        var context = ProcessorContext.Create(
+            logger: loggerFactory.CreateLogger(processorType),
+            inputs: processorInputs,
+            outputs: processorOutputs,
+            properties: properties);
         return Result.Created(context);
     }
 }

@@ -16,7 +16,7 @@ public sealed partial class DolbyEncodingEngine : IDolbyEncodingEngine
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
-    private readonly ILogger<DolbyEncodingEngine>? _logger;
+    private readonly ILogger? _logger;
 
     public DolbyEncodingEngine(string path, bool useWine = false)
     {
@@ -29,6 +29,11 @@ public sealed partial class DolbyEncodingEngine : IDolbyEncodingEngine
     public DolbyEncodingEngine(string path, bool useWine, ILoggerFactory loggerFactory) : this(path, useWine)
     {
         _logger = loggerFactory.CreateLogger<DolbyEncodingEngine>();
+    }
+
+    public DolbyEncodingEngine(string path, bool useWine, ILogger logger) : this(path, useWine)
+    {
+        _logger = logger;
     }
 
     private bool IsInitialized => !string.IsNullOrEmpty(Version);
