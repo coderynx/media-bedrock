@@ -14,8 +14,6 @@ public sealed class DolbyDigitalPlusEncoder
 {
     public async Task<ProcessorResult> ProcessAsync(ProcessorContext context, CancellationToken ct = default)
     {
-        context.Logger.LogDebug("Processing Dolby Digital Plus encoder {JobId}", "11");
-
         var inputTrack = context.GetInput("input");
         if (inputTrack is null)
         {
