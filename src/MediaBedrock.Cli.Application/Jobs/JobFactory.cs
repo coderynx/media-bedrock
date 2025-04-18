@@ -5,7 +5,6 @@ using MediaBedrock.Cli.Domain.Jobs;
 using MediaBedrock.Cli.Domain.Jobs.Batches;
 using MediaBedrock.Cli.Domain.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs.Parameters;
-using MediaBedrock.Cli.Domain.Jobs.Processors;
 using MediaBedrock.Cli.Domain.Jobs.Steps;
 using MediaBedrock.Cli.Domain.Jobs.Templates;
 
@@ -159,12 +158,6 @@ public sealed partial class JobFactory(IJobTemplatesRepository jobTemplatesRepos
                 return new JobStepSource(om.Name, om.Destination);
             }).ToArray();
 
-            var createProcessorName = ProcessorName.Create(s.ProcessorName);
-            if (createProcessorName.IsFailure)
-            {
-                return createProcessorName.Error;
-            }
-
             var createJobStepName = JobStepName.Create(s.Name);
             if (createJobStepName.IsFailure)
             {
@@ -173,7 +166,7 @@ public sealed partial class JobFactory(IJobTemplatesRepository jobTemplatesRepos
 
             generatedSteps.Add(JobStep.Create(
                 name: createJobStepName.Value,
-                processorName: createProcessorName.Value,
+                processorName: s.ProcessorName,
                 properties: stepProperties,
                 inputs: stepInputs,
                 outputs: stepOutputs));

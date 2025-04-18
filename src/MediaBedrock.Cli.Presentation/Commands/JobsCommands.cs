@@ -10,6 +10,7 @@ public sealed class JobsCommands(IJobFactory jobFactory, IJobSerializer jobSeria
 {
     [Command("generate")]
     public async Task Generate(
+        [Argument(Name = "template", Description = "The name of the template to use for processing the job.")]
         string templateName,
         string inputs,
         string outputs,

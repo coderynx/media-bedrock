@@ -1,3 +1,5 @@
+using MediaBedrock.Cli.Domain.Jobs.Processors;
+
 namespace MediaBedrock.Cli.Domain.Jobs.Templates;
 
 public sealed record JobStepTemplateSink
@@ -17,7 +19,7 @@ public sealed record JobTemplateStep
     public required string Name { get; init; }
     public string DisplayName { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;
-    public required string ProcessorName { get; init; }
+    public required ProcessorName ProcessorName { get; init; }
 
     public JobStepTemplateSink[] Sinks { get; init; } = [];
     public JobStepTemplateSource[] Sources { get; init; } = [];

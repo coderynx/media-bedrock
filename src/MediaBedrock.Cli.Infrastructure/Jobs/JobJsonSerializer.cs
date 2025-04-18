@@ -18,7 +18,8 @@ public sealed class JobJsonSerializer : IJobSerializer
         {
             new JobIdConverter(),
             new JobTemplateNameConverter(),
-            new JobStepNameConverter()
+            new JobStepNameConverter(),
+            new ProcessorNameConverter()
         },
         WriteIndented = true
     };

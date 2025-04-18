@@ -9,7 +9,11 @@ public sealed class JobTemplateJsonSerializer : IJobTemplateSerializer
 {
     private readonly JsonSerializerOptions _serializerOptions = new()
     {
-        Converters = { new JobTemplateNameConverter() }
+        Converters =
+        {
+            new JobTemplateNameConverter(),
+            new ProcessorNameConverter()
+        }
     };
 
     public Result<string> Serialize(JobTemplate jobTemplate)

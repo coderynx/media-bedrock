@@ -29,6 +29,7 @@ internal static class JobDefinitionExtensions
                 audioDefinitionModel),
             AtmosMezzanineInput atmosMezzanine => AtmosMezzanineInputExtensions.ToDto(atmosMezzanine),
             Ec3Input ec3 => Ec3InputExtensions.ToDto(ec3),
+            WavInput wav => WavInputExtensions.ToDto(wav),
             _ => throw new ArgumentOutOfRangeException(nameof(input))
         };
     }

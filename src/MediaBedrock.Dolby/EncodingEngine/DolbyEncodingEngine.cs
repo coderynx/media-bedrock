@@ -125,6 +125,7 @@ public sealed class DolbyEncodingEngine : IDolbyEncodingEngine
                 throw new DolbyEncodingEngineException(
                     "Failed to parse the encoding engine version. The output format is invalid.");
             }
+
             Version = parts[1]
                 .Replace("Version", string.Empty)
                 .Trim();

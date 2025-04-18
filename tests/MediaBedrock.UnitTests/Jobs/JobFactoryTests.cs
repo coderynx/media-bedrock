@@ -4,6 +4,7 @@ using MediaBedrock.Cli.Application.Jobs;
 using MediaBedrock.Cli.Domain.Jobs.Batches;
 using MediaBedrock.Cli.Domain.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs.Parameters;
+using MediaBedrock.Cli.Domain.Jobs.Processors;
 using MediaBedrock.Cli.Domain.Jobs.Templates;
 using NSubstitute;
 using Shouldly;
@@ -44,7 +45,10 @@ public sealed class JobFactoryTests
             Version = "1.0",
             Inputs = [new JobTemplateInput { Name = "Input1" }],
             Outputs = [new JobTemplateOutput { Name = "Output1" }],
-            Steps = [new JobTemplateStep { Name = "Step1", ProcessorName = "namespace/processor" }]
+            Steps =
+            [
+                new JobTemplateStep { Name = "Step1", ProcessorName = new ProcessorName("namespace", "processor") }
+            ]
         };
 
         var jobParameters = new JobParameters(
@@ -98,7 +102,10 @@ public sealed class JobFactoryTests
             Version = "1.0",
             Inputs = [new JobTemplateInput { Name = "Input1" }],
             Outputs = [new JobTemplateOutput { Name = "Output1" }],
-            Steps = [new JobTemplateStep { Name = "Step1", ProcessorName = "namespace/processor" }]
+            Steps =
+            [
+                new JobTemplateStep { Name = "Step1", ProcessorName = new ProcessorName("namespace", "processor") }
+            ]
         };
 
         var jobParameters = new JobParameters(
