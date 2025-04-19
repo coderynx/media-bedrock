@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Coderynx.Functional.Results;
-using MediaBedrock.Cli.Application.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs;
+using MediaBedrock.Cli.Domain.Jobs.Interfaces;
 using MediaBedrock.Cli.Infrastructure.Jobs.Templates;
 
 namespace MediaBedrock.Cli.Infrastructure.Jobs;
@@ -16,9 +16,10 @@ public sealed class JobJsonSerializer : IJobSerializer
     {
         Converters =
         {
-            new JobIdConverter(),
-            new JobTemplateNameConverter(),
-            new JobStepNameConverter()
+            new JobIdJsonConverter(),
+            new JobTemplateNameJsonConverter(),
+            new JobStepNameJsonConverter(),
+            new ProcessorNameJsonConverter()
         },
         WriteIndented = true
     };

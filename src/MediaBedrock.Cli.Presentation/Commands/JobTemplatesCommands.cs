@@ -1,20 +1,28 @@
 using Cocona;
-using MediaBedrock.Cli.Application.Jobs.Interfaces;
-using MediaBedrock.Cli.Domain.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs.Templates;
+using MediaBedrock.Cli.Domain.Jobs.Templates.Interfaces;
 using Spectre.Console;
 using Spectre.Console.Json;
 
 namespace MediaBedrock.Cli.Presentation.Commands;
 
-public sealed class JobTemplatesCommands(IJobTemplateSerializer templateSerializer, IJobTemplatesRepository repository)
+public sealed class JobTemplatesCommands(
+    IJobTemplateSerializerProvider serializerProvider,
+    IJobTemplatesRepository repository)
 {
     [Command("add")]
     public async Task AddAsync(string path)
     {
         var templateJson = await File.ReadAllTextAsync(path);
 
-        var createJobTemplate = templateSerializer.Deserialize(templateJson);
+        var resolveSerializer = serializerProvider.ResolveSerializer(Path.GetExtension(path));
+        if (resolveSerializer.IsFailure)
+        {
+            AnsiConsole.MarkupLine($"[red]Failed to resolve serializer: {resolveSerializer.Error.Message}[/]");
+            return;
+        }
+
+        var createJobTemplate = resolveSerializer.Value.Deserialize(templateJson);
         if (createJobTemplate.IsFailure)
         {
             AnsiConsole.MarkupLine($"[red]Failed to deserialize job template: {createJobTemplate.Error.Message}[/]");
@@ -38,7 +46,14 @@ public sealed class JobTemplatesCommands(IJobTemplateSerializer templateSerializ
     {
         var templateJson = await File.ReadAllTextAsync(path);
 
-        var createJobTemplate = templateSerializer.Deserialize(templateJson);
+        var resolveSerializer = serializerProvider.ResolveSerializer(Path.GetExtension(path));
+        if (resolveSerializer.IsFailure)
+        {
+            AnsiConsole.MarkupLine($"[red]Failed to resolve serializer: {resolveSerializer.Error.Message}[/]");
+            return;
+        }
+
+        var createJobTemplate = resolveSerializer.Value.Deserialize(templateJson);
         if (createJobTemplate.IsFailure)
         {
             AnsiConsole.MarkupLine($"[red]Failed to deserialize job template: {createJobTemplate.Error.Message}[/]");
@@ -76,7 +91,14 @@ public sealed class JobTemplatesCommands(IJobTemplateSerializer templateSerializ
 
         var template = getTemplate.ValueOrThrow();
 
-        var serialize = templateSerializer.Serialize(template);
+        var resolveSerializer = serializerProvider.ResolveSerializer(JobTemplateSerializerFormat.Json);
+        if (resolveSerializer.IsFailure)
+        {
+            AnsiConsole.MarkupLine($"[red]Failed to resolve serializer: {resolveSerializer.Error.Message}[/]");
+            return;
+        }
+
+        var serialize = resolveSerializer.Value.Serialize(template);
         if (serialize.IsFailure)
         {
             AnsiConsole.MarkupLine($"[red]Failed to serialize job template: {serialize.Error.Message}[/]");

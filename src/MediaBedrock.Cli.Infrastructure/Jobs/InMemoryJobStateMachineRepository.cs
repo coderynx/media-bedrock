@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 using Coderynx.Functional.Options;
 using Coderynx.Functional.Results;
-using MediaBedrock.Cli.Application.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs;
+using MediaBedrock.Cli.Domain.Jobs.Interfaces;
 
 namespace MediaBedrock.Cli.Infrastructure.Jobs;
 

@@ -1,5 +1,6 @@
 using MediaBedrock.Cli.Application.Jobs.Handlers;
 using MediaBedrock.Cli.Application.Jobs.Interfaces;
+using MediaBedrock.Cli.Domain.Jobs.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaBedrock.Cli.Application.Jobs.Bootstrap;

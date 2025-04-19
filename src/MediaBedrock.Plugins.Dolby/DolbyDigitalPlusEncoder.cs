@@ -1,5 +1,6 @@
-using MediaBedrock.Dolby.EncodingEngine;
-using MediaBedrock.Dolby.EncodingEngine.Messages;
+using System.Text;
+using MediaBedrock.Dolby.Encoding;
+using MediaBedrock.Dolby.Encoding.Messages;
 using MediaBedrock.Dolby.Jobs.Models;
 using MediaBedrock.Dolby.Jobs.Models.Filters;
 using MediaBedrock.Dolby.Jobs.Models.Inputs;
@@ -9,24 +10,29 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBedrock.Plugins.Dolby;
 
-[Processor("dolby", "ddp-encoder")]
+[Processor("dolby", "ddp_encoder")]
 public sealed class DolbyDigitalPlusEncoder
     : IProcessor
 {
     public async Task<ProcessorResult> ProcessAsync(ProcessorContext context, CancellationToken ct = default)
     {
-        var inputTrack = context.GetInput("input");
+        const string inputKey = "input";
+        const string outputKey = "output";
+        const string lineDrcProfileKey = "line_drc_profile";
+        const string rightLeftDrcKey = "right_left_drc_profile";
+        const string enginePathKey = "engine_path";
+        const string useWineKey = "use_wine";
+
+        var inputTrack = context.GetInput(inputKey);
         if (inputTrack is null)
         {
-            context.Logger.LogError("Input track not found");
-            return ProcessorResult.Failure("Input track not found");
+            return ProcessorResult.Failure($"{inputKey} track not found");
         }
 
-        var outputTrack = context.GetOutput("output");
+        var outputTrack = context.GetOutput(outputKey);
         if (outputTrack is null)
         {
-            context.Logger.LogError("Output track not found");
-            return ProcessorResult.Failure("Output track not found");
+            return ProcessorResult.Failure($"{outputKey} track not found");
         }
 
         var inputUri = inputTrack.GetAsFilePath();
@@ -38,20 +44,30 @@ public sealed class DolbyDigitalPlusEncoder
 
         if (inputTrack.MediaInformation.Format.Equals("Wave"))
         {
-            job.WithInput(
-                AtmosMezzanineInput.CreateBuilder()
-                    .WithFilePath(inputUri)
-                    .Build());
+            if (IsBwf(inputUri))
+            {
+                job.WithInput(
+                    AtmosMezzanineInput.CreateBuilder()
+                        .WithFilePath(inputUri)
+                        .Build());
+            }
+            else
+            {
+                job.WithInput(
+                    WavInput.CreateBuilder()
+                        .WithFilePath(inputUri)
+                        .Build());
+            }
         }
         else
         {
             return ProcessorResult.Failure("Input track must be an Atmos mezzanine");
         }
 
-        var lineDrc = context.GetPropertyRequired("LineDrcProfile")
+        var lineDrc = context.GetPropertyRequired(lineDrcProfileKey)
             .Transform(input => Enum.TryParse<DrcProfile>(input, out var profile) ? profile : DrcProfile.MusicStandard);
 
-        var rightLeftDrc = context.GetPropertyRequired("RightLeftDrcProfile")
+        var rightLeftDrc = context.GetPropertyRequired(rightLeftDrcKey)
             .Transform(input => Enum.TryParse<DrcProfile>(input, out var profile) ? profile : DrcProfile.MusicStandard);
 
         job.WithFilter(
@@ -67,13 +83,13 @@ public sealed class DolbyDigitalPlusEncoder
 
         var jobDefinition = job.Build();
 
-        var enginePath = context.GetProperty("EnginePath")?.GetValue();
+        var enginePath = context.GetProperty(enginePathKey)?.GetValue();
         if (string.IsNullOrEmpty(enginePath))
         {
-            return ProcessorResult.Failure("Engine path is not set");
+            return ProcessorResult.Failure($"{enginePath} is not set");
         }
 
-        var useWine = context.GetPropertyRequired("UseWine")
+        var useWine = context.GetPropertyRequired(useWineKey)
             .GetValue("true")
             .Equals("true", StringComparison.OrdinalIgnoreCase);
 
@@ -116,5 +132,41 @@ public sealed class DolbyDigitalPlusEncoder
                     break;
             }
         }
+    }
+
+    private static bool IsBwf(string filePath)
+    {
+        // TODO: This should be handled by the MediaInfoRetriever.
+
+        using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+        using var reader = new BinaryReader(stream);
+
+        var riffHeader = Encoding.ASCII.GetString(reader.ReadBytes(4));
+        if (riffHeader.Equals("RIFF"))
+        {
+            return false;
+        }
+
+        reader.BaseStream.Seek(4, SeekOrigin.Current);
+        var waveHeader = Encoding.ASCII.GetString(reader.ReadBytes(4));
+        if (waveHeader.Equals("WAVE"))
+        {
+            return false;
+        }
+
+        while (reader.BaseStream.Position < reader.BaseStream.Length)
+        {
+            var chunkId = Encoding.ASCII.GetString(reader.ReadBytes(4));
+            var chunkSize = reader.ReadInt32();
+
+            if (chunkId.Equals("bext"))
+            {
+                return true;
+            }
+
+            reader.BaseStream.Seek(chunkSize, SeekOrigin.Current);
+        }
+
+        return false;
     }
 }

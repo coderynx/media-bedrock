@@ -10,7 +10,12 @@ internal static class JobDefinitionDtoSerializer
     {
         WriteIndented = true,
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Converters =
+        {
+            new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower),
+            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
+        }
     };
 
     public static string Serialize(JobDefinitionDto dto)

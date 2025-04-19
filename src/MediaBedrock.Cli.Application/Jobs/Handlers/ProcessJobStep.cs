@@ -3,6 +3,7 @@ using MediaBedrock.Cli.Application.Assets;
 using MediaBedrock.Cli.Application.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs;
 using MediaBedrock.Cli.Domain.Jobs.Assets;
+using MediaBedrock.Cli.Domain.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs.Steps;
 using MediaBedrock.Sdk.Processors;
 using Microsoft.Extensions.Logging;
@@ -170,6 +171,7 @@ public sealed class ProcessJobStepHandler(
 
             var asset = resolveAsset.ValueOrThrow();
             asset.UpdateUri(output.GetAsFilePath());
+            asset.MediaInformation = getMediaInfo.Value;
 
             updatedAssets.Add(asset.Name);
 

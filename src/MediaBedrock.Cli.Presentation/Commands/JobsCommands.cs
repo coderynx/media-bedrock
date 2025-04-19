@@ -1,15 +1,19 @@
 using Cocona;
-using MediaBedrock.Cli.Application.Jobs.Interfaces;
+using MediaBedrock.Cli.Domain.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs.Parameters;
 using MediaBedrock.Cli.Domain.Jobs.Templates;
 using Spectre.Console;
 
 namespace MediaBedrock.Cli.Presentation.Commands;
 
-public sealed class JobsCommands(IJobFactory jobFactory, IJobSerializer jobSerializer, IJobRunner jobRunner)
+public sealed class JobsCommands(
+    IJobFactory factory,
+    IJobSerializerProvider serializerProvider,
+    IJobRunner runner)
 {
     [Command("generate")]
     public async Task Generate(
+        [Argument(Name = "template", Description = "The name of the template to use for processing the job.")]
         string templateName,
         string inputs,
         string outputs,
@@ -50,7 +54,7 @@ public sealed class JobsCommands(IJobFactory jobFactory, IJobSerializer jobSeria
             Outputs: createOutputs.Value,
             Properties: createProperties.Value);
 
-        var createJob = await jobFactory.CreateAsync(jobParameters);
+        var createJob = await factory.CreateAsync(jobParameters);
         if (createJob.IsFailure)
         {
             AnsiConsole.MarkupLine($"[red]Failed to create job: {createJob.Error.Message}[/]");
@@ -59,7 +63,14 @@ public sealed class JobsCommands(IJobFactory jobFactory, IJobSerializer jobSeria
 
         var job = createJob.Value;
 
-        var serializedJob = jobSerializer.Serialize(job);
+        var resolveSerializer = serializerProvider.ResolveSerializer(Path.GetExtension(outputPath));
+        if (resolveSerializer.IsFailure)
+        {
+            AnsiConsole.MarkupLine($"[red]Failed to resolve serializer: {resolveSerializer.Error.Message}[/]");
+            return;
+        }
+
+        var serializedJob = resolveSerializer.Value.Serialize(job);
         if (serializedJob.IsFailure)
         {
             AnsiConsole.MarkupLine($"[red]Failed to serialize job: {serializedJob.Error.Message}[/]");
@@ -114,7 +125,7 @@ public sealed class JobsCommands(IJobFactory jobFactory, IJobSerializer jobSeria
             Outputs: createOutputs.Value,
             Properties: createProperties.Value);
 
-        var createJob = await jobFactory.CreateAsync(jobParameters);
+        var createJob = await factory.CreateAsync(jobParameters);
         if (createJob.IsFailure)
         {
             AnsiConsole.MarkupLine($"[red]Failed to create job: {createJob.Error.Message}[/]");
@@ -123,35 +134,35 @@ public sealed class JobsCommands(IJobFactory jobFactory, IJobSerializer jobSeria
 
         var job = createJob.Value;
 
-        var serializedJob = jobSerializer.Serialize(job);
-        if (serializedJob.IsFailure)
-        {
-            AnsiConsole.MarkupLine($"[red]Failed to serialize job: {serializedJob.Error.Message}[/]");
-            return;
-        }
-
-        var result = await jobRunner.TakeAsync(job);
+        var result = await runner.TakeAsync(job);
         if (result.IsFailure)
         {
             AnsiConsole.MarkupLine($"[red]Failed to run the job: {result.Error.Message}[/]");
         }
     }
 
-    [Command("take-json")]
+    [Command("take-file")]
     public async Task Take(
         [Argument(Name = "path", Description = "The path of the job manifest")]
         string path)
     {
         var jobJson = await File.ReadAllTextAsync(path);
 
-        var deserializeJob = jobSerializer.Deserialize(jobJson);
+        var resolveSerializer = serializerProvider.ResolveSerializer(Path.GetExtension(path));
+        if (resolveSerializer.IsFailure)
+        {
+            AnsiConsole.MarkupLine($"[red]Failed to resolve serializer: {resolveSerializer.Error.Message}[/]");
+            return;
+        }
+
+        var deserializeJob = resolveSerializer.Value.Deserialize(jobJson);
         if (deserializeJob.IsFailure)
         {
             AnsiConsole.MarkupLine($"[red]Failed to deserialize job: {deserializeJob.Error.Message}[/]");
             return;
         }
 
-        var result = await jobRunner.TakeAsync(deserializeJob.Value);
+        var result = await runner.TakeAsync(deserializeJob.Value);
         if (result.IsFailure)
         {
             AnsiConsole.MarkupLine($"[red]Failed to run the job: {result.Error.Message}[/]");

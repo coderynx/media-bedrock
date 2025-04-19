@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Coderynx.Functional.Results;
-using MediaBedrock.Cli.Application.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs.Batches;
+using MediaBedrock.Cli.Domain.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs.Templates;
 using MediaBedrock.Cli.Infrastructure.Jobs.Templates;
 
@@ -11,7 +11,7 @@ public sealed class BatchJobParametersJsonSerializer : IBatchJobParametersSerial
 {
     private readonly JsonSerializerOptions _serializerOptions = new()
     {
-        Converters = { new JobTemplateNameConverter() }
+        Converters = { new JobTemplateNameJsonConverter() }
     };
 
     public Result<string> Serialize(BatchJobParameters parameters)

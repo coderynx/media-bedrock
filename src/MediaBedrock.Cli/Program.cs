@@ -18,7 +18,7 @@ builder.Host.UseSerilog((context, configuration) =>
 
 builder.Services.Configure<HostOptions>(options =>
 {
-    options.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+    options.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.StopHost;
 });
 
 builder.Services.AddInfrastructure();

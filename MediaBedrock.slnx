@@ -17,6 +17,7 @@
     <Folder Name="/src/plugins/">
         <Project Path="src\MediaBedrock.Plugins.Core\MediaBedrock.Plugins.Core.csproj" Type="Classic C#"/>
         <Project Path="src\MediaBedrock.Plugins.Dolby\MediaBedrock.Plugins.Dolby.csproj" Type="Classic C#"/>
+        <Project Path="src\MediaBedrock.Plugins.FFmpeg\MediaBedrock.Plugins.FFmpeg.csproj" Type="Classic C#"/>
     </Folder>
     <Folder Name="/src/samples/">
         <Project Path="src\MediaBedrock.Dolby.Example\MediaBedrock.Dolby.Example.csproj" Type="Classic C#"/>
