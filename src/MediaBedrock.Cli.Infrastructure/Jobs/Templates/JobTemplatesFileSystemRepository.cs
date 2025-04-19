@@ -1,40 +1,50 @@
 using Coderynx.Functional.Options;
 using Coderynx.Functional.Results;
-using MediaBedrock.Cli.Application.Jobs.Interfaces;
-using MediaBedrock.Cli.Domain.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs.Templates;
+using MediaBedrock.Cli.Domain.Jobs.Templates.Interfaces;
 
 namespace MediaBedrock.Cli.Infrastructure.Jobs.Templates;
 
 public sealed class JobTemplatesFileSystemRepository : IJobTemplatesRepository
 {
-    private readonly string _directory;
-    private readonly IJobTemplateSerializer _jobTemplateSerializer;
+    private readonly string _directoryPath;
 
-    public JobTemplatesFileSystemRepository(IJobTemplateSerializer jobTemplateSerializer)
+    private readonly IJobTemplateSerializerProvider _serializerProvider;
+
+    public JobTemplatesFileSystemRepository(IJobTemplateSerializerProvider serializerProvider)
     {
-        _jobTemplateSerializer = jobTemplateSerializer;
-        _directory = Path.Combine(AppContext.BaseDirectory, "Templates");
+        _serializerProvider = serializerProvider;
+        _directoryPath = Path.Combine(AppContext.BaseDirectory, "Templates");
 
-        if (!Directory.Exists(_directory))
+        if (!Directory.Exists(_directoryPath))
         {
-            Directory.CreateDirectory(_directory);
+            Directory.CreateDirectory(_directoryPath);
         }
     }
 
     public async Task<Result> StoreAsync(JobTemplate jobTemplate)
     {
+        var serializer = _serializerProvider.ResolveSerializer(JobTemplateSerializerFormat.Json);
+        if (serializer.IsFailure)
+        {
+            return serializer;
+        }
+
         try
         {
-            var filePath = GetFilePath(jobTemplate.Name);
+            var getFilePath = GetFilePath(jobTemplate.Name);
+            if (getFilePath.IsFailure)
+            {
+                return getFilePath.Error;
+            }
 
-            var serialize = _jobTemplateSerializer.Serialize(jobTemplate);
+            var serialize = serializer.Value.Serialize(jobTemplate);
             if (serialize.IsFailure)
             {
                 return serialize;
             }
 
-            await File.WriteAllTextAsync(filePath, serialize.Value);
+            await File.WriteAllTextAsync(getFilePath.Value, serialize.Value);
             return Result.Created();
         }
         catch (Exception ex)
@@ -47,15 +57,21 @@ public sealed class JobTemplatesFileSystemRepository : IJobTemplatesRepository
     {
         try
         {
-            var filePath = GetFilePath(name);
-            if (!File.Exists(filePath))
+            var getFilePath = GetFilePath(name);
+            if (getFilePath.IsFailure)
             {
                 return Option<JobTemplate>.None();
             }
 
-            var json = await File.ReadAllTextAsync(filePath);
+            var serialized = await File.ReadAllTextAsync(getFilePath.Value);
 
-            var deserialize = _jobTemplateSerializer.Deserialize(json);
+            var serializer = _serializerProvider.ResolveSerializer(Path.GetExtension(getFilePath.Value));
+            if (serializer.IsFailure)
+            {
+                return Option<JobTemplate>.None();
+            }
+
+            var deserialize = serializer.Value.Deserialize(serialized);
             return deserialize.IsFailure
                 ? Option<JobTemplate>.None()
                 : Option<JobTemplate>.Some(deserialize.Value);
@@ -70,13 +86,13 @@ public sealed class JobTemplatesFileSystemRepository : IJobTemplatesRepository
     {
         try
         {
-            var filePath = GetFilePath(name);
-            if (!File.Exists(filePath))
+            var getFilePath = GetFilePath(name);
+            if (getFilePath.IsFailure)
             {
-                return Task.FromResult<Result>(JobTemplateErrors.NotFound(name));
+                return Task.FromResult<Result>(getFilePath.Error);
             }
 
-            File.Delete(filePath);
+            File.Delete(getFilePath.Value);
             return Task.FromResult(Result.Deleted());
         }
         catch (Exception ex)
@@ -85,8 +101,26 @@ public sealed class JobTemplatesFileSystemRepository : IJobTemplatesRepository
         }
     }
 
-    private string GetFilePath(JobTemplateName name)
+    private Result<string> GetFilePath(JobTemplateName name)
     {
-        return Path.Combine(_directory, $"{name.Value}.json");
+        var yamlPath = Path.Combine(_directoryPath, $"{name.Value}.yaml");
+        if (File.Exists(yamlPath))
+        {
+            return Result.Found(yamlPath);
+        }
+
+        var ymlPath = Path.Combine(_directoryPath, $"{name.Value}.yml");
+        if (File.Exists(ymlPath))
+        {
+            return Result.Found(ymlPath);
+        }
+
+        var jsonPath = Path.Combine(_directoryPath, $"{name.Value}.json");
+        if (File.Exists(jsonPath))
+        {
+            return Result.Found(jsonPath);
+        }
+
+        return JobTemplateErrors.NotFound(name);
     }
 }

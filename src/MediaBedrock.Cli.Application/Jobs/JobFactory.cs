@@ -1,12 +1,12 @@
 using System.Text.RegularExpressions;
 using Coderynx.Functional.Results;
-using MediaBedrock.Cli.Application.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs;
 using MediaBedrock.Cli.Domain.Jobs.Batches;
 using MediaBedrock.Cli.Domain.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs.Parameters;
 using MediaBedrock.Cli.Domain.Jobs.Steps;
 using MediaBedrock.Cli.Domain.Jobs.Templates;
+using MediaBedrock.Cli.Domain.Jobs.Templates.Interfaces;
 
 namespace MediaBedrock.Cli.Application.Jobs;
 
@@ -132,7 +132,7 @@ public sealed partial class JobFactory(IJobTemplatesRepository jobTemplatesRepos
                         continue;
                     }
 
-                    var defaultValue = template.Parameters.FirstOrDefault(p => p.Name.Equals(key));
+                    var defaultValue = template.Properties.FirstOrDefault(p => p.Name.Equals(key));
                     if (defaultValue is null)
                     {
                         return JobErrors.PropertyNotFound(key);

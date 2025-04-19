@@ -17,12 +17,18 @@ public static class JobTemplateErrors
 
     public const string DeleteFailedCode = "JobTemplate.DeleteFailed";
 
+    public const string InvalidSerializerFormatCode = "JobTemplate.InvalidSerializerFormat";
+
+    public const string InvalidAuthorCode = "JobTemplate.InvalidAuthor";
+
+    public const string InvalidVersionCode = "JobTemplate.InvalidVersion";
+
     public static Error NotFound(JobTemplateName name)
     {
         return new Error(
             ResultError: ResultError.NotFound,
             Code: NotFoundCode,
-            Message: $"The job template '{name}' was not found. Please check the name and try again.");
+            Message: $"The job template '{name}' was not found.");
     }
 
     public static Error DeserializationFailed(string path)
@@ -31,7 +37,7 @@ public static class JobTemplateErrors
             ResultError: ResultError.Custom,
             Code: DeserializationFailedCode,
             Message:
-            $"Failed to deserialize the job template file '{path}'. Please check the file format and try again.");
+            $"Failed to deserialize the job template file '{path}'.");
     }
 
     public static Error InvalidName(string name)
@@ -39,7 +45,7 @@ public static class JobTemplateErrors
         return new Error(
             ResultError: ResultError.InvalidInput,
             Code: InvalidNameCode,
-            Message: $"The job template name '{name}' is invalid. Please check the format and try again.");
+            Message: $"The job template name '{name}' is invalid.");
     }
 
     public static Error SerializationFailed(string message)
@@ -64,5 +70,29 @@ public static class JobTemplateErrors
             ResultError: ResultError.Custom,
             Code: DeleteFailedCode,
             Message: $"Failed to delete the job template. {message}");
+    }
+
+    public static Error InvalidSerializerFormat()
+    {
+        return new Error(
+            ResultError: ResultError.InvalidInput,
+            Code: InvalidSerializerFormatCode,
+            Message: "The specified job template serializer format is invalid.");
+    }
+
+    public static Error InvalidAuthor(string author)
+    {
+        return new Error(
+            ResultError: ResultError.InvalidInput,
+            Code: InvalidAuthorCode,
+            Message: $"The job template author '{author}' is invalid.");
+    }
+
+    public static Error InvalidVersion(string version)
+    {
+        return new Error(
+            ResultError: ResultError.InvalidInput,
+            Code: InvalidVersionCode,
+            Message: $"The job template version '{version}' is invalid.");
     }
 }

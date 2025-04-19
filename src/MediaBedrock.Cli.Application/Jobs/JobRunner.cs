@@ -3,6 +3,7 @@ using MediaBedrock.Cli.Application.Jobs.Handlers;
 using MediaBedrock.Cli.Application.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs;
 using MediaBedrock.Cli.Domain.Jobs.Batches;
+using MediaBedrock.Cli.Domain.Jobs.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBedrock.Cli.Application.Jobs;

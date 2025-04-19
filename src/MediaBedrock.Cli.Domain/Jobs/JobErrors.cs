@@ -17,6 +17,8 @@ public static class JobErrors
 
     public const string ContainerRemovalFailedCode = "Job.ContainerRemovalFailed";
 
+    public const string InvalidSerializerFormatCode = "Job.InvalidSerializerFormat";
+
     public static Error PropertyNotFound(string key)
     {
         return new Error(
@@ -62,7 +64,7 @@ public static class JobErrors
         return new Error(
             ResultError: ResultError.InvalidInput,
             Code: ContainerConflictCode,
-            Message: $"A job container with ID '{jobId}' already exists. Please check the job ID and try again.");
+            Message: $"A job container with ID '{jobId}' already exists.");
     }
 
     public static Error ContainerRemovalFailed(JobId jobId)
@@ -70,6 +72,14 @@ public static class JobErrors
         return new Error(
             ResultError: ResultError.InvalidInput,
             Code: ContainerRemovalFailedCode,
-            Message: $"Failed to remove the job container with ID '{jobId}'. Please check the job ID and try again.");
+            Message: $"Failed to remove the job container with ID '{jobId}'.");
+    }
+
+    public static Error InvalidSerializerFormat()
+    {
+        return new Error(
+            ResultError: ResultError.InvalidInput,
+            Code: InvalidSerializerFormatCode,
+            Message: "The specified serializer format is invalid.");
     }
 }

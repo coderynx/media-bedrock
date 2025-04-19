@@ -1,8 +1,8 @@
 using System.Text.Json;
 using Coderynx.Functional.Results;
-using MediaBedrock.Cli.Application.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs;
 using MediaBedrock.Cli.Domain.Jobs.Batches;
+using MediaBedrock.Cli.Domain.Jobs.Interfaces;
 using MediaBedrock.Cli.Infrastructure.Jobs.Templates;
 
 namespace MediaBedrock.Cli.Infrastructure.Jobs.Batch;
@@ -18,9 +18,9 @@ public sealed class BatchJobJsonSerializer : IBatchJobSerializer
         Converters =
         {
             new BatchJobIdConverter(),
-            new JobIdConverter(),
-            new JobTemplateNameConverter(),
-            new JobStepNameConverter()
+            new JobIdJsonConverter(),
+            new JobTemplateNameJsonConverter(),
+            new JobStepNameJsonConverter()
         }
     };
 

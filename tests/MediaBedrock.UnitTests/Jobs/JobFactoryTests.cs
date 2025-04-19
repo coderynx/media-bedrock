@@ -2,10 +2,10 @@ using AutoFixture;
 using Coderynx.Functional.Options;
 using MediaBedrock.Cli.Application.Jobs;
 using MediaBedrock.Cli.Domain.Jobs.Batches;
-using MediaBedrock.Cli.Domain.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs.Parameters;
 using MediaBedrock.Cli.Domain.Jobs.Processors;
 using MediaBedrock.Cli.Domain.Jobs.Templates;
+using MediaBedrock.Cli.Domain.Jobs.Templates.Interfaces;
 using NSubstitute;
 using Shouldly;
 
@@ -23,6 +23,8 @@ public sealed class JobFactoryTests
 
         var jobTemplate = _fixture.Build<JobTemplate>()
             .With(x => x.Name, JobTemplateName.Create("TestTemplate").Value)
+            .With(x => x.Author, JobTemplateAuthor.Create("Test Author").Value)
+            .With(x => x.Version, JobTemplateVersion.Create("1.0.0").Value)
             .Create();
 
         _jobTemplatesRepository.GetAsync(Arg.Is<JobTemplateName>(name => name.Value.Equals("TestTemplate")))
@@ -42,7 +44,6 @@ public sealed class JobFactoryTests
         var jobTemplate = new JobTemplate
         {
             Name = templateName,
-            Version = "1.0",
             Inputs = [new JobTemplateInput { Name = "Input1" }],
             Outputs = [new JobTemplateOutput { Name = "Output1" }],
             Steps =
@@ -99,7 +100,6 @@ public sealed class JobFactoryTests
         var jobTemplate = new JobTemplate
         {
             Name = templateName,
-            Version = "1.0",
             Inputs = [new JobTemplateInput { Name = "Input1" }],
             Outputs = [new JobTemplateOutput { Name = "Output1" }],
             Steps =
@@ -135,10 +135,10 @@ public sealed class JobFactoryTests
         // Arrange
         var templateName = JobTemplateName.Create("NonExistentTemplate").Value;
         var jobParameters = new JobParameters(
-            templateName,
-            [],
-            [],
-            []);
+            TemplateName: templateName,
+            Inputs: [],
+            Outputs: [],
+            Properties: []);
 
         var batchJobParameters = new BatchJobParameters
         {

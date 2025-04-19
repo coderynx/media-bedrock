@@ -5,7 +5,7 @@ namespace MediaBedrock.Dolby.Jobs.Dto;
 internal enum Mp4OutputFormatDto
 {
     [JsonPropertyName("mp4")] Mp4,
-    [JsonPropertyName("dash")] Dash,
+    [JsonPropertyName("dash")] Dash
 }
 
 internal sealed record Mp4OutputDto

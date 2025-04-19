@@ -1,8 +1,8 @@
 using Coderynx.Functional.Results;
 using MediaBedrock.Cli.Application.Assets;
-using MediaBedrock.Cli.Application.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs;
 using MediaBedrock.Cli.Domain.Jobs.Assets;
+using MediaBedrock.Cli.Domain.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs.Steps;
 using Microsoft.Extensions.Logging;
 

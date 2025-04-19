@@ -1,5 +1,5 @@
 using Cocona;
-using MediaBedrock.Cli.Application.Jobs.Interfaces;
+using MediaBedrock.Cli.Domain.Jobs.Interfaces;
 using Spectre.Console;
 
 namespace MediaBedrock.Cli.Presentation.Commands;
