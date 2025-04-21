@@ -1,4 +1,4 @@
-using MediaBedrock.Cli.Domain.Jobs.Templates;
+using MediaBedrock.Cli.Domain.JobTemplates;
 
 namespace MediaBedrock.Cli.Domain.Jobs.Parameters;
 

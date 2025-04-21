@@ -1,4 +1,4 @@
-using MediaBedrock.Cli.Domain.Jobs.Templates;
+using MediaBedrock.Cli.Domain.JobTemplates;
 using Shouldly;
 
 namespace MediaBedrock.UnitTests.Jobs;

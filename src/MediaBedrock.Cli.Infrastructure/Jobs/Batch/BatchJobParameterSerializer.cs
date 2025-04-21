@@ -2,8 +2,8 @@ using System.Text.Json;
 using Coderynx.Functional.Results;
 using MediaBedrock.Cli.Domain.Jobs.Batches;
 using MediaBedrock.Cli.Domain.Jobs.Interfaces;
-using MediaBedrock.Cli.Domain.Jobs.Templates;
-using MediaBedrock.Cli.Infrastructure.Jobs.Templates;
+using MediaBedrock.Cli.Domain.JobTemplates;
+using MediaBedrock.Cli.Infrastructure.JobTemplates.Serializers;
 
 namespace MediaBedrock.Cli.Infrastructure.Jobs.Batch;
 

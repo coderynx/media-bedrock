@@ -20,12 +20,4 @@ public static class ProcessorErrors
             Code: "Processor.InvalidName",
             Message: $"The processor name '{name}' is invalid. It should be in the format 'namespace/name'.");
     }
-
-    public static Error ProcessingFailed(JobId jobId, ProcessorName processorName)
-    {
-        return new Error(
-            ResultError: ResultError.InvalidInput,
-            Code: "Processor.ProcessingFailed",
-            Message: $"The processor '{processorName}' failed to process the job with ID '{jobId}'.");
-    }
 }

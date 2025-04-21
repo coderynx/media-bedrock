@@ -5,25 +5,16 @@ using MediaBedrock.Cli.Domain.Jobs.Batches;
 using MediaBedrock.Cli.Domain.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs.Parameters;
 using MediaBedrock.Cli.Domain.Jobs.Steps;
-using MediaBedrock.Cli.Domain.Jobs.Templates;
-using MediaBedrock.Cli.Domain.Jobs.Templates.Interfaces;
+using MediaBedrock.Cli.Domain.JobTemplates;
 
 namespace MediaBedrock.Cli.Application.Jobs;
 
 /// <inheritdoc />
-public sealed partial class JobFactory(IJobTemplatesRepository jobTemplatesRepository) : IJobFactory
+public sealed partial class JobFactory : IJobFactory
 {
     /// <inheritdoc />
-    public async Task<Result<Job>> CreateAsync(JobParameters parameters)
+    public Result<Job> Create(JobTemplate template, JobParameters parameters)
     {
-        var getTemplate = await jobTemplatesRepository.GetAsync(parameters.TemplateName);
-        if (!getTemplate.IsSome)
-        {
-            return JobTemplateErrors.NotFound(parameters.TemplateName);
-        }
-
-        var template = getTemplate.ValueOrThrow();
-
         if (!template.Name.Equals(parameters.TemplateName))
         {
             return JobTemplateErrors.NotFound(template.Name);
@@ -57,18 +48,18 @@ public sealed partial class JobFactory(IJobTemplatesRepository jobTemplatesRepos
     }
 
     /// <inheritdoc />
-    public async Task<Result<BatchJob>> CreateAsync(BatchJobParameters parameters)
+    public Result<BatchJob> Create(List<JobTemplate> templates, BatchJobParameters parameters)
     {
         var jobs = new List<Job>();
         foreach (var jobParameters in parameters.Entries)
         {
-            var template = await jobTemplatesRepository.GetAsync(jobParameters.TemplateName);
-            if (!template.IsSome)
+            var template = templates.FirstOrDefault(t => t.Name.Equals(jobParameters.TemplateName));
+            if (template is null)
             {
                 return JobTemplateErrors.NotFound(jobParameters.TemplateName);
             }
 
-            var createJob = await CreateAsync(jobParameters);
+            var createJob = Create(template, jobParameters);
             if (createJob.IsFailure)
             {
                 return createJob.Error;

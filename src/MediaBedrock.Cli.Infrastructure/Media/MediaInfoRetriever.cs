@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Coderynx.Functional.Results;
-using MediaBedrock.Cli.Application.Assets;
+using MediaBedrock.Cli.Domain.Media;
 using MediaBedrock.Cli.Domain.Media.Errors;
 using MediaBedrock.Sdk.Processors;
 using Microsoft.Extensions.Logging;

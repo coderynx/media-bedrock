@@ -74,12 +74,4 @@ public static class JobErrors
             Code: ContainerRemovalFailedCode,
             Message: $"Failed to remove the job container with ID '{jobId}'.");
     }
-
-    public static Error InvalidSerializerFormat()
-    {
-        return new Error(
-            ResultError: ResultError.InvalidInput,
-            Code: InvalidSerializerFormatCode,
-            Message: "The specified serializer format is invalid.");
-    }
 }

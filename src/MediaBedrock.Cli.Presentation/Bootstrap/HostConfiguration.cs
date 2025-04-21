@@ -1,6 +1,8 @@
 using Cocona;
 using Cocona.Builder;
-using MediaBedrock.Cli.Presentation.Commands;
+using MediaBedrock.Cli.Presentation.BatchJobs;
+using MediaBedrock.Cli.Presentation.Jobs;
+using MediaBedrock.Cli.Presentation.JobTemplates;
 
 namespace MediaBedrock.Cli.Presentation.Bootstrap;
 
