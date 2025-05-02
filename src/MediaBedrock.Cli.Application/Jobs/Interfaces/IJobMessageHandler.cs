@@ -1,6 +1,6 @@
 namespace MediaBedrock.Cli.Application.Jobs.Interfaces;
 
-public interface IJobMessageHandler<TJobMessage> where TJobMessage : JobMessage
+public interface IJobMessageHandler<in TJobMessage> where TJobMessage : JobMessage
 {
-    Task HandleAsync(JobMessageContext<TJobMessage> context, CancellationToken ct = default);
+    Task HandleAsync(TJobMessage message, CancellationToken ct = default);
 }

@@ -1,5 +1,6 @@
 using Cocona;
 using MediaBedrock.Cli.Presentation.JobTemplates.Contracts;
+using MediaBedrock.Cli.Presentation.JobTemplates.Converters;
 using MediaBedrock.Cli.Presentation.JobTemplates.Mappers;
 using Spectre.Console;
 using YamlDotNet.Serialization;
@@ -7,27 +8,20 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace MediaBedrock.Cli.Presentation.JobTemplates;
 
-public sealed class JobTemplatesCommands
+internal sealed class JobTemplatesCommands
 {
+    private readonly IDeserializer _deserializer = new DeserializerBuilder()
+        .WithNamingConvention(UnderscoredNamingConvention.Instance)
+        .WithTypeConverter(new ReadOnlyDictionaryStringStringYamlTypeConverter())
+        .Build();
+
     [Command("inspect")]
     public async Task Inspect(string path)
     {
-        var templateJson = await File.ReadAllTextAsync(path);
+        var yaml = await File.ReadAllTextAsync(path);
+        var dto = _deserializer.Deserialize<JobTemplateManifestDto>(yaml);
 
-        var deserializer = new DeserializerBuilder()
-            .WithNamingConvention(UnderscoredNamingConvention.Instance)
-            .Build();
-
-        var jobTemplateDto = deserializer.Deserialize<JobTemplateDto>(templateJson);
-
-        var toDomainTemplate = jobTemplateDto.ToDomain();
-        if (toDomainTemplate.IsFailure)
-        {
-            AnsiConsole.MarkupLine($"[red]Failed to convert parse JobTemplate: {toDomainTemplate.Error.Message}[/]");
-            return;
-        }
-
-        var template = toDomainTemplate.Value;
+        var template = dto.ToDomain();
 
         var tree = new Tree("Template");
         tree.AddNode($"Name: [purple_2]{template.Name.Value}[/]");

@@ -1,6 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using MediaBedrock.Cli.Domain.Jobs.Batches;
+using MediaBedrock.Cli.Domain.BatchJobs;
 
 namespace MediaBedrock.Cli.Infrastructure.Jobs.Batch;
 

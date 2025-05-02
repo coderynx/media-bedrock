@@ -1,6 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using MediaBedrock.Cli.Domain.Jobs.Processors;
+using MediaBedrock.Cli.Domain.Processors;
 
 namespace MediaBedrock.Cli.Infrastructure.Jobs;
 

@@ -1,11 +1,13 @@
 using Coderynx.Functional.Results;
 using MediaBedrock.Cli.Application.Jobs.Interfaces;
+using MediaBedrock.Cli.Application.Persistence;
+using MediaBedrock.Cli.Domain.JobAssets;
+using MediaBedrock.Cli.Domain.JobAssets.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs;
-using MediaBedrock.Cli.Domain.Jobs.Assets;
-using MediaBedrock.Cli.Domain.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs.Steps;
-using MediaBedrock.Cli.Domain.Media;
+using MediaBedrock.Cli.Domain.Processors.Interfaces;
 using MediaBedrock.Sdk.Processors;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Serilog.Context;
 
@@ -21,10 +23,11 @@ public sealed class ProcessJobStepHandler(
     IProcessorProvider processorProvider,
     IMediaInformationRetriever mediaInformationRetriever,
     IJobMessageBus messageBus,
+    IApplicationDbContext dbContext,
     ILogger<ProcessJobStepHandler> logger)
     : IJobMessageHandler<ProcessJobStep>
 {
-    public async Task HandleAsync(JobMessageContext<ProcessJobStep> context, CancellationToken ct = default)
+    public async Task HandleAsync(ProcessJobStep message, CancellationToken ct = default)
     {
         const string jobIdPropertyName = "JobId";
         const string jobStepNamePropertyName = "JobStepName";
@@ -32,34 +35,46 @@ public sealed class ProcessJobStepHandler(
         const string processorNamePropertyName = "ProcessorName";
 
         logger.LogInformation("Processing job step {StepName} for job {JobId}",
-            context.JobMessage.StepName,
-            context.JobMessage.JobId);
+            message.StepName,
+            message.JobId);
 
-        var jobActivity = context.JobStateMachine.JobActivities
-            .SingleOrDefault(ja => ja.Step.Name.Equals(context.JobMessage.StepName));
+        var jobStateMachine = dbContext.JobsStateMachines
+            .Include(j => j.AssetsPool)
+            .Include(j => j.Job)
+            .Include(j => j.StepsStateMachines)
+            .ThenInclude(s => s.StepSinks)
+            .Include(j => j.StepsStateMachines)
+            .ThenInclude(s => s.StepSources)
+            .SingleOrDefault(ja => ja.Job.Id.Equals(message.JobId));
 
-        if (jobActivity is null)
+        if (jobStateMachine is null)
         {
-            logger.LogError("Job step {StepName} not found in job {JobId}",
-                context.JobMessage.StepName,
-                context.JobMessage.JobId);
+            logger.LogError("Job state machine for Job {JobId} not found", message.JobId);
             return;
         }
 
-        var resolveProcessor = processorProvider.ResolveProcessor(jobActivity.Step.ProcessorName);
+        var jobStepStateMachine = jobStateMachine.StepsStateMachines
+            .SingleOrDefault(ja => ja.StepName.Equals(message.StepName));
+
+        if (jobStepStateMachine is null)
+        {
+            logger.LogError("Job step state machine for job {JobId} not found", message.JobId);
+            return;
+        }
+
+        var resolveProcessor = processorProvider.ResolveProcessor(jobStepStateMachine.ProcessorName);
         if (resolveProcessor.IsFailure)
         {
             logger.LogError("Processor {ProcessorName} not found for job {JobId}",
-                jobActivity.Step.ProcessorName,
-                context.JobMessage.JobId);
+                jobStepStateMachine.ProcessorName,
+                message.JobId);
             return;
         }
 
         var createContext = processorContextFactory.Create(
             processorType: resolveProcessor.Value.GetType(),
-            jobId: context.JobMessage.JobId,
-            step: jobActivity.Step,
-            assetsPool: context.JobStateMachine.AssetsPool);
+            jobStateMachine: jobStateMachine,
+            jobStepName: message.StepName);
 
         if (createContext.IsFailure)
         {
@@ -67,100 +82,107 @@ public sealed class ProcessJobStepHandler(
             return;
         }
 
-        jobActivity.UpdateStatus(JobActivityStatus.Running);
+        jobStepStateMachine.TransitionToRunning();
+        await dbContext.SaveChangesAsync(ct);
 
-        using (LogContext.PushProperty(jobIdPropertyName, context.JobStateMachine.JobId))
-        using (LogContext.PushProperty(jobStepNamePropertyName, context.JobMessage.StepName))
-        using (LogContext.PushProperty(jobActivityIdPropertyName, jobActivity.Id))
-        using (LogContext.PushProperty(processorNamePropertyName, jobActivity.Step.ProcessorName))
+        using (LogContext.PushProperty(jobIdPropertyName, jobStateMachine.Job.Id))
+        using (LogContext.PushProperty(jobStepNamePropertyName, jobStepStateMachine.StepName))
+        using (LogContext.PushProperty(jobActivityIdPropertyName, jobStateMachine.Id))
+        using (LogContext.PushProperty(processorNamePropertyName, jobStepStateMachine.ProcessorName))
         {
             try
             {
                 var processResult = await resolveProcessor.Value.ProcessAsync(createContext.Value, ct);
                 if (!processResult.IsSuccess)
                 {
-                    jobActivity.UpdateStatus(JobActivityStatus.Failed);
+                    jobStepStateMachine.TransitionToFailed();
+                    await dbContext.SaveChangesAsync(ct);
+
                     logger.LogError("Failed to process job step {StepName} for job {JobId}: {ErrorMessage}",
-                        context.JobMessage.StepName,
-                        context.JobMessage.JobId,
+                        jobStepStateMachine.StepName,
+                        jobStateMachine.Job.Id,
                         processResult.Message);
                     return;
                 }
             }
             catch (Exception e)
             {
-                jobActivity.UpdateStatus(JobActivityStatus.Failed);
+                jobStepStateMachine.TransitionToFailed();
+                await dbContext.SaveChangesAsync(ct);
+
                 logger.LogError(e, "Failed to process job step {StepName} for job {JobId}",
-                    context.JobMessage.StepName,
-                    context.JobMessage.JobId);
+                    jobStepStateMachine.StepName,
+                    jobStateMachine.Job.Id);
+
                 return;
             }
         }
 
-        var updateAssetPool = await UpdateAssetPoolAsync(context.JobStateMachine, createContext.Value);
+        var updateAssetPool = await UpdateAssetPoolAsync(jobStateMachine, createContext.Value.Outputs);
         if (updateAssetPool.IsFailure)
         {
+            jobStepStateMachine.TransitionToFailed();
+
+            logger.LogError("Failed to update asset pool for job {JobId}", updateAssetPool.Error.Message);
             return;
         }
 
-        jobActivity.UpdateStatus(JobActivityStatus.Completed);
+        jobStepStateMachine.TransitionToCompleted();
+        await dbContext.SaveChangesAsync(ct);
 
-        await PublishProcessJobStepMessagesAsync(context, updateAssetPool.Value, ct);
+        await PublishProcessJobStepMessagesAsync(jobStateMachine, updateAssetPool.Value, ct);
 
         logger.LogInformation("Successfully processed step {StepName} of job {JobId}",
-            context.JobMessage.StepName,
-            context.JobMessage.JobId);
+            jobStepStateMachine.StepName,
+            jobStateMachine.Id);
 
-        var isJobCompleted = !context.JobStateMachine.JobActivities
-            .Any(ja => ja.Status.Equals(JobActivityStatus.Running) || ja.Status.Equals(JobActivityStatus.Pending));
+        var isJobCompleted = !jobStateMachine.StepsStateMachines
+            .Any(ja => ja.Status.Equals(JobStepStatus.Running) || ja.Status.Equals(JobStepStatus.Pending));
 
         if (isJobCompleted)
         {
-            context.JobStateMachine.UpdateStatus(JobWorkflowStatus.Completed);
-            logger.LogInformation("Job {JobId} completed successfully", context.JobMessage.JobId);
+            jobStateMachine.TransitionToCompleted();
+            await dbContext.SaveChangesAsync(ct);
+
+            logger.LogInformation("Job {JobId} completed successfully", jobStateMachine.Job.Id);
         }
     }
 
     private async Task PublishProcessJobStepMessagesAsync(
-        JobMessageContext<ProcessJobStep> context,
-        List<string> updatedAssets,
+        JobStateMachine jobStateMachine,
+        List<JobAssetName> updatedAssets,
         CancellationToken ct = default)
     {
-        var jobSteps = updatedAssets.Select(updatedJobAsset =>
-            context.JobStateMachine.JobActivities.SingleOrDefault(ja =>
-                ja.Step.Sinks.Any(a => a.AssetName.Equals(updatedJobAsset))));
+        var stepsStateMachines = jobStateMachine.StepsStateMachines
+            .Where(ssm => ssm.StepSinks.Any(ss => updatedAssets.Any(ua => ua.Equals(ss.AssetName))))
+            .ToList();
 
-        foreach (var activity in jobSteps)
+        foreach (var jobStep in stepsStateMachines)
         {
-            if (activity is null)
-            {
-                logger.LogInformation("Skipping job step {StepName} for job {JobId} as no assets were updated",
-                    context.JobMessage.StepName,
-                    context.JobMessage.JobId);
-                continue;
-            }
-
             var startJobStep = new ProcessJobStep
             {
-                JobId = context.JobMessage.JobId,
-                StepName = activity.Step.Name
+                JobId = jobStateMachine.Job.Id,
+                StepName = jobStep.StepName
             };
 
             await messageBus.PublishAsync(startJobStep, ct);
         }
     }
 
-    private async Task<Result<List<string>>> UpdateAssetPoolAsync(JobStateMachine stateMachine,
-        ProcessorContext context)
+    private async Task<Result<List<JobAssetName>>> UpdateAssetPoolAsync(
+        JobStateMachine stateMachine,
+        IReadOnlyCollection<ProcessorOutput> outputs)
     {
-        var updatedAssets = new List<string>();
+        var updatedAssets = new List<JobAssetName>();
 
-        foreach (var output in context.Outputs)
+        foreach (var output in outputs)
         {
-            var resolveAsset = stateMachine.AssetsPool.ResolveAsset(output.AssetName);
+            var assetName = new JobAssetName(output.AssetName);
+
+            var resolveAsset = stateMachine.ResolveAsset(assetName);
             if (!resolveAsset.IsSome)
             {
-                return JobAssetErrors.AssetNotFound(output.AssetName);
+                return JobAssetErrors.NotFound(assetName);
             }
 
             var getMediaInfo = await mediaInformationRetriever.GetMediaInfoAsync(output.GetAsFilePath());

@@ -27,12 +27,11 @@ public sealed class JobTemplateJsonSerializer : IJobTemplateSerializer
         try
         {
             var json = JsonSerializer.Serialize(jobTemplate, _serializerOptions);
-
             return Result.Created(json);
         }
         catch (Exception e)
         {
-            return JobTemplateErrors.SerializationFailed(e.Message);
+            return JobTemplateErrors.ManifestSerializationFailed(e.Message);
         }
     }
 
@@ -42,7 +41,7 @@ public sealed class JobTemplateJsonSerializer : IJobTemplateSerializer
         var jobTemplate = JsonSerializer.Deserialize<JobTemplate>(serialized, _serializerOptions);
 
         return jobTemplate is null
-            ? JobTemplateErrors.DeserializationFailed(serialized)
+            ? JobTemplateErrors.ManifestDeserializationFailed(serialized)
             : Result.Created(jobTemplate);
     }
 }

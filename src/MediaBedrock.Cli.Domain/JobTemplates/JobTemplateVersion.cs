@@ -5,16 +5,27 @@ namespace MediaBedrock.Cli.Domain.JobTemplates;
 
 public sealed partial record JobTemplateVersion
 {
-    public static readonly JobTemplateVersion Default = new()
+    public JobTemplateVersion(string value)
     {
-        Value = "0.0.1"
-    };
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new DomainException(JobTemplateErrors.InvalidVersionCode, "Version cannot be null or empty.");
+        }
 
-    private JobTemplateVersion()
-    {
+        if (!SemverRegex().IsMatch(value))
+        {
+            throw new DomainException(JobTemplateErrors.InvalidVersionCode, "Version is not a valid semantic version.");
+        }
+
+        Value = value;
     }
 
-    public required string Value { get; init; }
+    public JobTemplateVersion()
+    {
+        Value = "0.0.1";
+    }
+
+    public string Value { get; }
 
     public static Result<JobTemplateVersion> Create(string value)
     {
@@ -29,10 +40,7 @@ public sealed partial record JobTemplateVersion
             return JobTemplateErrors.InvalidVersion(value);
         }
 
-        var version = new JobTemplateVersion
-        {
-            Value = value
-        };
+        var version = new JobTemplateVersion(value);
 
         return Result.Created(version);
     }

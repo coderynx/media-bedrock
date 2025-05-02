@@ -1,6 +1,6 @@
 using MediaBedrock.Cli.Infrastructure.Jobs.Bootstrap;
-using MediaBedrock.Cli.Infrastructure.JobTemplates.Bootstrap;
 using MediaBedrock.Cli.Infrastructure.Media;
+using MediaBedrock.Cli.Infrastructure.Persistence.Bootstrap;
 using MediaBedrock.Cli.Infrastructure.Plugins;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,9 +10,9 @@ public static class ServiceCollectionExtensions
 {
     public static void AddInfrastructure(this IServiceCollection services)
     {
+        services.AddPersistence();
         services.AddMedia();
         services.AddJobs();
-        services.AddJobTemplates();
         services.AddPlugins();
     }
 }

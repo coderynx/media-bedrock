@@ -4,5 +4,5 @@ namespace MediaBedrock.Cli.Presentation.BatchJobs.Contracts;
 
 public sealed record BatchJobParametersDto
 {
-    public List<JobParametersDto> Entries { get; init; } = [];
+    public IReadOnlyList<JobParametersDto> Entries { get; init; } = [];
 }

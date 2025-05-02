@@ -1,4 +1,4 @@
-using MediaBedrock.Cli.Domain.Jobs.Processors;
+using MediaBedrock.Cli.Domain.Processors;
 using Shouldly;
 
 namespace MediaBedrock.UnitTests.Jobs.Processors;
@@ -12,12 +12,12 @@ public sealed class ProcessorNameTests
         const string fullName = "namespace/name";
 
         // Act
-        var result = ProcessorName.Create(fullName);
+        var createProcessorName = ProcessorName.Create(fullName);
 
         // Assert
-        result.IsSuccess.ShouldBeTrue();
-        result.Value.Namespace.ShouldBe("namespace");
-        result.Value.Name.ShouldBe("name");
+        createProcessorName.IsSuccess.ShouldBeTrue();
+        createProcessorName.Value.Namespace.ShouldBe("namespace");
+        createProcessorName.Value.Name.ShouldBe("name");
     }
 
     [Fact]
@@ -27,21 +27,21 @@ public sealed class ProcessorNameTests
         const string fullName = "invalidFullName";
 
         // Act
-        var result = ProcessorName.Create(fullName);
+        var createProcessorName = ProcessorName.Create(fullName);
 
         // Assert
-        result.IsSuccess.ShouldBeFalse();
-        result.Error.ShouldBe(ProcessorErrors.InvalidName(fullName));
+        createProcessorName.IsSuccess.ShouldBeFalse();
+        createProcessorName.Error.ShouldBe(ProcessorErrors.InvalidName(fullName));
     }
 
     [Fact]
     public void ToString_ShouldReturnCorrectFormat()
     {
         // Arrange
-        var processorName = new ProcessorName("namespace", "name");
+        var createProcessorName = ProcessorName.Create("namespace", "name");
 
         // Act
-        var result = processorName.ToString();
+        var result = createProcessorName.Value.ToString();
 
         // Assert
         result.ShouldBe("namespace/name");

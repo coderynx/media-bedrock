@@ -1,9 +1,9 @@
-using MediaBedrock.Cli.Application.Jobs;
-using MediaBedrock.Cli.Domain.Jobs.Batches;
+using MediaBedrock.Cli.Domain.BatchJobs;
 using MediaBedrock.Cli.Domain.Jobs.Parameters;
-using MediaBedrock.Cli.Domain.Jobs.Processors;
 using MediaBedrock.Cli.Domain.JobTemplates;
+using MediaBedrock.Cli.Domain.Processors;
 using Shouldly;
+using JobFactory = MediaBedrock.Cli.Domain.Jobs.JobFactory;
 
 namespace MediaBedrock.UnitTests.Jobs;
 
@@ -15,8 +15,15 @@ public sealed class JobFactoryTests
     public void Create_ShouldReturnError_WhenTemplateNameDoesNotMatch()
     {
         // Arrange
-        var template = new JobTemplate { Name = JobTemplateName.Create("Template1").Value };
-        var parameters = new JobParameters(JobTemplateName.Create("Template2").Value, [], [], []);
+        var template = JobTemplate.Create(
+            name: new JobTemplateName("Template1"),
+            version: new JobTemplateVersion(),
+            author: new JobTemplateAuthor(),
+            properties: [],
+            inputs: [],
+            outputs: []);
+
+        var parameters = new JobParameters(new JobTemplateName("Template2"), [], [], []);
 
         // Act
         var result = _jobFactory.Create(template, parameters);
@@ -30,25 +37,29 @@ public sealed class JobFactoryTests
     public void Create_ShouldReturnJob_WhenInputsOutputsAndStepsAreValid()
     {
         // Arrange
-        var template = new JobTemplate
-        {
-            Name = JobTemplateName.Create("Template1").Value,
-            Inputs = [new JobTemplateInput { Name = "Input1" }],
-            Outputs = [new JobTemplateOutput { Name = "Output1" }],
-            Steps =
-            [
-                new JobTemplateStep
-                {
-                    Name = "Step1",
-                    ProcessorName = ProcessorName.Create("namespace/processor").Value
-                }
-            ]
-        };
+        var template = JobTemplate.Create(
+            name: new JobTemplateName("Template1"),
+            version: new JobTemplateVersion(),
+            author: new JobTemplateAuthor(),
+            inputs: [new JobTemplateInput("Input1")],
+            outputs: [new JobTemplateOutput("Output1")],
+            properties: []);
+
+        var step = JobTemplateStep.Create(
+            template: template,
+            name: new JobTemplateStepName("Step1"),
+            processorName: ProcessorName.Create("namespace/processor").Value,
+            sinks: [],
+            sources: [],
+            properties: []);
+
+        template.AddStepRange([step]);
 
         var parameters = new JobParameters(
-            JobTemplateName.Create("Template1").Value,
-            [new JobInputParameter("Input1", "Uri1")],
-            [new JobOutputParameter("Output1", "Uri2")], []);
+            TemplateName: new JobTemplateName("Template1"),
+            Inputs: [new JobInputParameter("Input1", "Uri1")],
+            Outputs: [new JobOutputParameter("Output1", "Uri2")],
+            Properties: []);
 
         // Act
         var result = _jobFactory.Create(template, parameters);
@@ -56,7 +67,7 @@ public sealed class JobFactoryTests
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldNotBeNull();
-        result.Value.TemplateName.ShouldBe(template.Name);
+        result.Value.Template.Name.ShouldBe(template.Name);
     }
 
     [Fact]
@@ -66,7 +77,7 @@ public sealed class JobFactoryTests
         var templates = new List<JobTemplate>();
         var parameters = new BatchJobParameters
         {
-            Entries = [new JobParameters(JobTemplateName.Create("Template1").Value, [], [], [])]
+            Entries = [new JobParameters(new JobTemplateName("Template1"), [], [], [])]
         };
 
         // Act
@@ -81,20 +92,23 @@ public sealed class JobFactoryTests
     public void CreateBatch_ShouldReturnBatchJob_WhenAllJobsAreValid()
     {
         // Arrange
-        var template = new JobTemplate
-        {
-            Name = JobTemplateName.Create("Template1").Value,
-            Inputs = [new JobTemplateInput { Name = "Input1" }],
-            Outputs = [new JobTemplateOutput { Name = "Output1" }],
-            Steps =
-            [
-                new JobTemplateStep
-                {
-                    Name = "Step1",
-                    ProcessorName = ProcessorName.Create("namespace/processor").Value
-                }
-            ]
-        };
+        var template = JobTemplate.Create(
+            name: new JobTemplateName("Template1"),
+            version: new JobTemplateVersion(),
+            author: new JobTemplateAuthor(),
+            properties: [],
+            inputs: [new JobTemplateInput("Input1")],
+            outputs: [new JobTemplateOutput("Output1")]);
+
+        var step = JobTemplateStep.Create(
+            template: template,
+            name: new JobTemplateStepName("Step1"),
+            processorName: ProcessorName.Create("namespace/processor").Value,
+            sinks: [],
+            sources: [],
+            properties: []);
+
+        template.AddStepRange([step]);
 
         var templates = new List<JobTemplate> { template };
         var parameters = new BatchJobParameters
@@ -102,7 +116,7 @@ public sealed class JobFactoryTests
             Entries =
             [
                 new JobParameters(
-                    TemplateName: JobTemplateName.Create("Template1").Value,
+                    TemplateName: new JobTemplateName("Template1"),
                     Inputs: [new JobInputParameter("Input1", "Uri1")],
                     Outputs: [new JobOutputParameter("Output1", "Uri2")],
                     Properties: [])
@@ -116,6 +130,6 @@ public sealed class JobFactoryTests
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldNotBeNull();
         result.Value.Jobs.Count().ShouldBe(1);
-        result.Value.Jobs.First().TemplateName.ShouldBe(template.Name);
+        result.Value.Jobs.First().Template.Name.ShouldBe(template.Name);
     }
 }

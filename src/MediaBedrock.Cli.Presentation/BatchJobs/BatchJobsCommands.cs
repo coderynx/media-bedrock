@@ -1,9 +1,11 @@
 using Cocona;
 using Coderynx.Functional.Results;
+using MediaBedrock.Cli.Domain.BatchJobs.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs.Interfaces;
 using MediaBedrock.Cli.Domain.JobTemplates;
-using MediaBedrock.Cli.Presentation.JobTemplates.Contracts;
-using MediaBedrock.Cli.Presentation.JobTemplates.Mappers;
+using MediaBedrock.Cli.Domain.JobTemplates.Manifests;
+using MediaBedrock.Cli.Presentation.BatchJobs.Contracts;
+using MediaBedrock.Cli.Presentation.BatchJobs.Mappers;
 using Spectre.Console;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -12,9 +14,7 @@ namespace MediaBedrock.Cli.Presentation.BatchJobs;
 
 public sealed class BatchJobsCommands(
     IBatchJobSerializer batchJobSerializer,
-    IBatchJobParametersSerializer batchJobParametersSerializer,
-    IJobFactory jobFactory,
-    IJobRunner jobRunner)
+    IJobFactory jobFactory)
 {
     [Command("generate")]
     public async Task Generate(List<string> templatesPaths, string parametersPath, string batchJobOutputPath)
@@ -28,14 +28,20 @@ public sealed class BatchJobsCommands(
 
         var parametersYaml = await File.ReadAllTextAsync(parametersPath);
 
-        var parameters = batchJobParametersSerializer.Deserialize(parametersYaml);
-        if (parameters.IsFailure)
+        var deserializer = new DeserializerBuilder()
+            .WithNamingConvention(UnderscoredNamingConvention.Instance)
+            .Build();
+
+        var parametersDto = deserializer.Deserialize<BatchJobParametersDto>(parametersYaml);
+
+        var toParametersDomain = parametersDto.ToDomain();
+        if (toParametersDomain.IsFailure)
         {
-            AnsiConsole.MarkupLine($"[red]Failed to deserialize batch job parameters: {parameters.Error.Message}[/]");
+            AnsiConsole.MarkupLine($"Failed to deserialize batch job parameters: {toParametersDomain.Error}");
             return;
         }
 
-        var createJobs = jobFactory.Create(readTemplateFromYaml.Value, parameters.Value);
+        var createJobs = jobFactory.Create(readTemplateFromYaml.Value, toParametersDomain.Value);
         if (createJobs.IsFailure)
         {
             AnsiConsole.MarkupLine($"[red]Failed to create batch job: {createJobs.Error.Message}[/]");
@@ -55,24 +61,24 @@ public sealed class BatchJobsCommands(
         AnsiConsole.MarkupLine($"[green]Batch job generated successfully and saved to {batchJobOutputPath}[/]");
     }
 
-    [Command("take")]
-    public async Task Take(string path)
-    {
-        var batchJobJson = await File.ReadAllTextAsync(path);
-
-        var batchJob = batchJobSerializer.Deserialize(batchJobJson);
-        if (batchJob.IsFailure)
-        {
-            AnsiConsole.MarkupLine($"[red]Failed to deserialize batch job: {batchJob.Error.Message}[/]");
-            return;
-        }
-
-        var result = await jobRunner.TakeAsync(batchJob.Value);
-        if (result.IsFailure)
-        {
-            AnsiConsole.MarkupLine($"[red]Failed to run the batch job: {result.Error.Message}[/]");
-        }
-    }
+    // [Command("take")]
+    // public async Task Take(string path)
+    // {
+    //     var batchJobJson = await File.ReadAllTextAsync(path);
+    //
+    //     var batchJob = batchJobSerializer.Deserialize(batchJobJson);
+    //     if (batchJob.IsFailure)
+    //     {
+    //         AnsiConsole.MarkupLine($"[red]Failed to deserialize batch job: {batchJob.Error.Message}[/]");
+    //         return;
+    //     }
+    //
+    //     var result = await jobService.RunAsync(batchJob.Value);
+    //     if (result.IsFailure)
+    //     {
+    //         AnsiConsole.MarkupLine($"[red]Failed to run the batch job: {result.Error.Message}[/]");
+    //     }
+    // }
 
     private static async Task<Result<List<JobTemplate>>> ReadTemplatesFromYamlAsync(IEnumerable<string> templatesPaths)
     {
@@ -90,15 +96,10 @@ public sealed class BatchJobsCommands(
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .Build();
 
-            var templateDto = deserializer.Deserialize<JobTemplateDto>(templateYaml);
+            var templateManifest = deserializer.Deserialize<JobTemplateManifest>(templateYaml);
+            var template = templateManifest.ToTemplate();
 
-            var templateToDomain = templateDto.ToDomain();
-            if (templateToDomain.IsFailure)
-            {
-                return JobTemplateErrors.DeserializationFailed(templateDto.Name);
-            }
-
-            templates.Add(templateToDomain.Value);
+            templates.Add(template);
         }
 
         return Result.Created(templates);

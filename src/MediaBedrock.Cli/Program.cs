@@ -26,6 +26,7 @@ builder.Services.AddApplication();
 
 var app = builder.Build();
 
+app.Services.UseInfrastructure(builder.Environment);
 app.UsePresentation();
 
 await app.RunAsync();

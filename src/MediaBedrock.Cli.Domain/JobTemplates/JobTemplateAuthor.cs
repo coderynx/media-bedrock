@@ -1,34 +1,18 @@
-using Coderynx.Functional.Results;
-
 namespace MediaBedrock.Cli.Domain.JobTemplates;
 
 public sealed record JobTemplateAuthor
 {
-    public static readonly JobTemplateAuthor Empty = new()
+    public JobTemplateAuthor(string value)
     {
-        Value = string.Empty
-    };
-
-    private JobTemplateAuthor()
-    {
+        Value = value;
     }
 
-    public required string Value { get; init; }
-
-    public static Result<JobTemplateAuthor> Create(string value)
+    public JobTemplateAuthor()
     {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return JobTemplateErrors.InvalidAuthor(value);
-        }
-
-        var author = new JobTemplateAuthor
-        {
-            Value = value
-        };
-
-        return Result.Created(author);
+        Value = string.Empty;
     }
+
+    public string Value { get; }
 
     public override string ToString()
     {

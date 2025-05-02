@@ -14,13 +14,7 @@ public sealed class JobTemplateAuthorJsonConverter : JsonConverter<JobTemplateAu
             throw new JsonException($"{nameof(JobTemplateAuthor)} cannot be null");
         }
 
-        var createJobTemplateAuthor = JobTemplateAuthor.Create(value);
-        if (createJobTemplateAuthor.IsFailure)
-        {
-            throw new JsonException(createJobTemplateAuthor.Error.Message);
-        }
-
-        return createJobTemplateAuthor.Value;
+        return new JobTemplateAuthor(value);
     }
 
     public override void Write(Utf8JsonWriter writer, JobTemplateAuthor value, JsonSerializerOptions options)

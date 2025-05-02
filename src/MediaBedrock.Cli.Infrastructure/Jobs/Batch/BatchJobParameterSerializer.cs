@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Coderynx.Functional.Results;
-using MediaBedrock.Cli.Domain.Jobs.Batches;
-using MediaBedrock.Cli.Domain.Jobs.Interfaces;
+using MediaBedrock.Cli.Domain.BatchJobs;
+using MediaBedrock.Cli.Domain.BatchJobs.Interfaces;
 using MediaBedrock.Cli.Domain.JobTemplates;
 using MediaBedrock.Cli.Infrastructure.JobTemplates.Serializers;
 
@@ -23,7 +23,7 @@ public sealed class BatchJobParametersJsonSerializer : IBatchJobParametersSerial
         }
         catch (Exception e)
         {
-            return JobTemplateErrors.SerializationFailed(e.Message);
+            return JobTemplateErrors.ManifestSerializationFailed(e.Message);
         }
     }
 
@@ -32,7 +32,7 @@ public sealed class BatchJobParametersJsonSerializer : IBatchJobParametersSerial
         var jobTemplate = JsonSerializer.Deserialize<BatchJobParameters>(serialized, _serializerOptions);
 
         return jobTemplate is null
-            ? JobTemplateErrors.DeserializationFailed(serialized)
+            ? JobTemplateErrors.ManifestDeserializationFailed(serialized)
             : Result.Created(jobTemplate);
     }
 }

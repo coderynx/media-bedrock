@@ -1,6 +1,8 @@
 using MediaBedrock.Cli.Application.Jobs.Interfaces;
+using MediaBedrock.Cli.Application.Persistence;
+using MediaBedrock.Cli.Domain.JobAssets;
 using MediaBedrock.Cli.Domain.Jobs;
-using MediaBedrock.Cli.Domain.Jobs.Assets;
+using Microsoft.EntityFrameworkCore;
 
 namespace MediaBedrock.Cli.Application.Jobs.Handlers;
 
@@ -12,7 +14,7 @@ public sealed record RunJob : JobMessage
     {
         var startJob = new RunJob
         {
-            JobId = jobStateMachine.JobId,
+            JobId = jobStateMachine.Job.Id,
             StartedAt = DateTime.UtcNow
         };
 
@@ -20,23 +22,42 @@ public sealed record RunJob : JobMessage
     }
 }
 
-public sealed class RunJobHandler(IJobMessageBus messageBus) : IJobMessageHandler<RunJob>
+public sealed class RunJobHandler(
+    IJobMessageBus messageBus,
+    IApplicationDbContext dbContext) : IJobMessageHandler<RunJob>
 {
-    public async Task HandleAsync(JobMessageContext<RunJob> context, CancellationToken ct = default)
+    public async Task HandleAsync(RunJob message, CancellationToken ct = default)
     {
-        var inputAssets = context.JobStateMachine.AssetsPool.ResolveAssets(JobAssetKind.Input);
+        var jobStateMachine = await dbContext.JobsStateMachines
+            .Include(j => j.AssetsPool)
+            .Include(j => j.Job)
+            .Include(j => j.StepsStateMachines)
+            .ThenInclude(s => s.StepSinks)
+            .Include(j => j.StepsStateMachines)
+            .ThenInclude(s => s.StepSources)
+            .AsNoTracking()
+            .SingleOrDefaultAsync(j => j.Job.Id.Equals(message.JobId), ct);
 
-        var jobSteps = context.JobStateMachine.JobActivities
-            .Where(s => s.Step.Sinks.Any(a => inputAssets.Any(i => i.Name.Equals(a.AssetName))))
+        if (jobStateMachine is null)
+        {
+            throw new InvalidOperationException($"Job state machine not found for job {message.JobId}");
+        }
+
+        var inputAssets = jobStateMachine.ResolveAssets(JobAssetKind.Input);
+
+        var jobSteps = jobStateMachine.StepsStateMachines
+            .Where(s => s.StepSinks.Any(a => inputAssets.Any(i => i.Name.Equals(a.AssetName))))
             .ToList();
 
-        context.JobStateMachine.UpdateStatus(JobWorkflowStatus.Running);
+        jobStateMachine.TransitionToRunning();
+        await dbContext.SaveChangesAsync(ct);
 
-        foreach (var startJobStep in jobSteps.Select(jobStep => new ProcessJobStep
-                 {
-                     JobId = context.JobMessage.JobId,
-                     StepName = jobStep.Step.Name
-                 }))
-            await messageBus.PublishAsync(startJobStep, ct);
+        var processJobSteps = jobSteps.Select(jobStep => new ProcessJobStep
+        {
+            JobId = jobStateMachine.Job.Id,
+            StepName = jobStep.StepName
+        });
+
+        foreach (var processJobStep in processJobSteps) await messageBus.PublishAsync(processJobStep, ct);
     }
 }
