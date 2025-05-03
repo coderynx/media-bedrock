@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Coderynx.Functional.Results;
-using MediaBedrock.Cli.Domain.Jobs.Processors;
+using MediaBedrock.Cli.Domain.Processors;
 using MediaBedrock.Cli.Infrastructure.Plugins.Interfaces;
 using MediaBedrock.Sdk.Processors;
 using Microsoft.Extensions.DependencyInjection;

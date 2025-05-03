@@ -1,5 +1,7 @@
 using Coderynx.Functional;
 using Coderynx.Functional.Results;
+using MediaBedrock.Cli.Domain.Jobs.Steps;
+using MediaBedrock.Cli.Domain.JobsStateMachine;
 
 namespace MediaBedrock.Cli.Domain.Jobs;
 
@@ -7,17 +9,19 @@ public static class JobErrors
 {
     public const string PropertyNotFoundCode = "Job.PropertyNotFound";
 
-    public const string InvalidIdCode = "Job.InvalidId";
-
     public const string InvalidStepNameCode = "Job.InvalidStepName";
 
     public const string DeserializationFailedCode = "Job.DeserializationFailed";
 
-    public const string ContainerConflictCode = "Job.ContainerConflict";
+    public const string InvalidInputNameCode = "Job.InvalidInputName";
 
-    public const string ContainerRemovalFailedCode = "Job.ContainerRemovalFailed";
+    public const string InvalidOutputNameCode = "Job.InvalidOutputName";
 
-    public const string InvalidSerializerFormatCode = "Job.InvalidSerializerFormat";
+    public const string StepNotFoundCode = "Job.StepNotFound";
+
+    public const string NotFoundCode = "Job.NotFound";
+
+    public const string StateMachineNotFoundCode = "Job.StateMachineNotFound";
 
     public static Error PropertyNotFound(string key)
     {
@@ -25,14 +29,6 @@ public static class JobErrors
             ResultError: ResultError.InvalidInput,
             Code: PropertyNotFoundCode,
             Message: $"The job property '{key}' was not found. Please check the property name and try again.");
-    }
-
-    public static Error InvalidId(Guid id)
-    {
-        return new Error(
-            ResultError: ResultError.InvalidInput,
-            Code: InvalidIdCode,
-            Message: $"The job ID '{id}' is invalid. Please check the ID and try again.");
     }
 
     public static Error InvalidStepName(string name)
@@ -59,27 +55,43 @@ public static class JobErrors
             Message: $"The job deserialization failed for the serialized job: {serialized}");
     }
 
-    public static Error ContainerConflict(JobId jobId)
+    public static Error InvalidInputName(string name)
     {
         return new Error(
             ResultError: ResultError.InvalidInput,
-            Code: ContainerConflictCode,
-            Message: $"A job container with ID '{jobId}' already exists.");
+            Code: InvalidInputNameCode,
+            Message: $"The job step input name '{name}' is invalid. Please check the name and try again.");
     }
 
-    public static Error ContainerRemovalFailed(JobId jobId)
+    public static Error InvalidOutputName(string name)
     {
         return new Error(
             ResultError: ResultError.InvalidInput,
-            Code: ContainerRemovalFailedCode,
-            Message: $"Failed to remove the job container with ID '{jobId}'.");
+            Code: InvalidOutputNameCode,
+            Message: $"The job step output '{name}' is invalid. Please check the name and try again.");
     }
 
-    public static Error InvalidSerializerFormat()
+    public static Error StepNotFound(JobStepName name)
     {
         return new Error(
             ResultError: ResultError.InvalidInput,
-            Code: InvalidSerializerFormatCode,
-            Message: "The specified serializer format is invalid.");
+            Code: StepNotFoundCode,
+            Message: $"The job step '{name}' was not found. Please check the step name and try again.");
+    }
+
+    public static Error NotFound(JobId jobId)
+    {
+        return new Error(
+            ResultError: ResultError.NotFound,
+            Code: NotFoundCode,
+            Message: $"The job with ID '{jobId}' was not found.");
+    }
+
+    public static Error StateMachineNotFound(JobStateMachineId stateMachineId)
+    {
+        return new Error(
+            ResultError: ResultError.NotFound,
+            Code: StateMachineNotFoundCode,
+            Message: $"The job state machine with ID '{stateMachineId}' was not found.");
     }
 }

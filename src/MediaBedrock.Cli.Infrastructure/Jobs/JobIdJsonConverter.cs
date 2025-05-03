@@ -10,13 +10,8 @@ public sealed class JobIdJsonConverter : JsonConverter<JobId>
     {
         var value = reader.GetGuid();
 
-        var jobId = JobId.Create(value);
-        if (jobId.IsFailure)
-        {
-            throw new JsonException(jobId.Error.Message);
-        }
-
-        return jobId.Value;
+        var jobId = new JobId(value);
+        return jobId;
     }
 
     public override void Write(Utf8JsonWriter writer, JobId value, JsonSerializerOptions options)

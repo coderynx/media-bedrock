@@ -2,8 +2,8 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Coderynx.Functional.Results;
-using MediaBedrock.Cli.Application.Assets;
-using MediaBedrock.Cli.Domain.Media.Errors;
+using MediaBedrock.Cli.Domain.JobAssets;
+using MediaBedrock.Cli.Domain.JobAssets.Interfaces;
 using MediaBedrock.Sdk.Processors;
 using Microsoft.Extensions.Logging;
 
@@ -32,7 +32,7 @@ public sealed class MediaInfoRetriever(ILogger<MediaInfoRetriever> logger) : IMe
         if (exitCode is not 0)
         {
             logger.LogError("Failed to retrieve media information for {Uri}", uri);
-            return MediaErrors.FailedToRetrieveInfo(uri);
+            return JobAssetErrors.FailedToRetrieveMediaInformation(uri);
         }
 
         var jsonNode = JsonSerializer.Deserialize<JsonElement>(output.ToString());

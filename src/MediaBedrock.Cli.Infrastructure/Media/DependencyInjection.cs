@@ -1,4 +1,4 @@
-using MediaBedrock.Cli.Application.Assets;
+using MediaBedrock.Cli.Domain.JobAssets.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaBedrock.Cli.Infrastructure.Media;

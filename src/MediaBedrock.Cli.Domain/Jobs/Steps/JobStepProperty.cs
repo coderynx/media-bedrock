@@ -2,6 +2,10 @@ namespace MediaBedrock.Cli.Domain.Jobs.Steps;
 
 public sealed record JobStepProperty
 {
+    private JobStepProperty()
+    {
+    }
+
     public required string Name { get; init; }
     public required string? Value { get; init; }
 
