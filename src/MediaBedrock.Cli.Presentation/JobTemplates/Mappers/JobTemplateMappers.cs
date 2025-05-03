@@ -24,7 +24,7 @@ public static class JobTemplateMappers
             steps: dto.Steps
                 .Select(s => s.ToDomain())
                 .ToList(),
-            displayName: dto.DisplayName,
-            description: dto.Description);
+            displayName: new JobTemplateDisplayName(dto.DisplayName),
+            description: new JobTemplateDescription(dto.Description));
     }
 }

@@ -2,6 +2,7 @@ using MediaBedrock.Cli.Application.Persistence;
 using MediaBedrock.Cli.Domain.JobAssets;
 using MediaBedrock.Cli.Domain.Jobs;
 using MediaBedrock.Cli.Domain.Jobs.Steps;
+using MediaBedrock.Cli.Domain.JobsStateMachine;
 using MediaBedrock.Cli.Domain.JobTemplates;
 using Microsoft.EntityFrameworkCore;
 

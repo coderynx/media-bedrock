@@ -30,8 +30,8 @@ public sealed class JobTemplateStepEntityConfiguration : IEntityTypeConfiguratio
             .HasMaxLength(500)
             .IsRequired(false);
 
-        builder.OwnsMany(jts => jts.Sinks, s => s.ToJson());
-        builder.OwnsMany(jts => jts.Sources, s => s.ToJson());
+        builder.OwnsMany(jts => jts.Inputs, s => s.ToJson());
+        builder.OwnsMany(jts => jts.Outputs, s => s.ToJson());
         builder.OwnsMany(jts => jts.Properties, s => s.ToJson());
     }
 }

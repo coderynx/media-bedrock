@@ -1,10 +1,7 @@
-using MediaBedrock.Cli.Domain.Jobs;
-
 namespace MediaBedrock.Cli.Domain.JobTemplates;
 
 public sealed class JobTemplate
 {
-    private readonly List<Job> _jobs = [];
     private readonly List<JobTemplateStep> _steps = [];
     private List<JobTemplateInput> _inputs = [];
     private List<JobTemplateOutput> _outputs = [];
@@ -18,13 +15,12 @@ public sealed class JobTemplate
     public required JobTemplateName Name { get; init; }
     public JobTemplateVersion Version { get; init; } = new();
     public JobTemplateAuthor Author { get; init; } = new();
-    public string DisplayName { get; init; } = string.Empty;
-    public string Description { get; init; } = string.Empty;
-    public IReadOnlyList<JobTemplateInput> Inputs => _inputs.AsReadOnly();
-    public IReadOnlyList<JobTemplateOutput> Outputs => _outputs.AsReadOnly();
-    public IReadOnlyList<JobTemplateProperty> Properties => _properties.AsReadOnly();
-    public IReadOnlyList<JobTemplateStep> Steps => _steps.AsReadOnly();
-    public IReadOnlyList<Job> Jobs => _jobs.AsReadOnly();
+    public JobTemplateDisplayName DisplayName { get; init; } = new();
+    public JobTemplateDescription Description { get; init; } = new();
+    public IReadOnlyList<JobTemplateInput> Inputs => _inputs;
+    public IReadOnlyList<JobTemplateOutput> Outputs => _outputs;
+    public IReadOnlyList<JobTemplateProperty> Properties => _properties;
+    public IReadOnlyList<JobTemplateStep> Steps => _steps;
 
     public static JobTemplate Create(
         JobTemplateName name,
@@ -33,8 +29,8 @@ public sealed class JobTemplate
         List<JobTemplateInput> inputs,
         List<JobTemplateOutput> outputs,
         List<JobTemplateProperty> properties,
-        string displayName = "",
-        string description = "")
+        JobTemplateDisplayName? displayName = null,
+        JobTemplateDescription? description = null)
     {
         return new JobTemplate
         {
@@ -45,8 +41,8 @@ public sealed class JobTemplate
             _inputs = inputs,
             _outputs = outputs,
             _properties = properties,
-            DisplayName = displayName,
-            Description = description
+            DisplayName = displayName ?? new JobTemplateDisplayName(),
+            Description = description ?? new JobTemplateDescription()
         };
     }
 

@@ -49,8 +49,8 @@ public sealed class JobFactoryTests
             template: template,
             name: new JobTemplateStepName("Step1"),
             processorName: ProcessorName.Create("namespace/processor").Value,
-            sinks: [],
-            sources: [],
+            inputs: [],
+            outputs: [],
             properties: []);
 
         template.AddStepRange([step]);
@@ -104,8 +104,8 @@ public sealed class JobFactoryTests
             template: template,
             name: new JobTemplateStepName("Step1"),
             processorName: ProcessorName.Create("namespace/processor").Value,
-            sinks: [],
-            sources: [],
+            inputs: [],
+            outputs: [],
             properties: []);
 
         template.AddStepRange([step]);

@@ -4,9 +4,9 @@ namespace MediaBedrock.Cli.Domain.JobTemplates;
 
 public sealed class JobTemplateStep
 {
+    private List<JobTemplateStepInput> _inputs = [];
+    private List<JobTemplateStepOutput> _outputs = [];
     private List<JobTemplateStepProperty> _properties = [];
-    private List<JobTemplateStepSink> _sinks = [];
-    private List<JobTemplateStepSource> _sources = [];
 
     private JobTemplateStep()
     {
@@ -19,16 +19,16 @@ public sealed class JobTemplateStep
     public string Description { get; init; } = string.Empty;
     public required ProcessorName ProcessorName { get; init; }
 
-    public IReadOnlyList<JobTemplateStepSink> Sinks => _sinks.AsReadOnly();
-    public IReadOnlyList<JobTemplateStepSource> Sources => _sources.AsReadOnly();
+    public IReadOnlyList<JobTemplateStepInput> Inputs => _inputs.AsReadOnly();
+    public IReadOnlyList<JobTemplateStepOutput> Outputs => _outputs.AsReadOnly();
     public IReadOnlyList<JobTemplateStepProperty> Properties => _properties.AsReadOnly();
 
     public static JobTemplateStep Create(
         JobTemplate template,
         JobTemplateStepName name,
         ProcessorName processorName,
-        List<JobTemplateStepSink> sinks,
-        List<JobTemplateStepSource> sources,
+        List<JobTemplateStepInput> inputs,
+        List<JobTemplateStepOutput> outputs,
         List<JobTemplateStepProperty> properties,
         string displayName = "",
         string description = "")
@@ -39,8 +39,8 @@ public sealed class JobTemplateStep
             Template = template,
             Name = name,
             ProcessorName = processorName,
-            _sinks = sinks,
-            _sources = sources,
+            _inputs = inputs,
+            _outputs = outputs,
             _properties = properties,
             DisplayName = displayName,
             Description = description

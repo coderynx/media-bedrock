@@ -15,8 +15,8 @@ internal static class JobTemplateStepMappers
         return new JobTemplateManifestStep(
             name: stepName,
             processorName: processorName,
-            sinksMappings: dto.Sinks,
-            sourcesMappings: dto.Sources,
+            inputsMappings: dto.Inputs,
+            outputsMappings: dto.Outputs,
             properties: dto.Properties,
             displayName: dto.DisplayName,
             description: dto.Description);

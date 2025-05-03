@@ -27,7 +27,7 @@ public sealed class JobStepEntityConfiguration : IEntityTypeConfiguration<JobSte
             .HasConversion(name => name.ToString(), value => ProcessorName.Create(value).Value)
             .IsRequired();
 
-        builder.OwnsMany(s => s.Sinks, i =>
+        builder.OwnsMany(s => s.Inputs, i =>
         {
             i.Property(p => p.AssetName)
                 .HasConversion(name => name.Value, value => new JobAssetName(value))
@@ -36,7 +36,7 @@ public sealed class JobStepEntityConfiguration : IEntityTypeConfiguration<JobSte
             i.ToJson();
         });
 
-        builder.OwnsMany(s => s.Sources, s =>
+        builder.OwnsMany(s => s.Outputs, s =>
         {
             s.Property(p => p.AssetName)
                 .HasConversion(name => name.Value, value => new JobAssetName(value))

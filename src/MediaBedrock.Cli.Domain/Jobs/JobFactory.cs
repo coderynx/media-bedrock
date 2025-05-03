@@ -136,21 +136,21 @@ public sealed partial class JobFactory : IJobFactory
                 stepProperties.Add(JobStepProperty.Create(parameter.Name, value));
             }
 
-            var createJobStepSinks = s.Sinks.Select(im =>
+            var createStepInputs = s.Inputs.Select(im =>
             {
                 var assetName = new JobAssetName(im.Source);
-                return JobStepSink.Create(im.Name, assetName);
+                return JobStepInput.Create(im.Name, assetName);
             }).ToList();
 
-            if (createJobStepSinks.Any(i => i.IsFailure))
+            if (createStepInputs.Any(i => i.IsFailure))
             {
-                return createJobStepSinks.First(i => i.IsFailure).Error;
+                return createStepInputs.First(i => i.IsFailure).Error;
             }
 
-            var createStepOutputs = s.Sources.Select(om =>
+            var createStepOutputs = s.Outputs.Select(om =>
             {
                 var assetName = new JobAssetName(om.Destination);
-                return JobStepSource.Create(om.Name, assetName);
+                return JobStepOutput.Create(om.Name, assetName);
             }).ToList();
 
             if (createStepOutputs.Any(o => o.IsFailure))
@@ -169,8 +169,8 @@ public sealed partial class JobFactory : IJobFactory
                 name: createJobStepName.Value,
                 processorName: s.ProcessorName,
                 properties: stepProperties,
-                sinks: createJobStepSinks.Select(i => i.Value).ToList(),
-                sources: createStepOutputs.Select(o => o.Value).ToList());
+                inputs: createStepInputs.Select(i => i.Value).ToList(),
+                outputs: createStepOutputs.Select(o => o.Value).ToList());
 
             generatedSteps.Add(jobStep);
         }

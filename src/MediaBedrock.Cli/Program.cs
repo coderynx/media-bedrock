@@ -1,5 +1,6 @@
 ﻿using Cocona;
 using MediaBedrock.Cli.Application.Bootstrap;
+using MediaBedrock.Cli.Domain.Bootstrap;
 using MediaBedrock.Cli.Infrastructure.Bootstrap;
 using MediaBedrock.Cli.Presentation.Bootstrap;
 using Microsoft.Extensions.Configuration;
@@ -21,6 +22,7 @@ builder.Services.Configure<HostOptions>(options =>
     options.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.StopHost;
 });
 
+builder.Services.AddDomain();
 builder.Services.AddInfrastructure();
 builder.Services.AddApplication();
 

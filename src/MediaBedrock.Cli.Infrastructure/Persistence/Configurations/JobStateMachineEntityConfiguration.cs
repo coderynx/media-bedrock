@@ -1,4 +1,4 @@
-using MediaBedrock.Cli.Domain.Jobs;
+using MediaBedrock.Cli.Domain.JobsStateMachine;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -22,7 +22,7 @@ public sealed class JobStateMachineEntityConfiguration : IEntityTypeConfiguratio
             .HasConversion(id => id.Value, value => new JobStateMachineId(value))
             .ValueGeneratedNever();
 
-        builder.Property(jsm => jsm.Status)
+        builder.Property(jsm => jsm.ExecutionStatus)
             .HasConversion<string>();
     }
 }

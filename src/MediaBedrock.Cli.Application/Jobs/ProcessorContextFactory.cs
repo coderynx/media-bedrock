@@ -2,6 +2,7 @@ using Coderynx.Functional.Results;
 using MediaBedrock.Cli.Domain.JobAssets;
 using MediaBedrock.Cli.Domain.Jobs;
 using MediaBedrock.Cli.Domain.Jobs.Steps;
+using MediaBedrock.Cli.Domain.JobsStateMachine;
 using MediaBedrock.Cli.Domain.Processors.Interfaces;
 using MediaBedrock.Sdk.Processors;
 using Microsoft.Extensions.Logging;
@@ -35,7 +36,7 @@ public sealed class ProcessorContextFactory(
         }
 
         var processorInputs = new List<ProcessorInput>();
-        foreach (var input in stepStateMachine.StepSinks)
+        foreach (var input in stepStateMachine.StepInputs)
         {
             var resolveAsset = jobStateMachine.ResolveAsset(input.AssetName);
             if (!resolveAsset.IsSome)
@@ -54,7 +55,7 @@ public sealed class ProcessorContextFactory(
         }
 
         var processorOutputs = new List<ProcessorOutput>();
-        foreach (var output in stepStateMachine.StepSources)
+        foreach (var output in stepStateMachine.StepOutputs)
         {
             var resolveAsset = jobStateMachine.ResolveAsset(output.AssetName, JobAssetKind.Output);
 

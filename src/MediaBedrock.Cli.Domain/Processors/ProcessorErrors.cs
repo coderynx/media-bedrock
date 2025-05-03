@@ -5,6 +5,8 @@ namespace MediaBedrock.Cli.Domain.Processors;
 
 public static class ProcessorErrors
 {
+    public const string ExecutionFailedCode = "Processor.ExecutionFailed";
+
     public static Error NotFound(string name)
     {
         return new Error(
@@ -28,5 +30,13 @@ public static class ProcessorErrors
             ResultError: ResultError.InvalidInput,
             Code: "Processor.InvalidName",
             Message: $"The processor name '{name}' is invalid. It should be in the format 'namespace/name'.");
+    }
+
+    public static Error ExecutionFailed(string message)
+    {
+        return new Error(
+            ResultError: ResultError.Custom,
+            Code: ExecutionFailedCode,
+            Message: $"The processor execution failed with the following message: {message}");
     }
 }

@@ -7,8 +7,8 @@ public sealed record JobTemplateManifestStep
     public JobTemplateManifestStep(
         JobTemplateStepName name,
         ProcessorName processorName,
-        IReadOnlyDictionary<string, string> sinksMappings,
-        IReadOnlyDictionary<string, string> sourcesMappings,
+        IReadOnlyDictionary<string, string> inputsMappings,
+        IReadOnlyDictionary<string, string> outputsMappings,
         IReadOnlyDictionary<string, string> properties,
         string displayName = "",
         string description = "")
@@ -17,8 +17,8 @@ public sealed record JobTemplateManifestStep
         ProcessorName = processorName;
         DisplayName = displayName;
         Description = description;
-        SinksMappings = sinksMappings;
-        SourcesMappings = sourcesMappings;
+        InputsMappings = inputsMappings;
+        OutputsMappings = outputsMappings;
         Properties = properties;
     }
 
@@ -26,8 +26,8 @@ public sealed record JobTemplateManifestStep
     public ProcessorName ProcessorName { get; init; }
     public string DisplayName { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;
-    public IReadOnlyDictionary<string, string> SinksMappings { get; }
-    public IReadOnlyDictionary<string, string> SourcesMappings { get; }
+    public IReadOnlyDictionary<string, string> InputsMappings { get; }
+    public IReadOnlyDictionary<string, string> OutputsMappings { get; }
     public IReadOnlyDictionary<string, string> Properties { get; }
 
     public JobTemplateStep ToTemplateStep(JobTemplate template)
@@ -36,8 +36,8 @@ public sealed record JobTemplateManifestStep
             template: template,
             name: Name,
             processorName: ProcessorName,
-            sinks: SinksMappings.Select(i => new JobTemplateStepSink(i.Key, i.Value)).ToList(),
-            sources: SourcesMappings.Select(o => new JobTemplateStepSource(o.Key, o.Value)).ToList(),
+            inputs: InputsMappings.Select(i => new JobTemplateStepInput(i.Key, i.Value)).ToList(),
+            outputs: OutputsMappings.Select(o => new JobTemplateStepOutput(o.Key, o.Value)).ToList(),
             properties: Properties.Select(p => new JobTemplateStepProperty(p.Key, p.Value)).ToList(),
             displayName: DisplayName,
             description: Description);

@@ -1,6 +1,6 @@
 using MediaBedrock.Cli.Domain.JobAssets;
-using MediaBedrock.Cli.Domain.Jobs;
 using MediaBedrock.Cli.Domain.Jobs.Steps;
+using MediaBedrock.Cli.Domain.JobsStateMachine;
 using MediaBedrock.Cli.Domain.Processors;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -11,25 +11,40 @@ public sealed class JobStepStateMachineEntityConfiguration : IEntityTypeConfigur
 {
     public void Configure(EntityTypeBuilder<JobStepStateMachine> builder)
     {
-        builder.HasKey(jsm => jsm.Id);
+        builder.HasKey(jssm => jssm.Id);
 
-        builder.Property(jsm => jsm.Id)
+        builder.HasOne(jssm => jssm.JobStateMachine)
+            .WithMany(jsm => jsm.StepsStateMachines)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Property(jssm => jssm.Id)
             .HasConversion(id => id.Value, value => new JobStepStateMachineId(value))
             .ValueGeneratedNever();
 
-        builder.Property(jsm => jsm.StepName)
+        builder.Property(jssm => jssm.StepName)
             .HasConversion(name => name.ToString(), value => JobStepName.Create(value).Value)
             .IsRequired();
 
-        builder.Property(jsm => jsm.ProcessorName)
+        builder.Property(jssm => jssm.ProcessorName)
             .HasConversion(name => name.ToString(), value => ProcessorName.Create(value).Value)
             .IsRequired();
 
-        builder.Property(jsm => jsm.Status)
+        builder.Property(jssm => jssm.ExecutionStatus)
             .HasConversion<string>()
             .IsRequired();
 
-        builder.OwnsMany(s => s.StepSinks, i =>
+        builder.OwnsOne(jssm => jssm.ExecutionError, e =>
+        {
+            e.Property(p => p.Kind)
+                .HasConversion<string>()
+                .IsRequired();
+
+            e.Property(p => p.Message)
+                .HasMaxLength(500)
+                .IsRequired(false);
+        });
+
+        builder.OwnsMany(jssm => jssm.StepInputs, i =>
         {
             i.Property(p => p.AssetName)
                 .HasConversion(name => name.Value, value => new JobAssetName(value))
@@ -38,7 +53,7 @@ public sealed class JobStepStateMachineEntityConfiguration : IEntityTypeConfigur
             i.ToJson();
         });
 
-        builder.OwnsMany(s => s.StepSources, s =>
+        builder.OwnsMany(jssm => jssm.StepOutputs, s =>
         {
             s.Property(p => p.AssetName)
                 .HasConversion(name => name.Value, value => new JobAssetName(value))
@@ -47,6 +62,6 @@ public sealed class JobStepStateMachineEntityConfiguration : IEntityTypeConfigur
             s.ToJson();
         });
 
-        builder.OwnsMany(s => s.StepProperties, p => p.ToJson());
+        builder.OwnsMany(jssm => jssm.StepProperties, p => p.ToJson());
     }
 }

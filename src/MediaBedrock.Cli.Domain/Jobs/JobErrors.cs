@@ -1,6 +1,7 @@
 using Coderynx.Functional;
 using Coderynx.Functional.Results;
 using MediaBedrock.Cli.Domain.Jobs.Steps;
+using MediaBedrock.Cli.Domain.JobsStateMachine;
 
 namespace MediaBedrock.Cli.Domain.Jobs;
 
@@ -8,21 +9,13 @@ public static class JobErrors
 {
     public const string PropertyNotFoundCode = "Job.PropertyNotFound";
 
-    public const string InvalidIdCode = "Job.InvalidId";
-
     public const string InvalidStepNameCode = "Job.InvalidStepName";
 
     public const string DeserializationFailedCode = "Job.DeserializationFailed";
 
-    public const string ContainerConflictCode = "Job.ContainerConflict";
+    public const string InvalidInputNameCode = "Job.InvalidInputName";
 
-    public const string ContainerRemovalFailedCode = "Job.ContainerRemovalFailed";
-
-    public const string InvalidAssetNameCode = "Job.InvalidAssetName";
-
-    public const string InvalidSinkNameCode = "Job.InvalidSinkName";
-
-    public const string InvalidSourceNameCode = "Job.InvalidSourceName";
+    public const string InvalidOutputNameCode = "Job.InvalidOutputName";
 
     public const string StepNotFoundCode = "Job.StepNotFound";
 
@@ -36,14 +29,6 @@ public static class JobErrors
             ResultError: ResultError.InvalidInput,
             Code: PropertyNotFoundCode,
             Message: $"The job property '{key}' was not found. Please check the property name and try again.");
-    }
-
-    public static Error InvalidId(Guid id)
-    {
-        return new Error(
-            ResultError: ResultError.InvalidInput,
-            Code: InvalidIdCode,
-            Message: $"The job ID '{id}' is invalid. Please check the ID and try again.");
     }
 
     public static Error InvalidStepName(string name)
@@ -70,44 +55,20 @@ public static class JobErrors
             Message: $"The job deserialization failed for the serialized job: {serialized}");
     }
 
-    public static Error ContainerConflict(JobId jobId)
+    public static Error InvalidInputName(string name)
     {
         return new Error(
             ResultError: ResultError.InvalidInput,
-            Code: ContainerConflictCode,
-            Message: $"A job container with ID '{jobId}' already exists.");
+            Code: InvalidInputNameCode,
+            Message: $"The job step input name '{name}' is invalid. Please check the name and try again.");
     }
 
-    public static Error ContainerRemovalFailed(JobId jobId)
+    public static Error InvalidOutputName(string name)
     {
         return new Error(
             ResultError: ResultError.InvalidInput,
-            Code: ContainerRemovalFailedCode,
-            Message: $"Failed to remove the job container with ID '{jobId}'.");
-    }
-
-    public static Error InvalidAssetName(string assetName)
-    {
-        return new Error(
-            ResultError: ResultError.InvalidInput,
-            Code: InvalidAssetNameCode,
-            Message: $"The job asset name '{assetName}' is invalid. Please check the name and try again.");
-    }
-
-    public static Error InvalidSinkName(string name)
-    {
-        return new Error(
-            ResultError: ResultError.InvalidInput,
-            Code: InvalidSinkNameCode,
-            Message: $"The job step sink name '{name}' is invalid. Please check the name and try again.");
-    }
-
-    public static Error InvalidSourceName(string name)
-    {
-        return new Error(
-            ResultError: ResultError.InvalidInput,
-            Code: InvalidSourceNameCode,
-            Message: $"The job step source name '{name}' is invalid. Please check the name and try again.");
+            Code: InvalidOutputNameCode,
+            Message: $"The job step output '{name}' is invalid. Please check the name and try again.");
     }
 
     public static Error StepNotFound(JobStepName name)

@@ -10,8 +10,8 @@ public sealed record JobTemplateManifest
         List<JobTemplateManifestInput> inputs,
         List<JobTemplateManifestOutput> outputs,
         List<JobTemplateManifestStep> steps,
-        string displayName = "",
-        string description = "")
+        JobTemplateDisplayName? displayName = null,
+        JobTemplateDescription? description = null)
     {
         Name = name;
         Version = version;
@@ -20,15 +20,15 @@ public sealed record JobTemplateManifest
         Inputs = inputs.AsReadOnly();
         Outputs = outputs.AsReadOnly();
         Steps = steps.AsReadOnly();
-        DisplayName = displayName;
-        Description = description;
+        DisplayName = displayName ?? new JobTemplateDisplayName();
+        Description = description ?? new JobTemplateDescription();
     }
 
     public JobTemplateName Name { get; }
     public JobTemplateVersion Version { get; }
     public JobTemplateAuthor Author { get; }
-    public string DisplayName { get; }
-    public string Description { get; }
+    public JobTemplateDisplayName DisplayName { get; }
+    public JobTemplateDescription Description { get; }
     public IReadOnlyList<JobTemplateManifestProperty> Properties { get; }
     public IReadOnlyList<JobTemplateManifestInput> Inputs { get; }
     public IReadOnlyList<JobTemplateManifestOutput> Outputs { get; }
