@@ -194,7 +194,7 @@ public sealed class JobsStateMachinesService(
 
             await messageBus.PublishAsync(jobStepFailed, cancellationToken);
 
-            logger.LogError("Failed to update asset pool for job {JobId}", updateAssetPool.Error.Message);
+            logger.LogError("Failed to update asset pool for job {JobId}: {ErrorMessage}", jobStateMachine.Job.Id, updateAssetPool.Error.Message);
             return updateAssetPool.Error;
         }
 
