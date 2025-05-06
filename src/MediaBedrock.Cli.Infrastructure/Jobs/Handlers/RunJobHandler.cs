@@ -6,9 +6,9 @@ namespace MediaBedrock.Cli.Infrastructure.Jobs.Handlers;
 
 public sealed class RunHandler(IJobsStateMachinesService jobStateMachineService) : IMessageHandler<RunJob>
 {
-    public async Task HandleAsync(RunJob message, CancellationToken ct = default)
+    public async Task HandleAsync(RunJob message, CancellationToken cancellationToken = default)
     {
-        var run = await jobStateMachineService.StartJobAsync(message.JobStateMachineId, ct);
+        var run = await jobStateMachineService.StartJobAsync(message.JobStateMachineId, cancellationToken);
         if (run.IsFailure)
         {
             throw new InvalidOperationException(

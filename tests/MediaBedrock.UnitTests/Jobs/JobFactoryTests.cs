@@ -30,7 +30,7 @@ public sealed class JobFactoryTests
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        result.Error.Code.ShouldBe(JobTemplateErrors.NotFoundCode);
+        result.Error.Code.ShouldBe(JobTemplateErrorCodes.NotFound);
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public sealed class JobFactoryTests
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        result.Error.Code.ShouldBe(JobTemplateErrors.NotFoundCode);
+        result.Error.Code.ShouldBe(JobTemplateErrorCodes.NotFound);
     }
 
     [Fact]

@@ -1,49 +1,49 @@
-using Coderynx.Functional;
-using Coderynx.Functional.Results;
+using Coderynx.Functional.Results.Errors;
 
 namespace MediaBedrock.Cli.Domain.Jobs.Parameters;
+
+public static class JobParameterErrorCodes
+{
+    public const string InvalidInput = "JobParameter.InvalidInput";
+    public const string InvalidOutput = "JobParameter.InvalidOutput";
+    public const string InvalidProperty = "JobParameter.InvalidProperty";
+    public const string NotFound = "JobParameter.NotFound";
+}
 
 public static class JobParameterErrors
 {
     public static Error InputParameterNotFound(string inputName)
     {
-        return new Error(
-            ResultError: ResultError.InvalidInput,
-            Code: "JobParameter.InputParameterNotFound",
-            Message:
-            $"The job input parameter '{inputName}' was not found. Please check the input name and try again.");
+        return Error.NotFound(
+            code: JobParameterErrorCodes.NotFound,
+            message: $"The job input parameter '{inputName}' was not found.");
     }
 
     public static Error OutputParameterNotFound(string outputName)
     {
-        return new Error(
-            ResultError: ResultError.InvalidInput,
-            Code: "JobParameter.OutputParameterNotFound",
-            Message:
-            $"The job output parameter '{outputName}' was not found. Please check the output name and try again.");
+        return Error.NotFound(
+            code: JobParameterErrorCodes.NotFound,
+            message: $"The job output parameter '{outputName}' was not found.");
     }
 
     public static Error InvalidInputParameter(string inputName)
     {
-        return new Error(
-            ResultError: ResultError.InvalidInput,
-            Code: "JobParameter.InvalidInputString",
-            Message: $"The job input parameter '{inputName}' is invalid. Please check the format and try again.");
+        return Error.InvalidInput(
+            code: JobParameterErrorCodes.InvalidInput,
+            message: $"The job input parameter '{inputName}' is invalid.");
     }
 
     public static Error InvalidOutputParameter(string outputName)
     {
-        return new Error(
-            ResultError: ResultError.InvalidInput,
-            Code: "JobParameter.InvalidOutputString",
-            Message: $"The job output parameter '{outputName}' is invalid. Please check the format and try again.");
+        return Error.InvalidInput(
+            code: JobParameterErrorCodes.InvalidOutput,
+            message: $"The job output parameter '{outputName}' is invalid.");
     }
 
     public static Error InvalidPropertyParameter(string propertyName)
     {
-        return new Error(
-            ResultError: ResultError.InvalidInput,
-            Code: "JobParameter.InvalidPropertyString",
-            Message: $"The job property parameter '{propertyName}' is invalid. Please check the format and try again.");
+        return Error.InvalidInput(
+            code: JobParameterErrorCodes.InvalidProperty,
+            message: $"The job property parameter '{propertyName}' is invalid.");
     }
 }

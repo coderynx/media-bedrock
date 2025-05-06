@@ -22,7 +22,7 @@ public sealed class BatchJobsCommands(
         var readTemplateFromYaml = await ReadTemplatesFromYamlAsync(templatesPaths);
         if (readTemplateFromYaml.IsFailure)
         {
-            AnsiConsole.MarkupLine($"Failed to read job template: {readTemplateFromYaml.Error}");
+            AnsiConsole.MarkupLine(readTemplateFromYaml.Error.Message);
             return;
         }
 

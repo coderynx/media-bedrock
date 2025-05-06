@@ -8,7 +8,7 @@ public sealed record JobOutputId
     {
         if (value == Guid.Empty)
         {
-            throw new DomainException(JobTemplateErrors.InvalidOutputIdCode, "Output ID cannot be empty.");
+            throw JobTemplateErrors.InvalidInputId();
         }
 
         Value = value;

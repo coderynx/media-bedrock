@@ -3,9 +3,25 @@ namespace MediaBedrock.Cli.Domain.Jobs;
 /// <summary>
 ///     Represents a unique identifier for a job.
 /// </summary>
-/// <param name="Value">The unique identifier value.</param>
-public sealed record JobId(Guid Value)
+public sealed record JobId
 {
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="JobId" /> class with the specified unique identifier.
+    /// </summary>
+    /// <param name="Value">The unique identifier value.</param>
+    public JobId(Guid Value)
+    {
+        if (Value == Guid.Empty)
+        {
+            throw JobErrors.InvalidId();
+        }
+
+        this.Value = Value;
+    }
+
+    /// <summary>The unique identifier value.</summary>
+    public Guid Value { get; }
+    
     /// <summary>
     ///     Creates a new instance of the <see cref="JobId" /> class with a new unique identifier.
     /// </summary>

@@ -1,3 +1,4 @@
+
 namespace MediaBedrock.Cli.Domain.JobsStateMachine;
 
 public sealed record JobStepStateMachineId
@@ -6,7 +7,7 @@ public sealed record JobStepStateMachineId
     {
         if (value == Guid.Empty)
         {
-            throw new DomainException(JobStateMachineErrors.InvalidStepIdCode, "Step ID cannot be empty.");
+            throw JobStateMachineErrors.InvalidStepId();
         }
 
         Value = value;
@@ -17,5 +18,5 @@ public sealed record JobStepStateMachineId
         Value = Guid.CreateVersion7();
     }
 
-    public Guid Value { get; init; }
+    public Guid Value { get; }
 }

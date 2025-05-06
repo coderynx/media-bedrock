@@ -6,7 +6,7 @@ public sealed record JobAssetId
     {
         if (value == Guid.Empty)
         {
-            throw new DomainException(JobAssetErrors.InvalidAssetIdCode, "Asset ID cannot be empty.");
+            throw JobAssetErrors.InvalidAssetId();
         }
 
         Value = value;

@@ -6,7 +6,7 @@ public sealed record JobTemplateId
     {
         if (value == Guid.Empty)
         {
-            throw new DomainException(JobTemplateErrors.InvalidIdCode, "Job template ID cannot be empty.");
+            throw JobTemplateErrors.InvalidId();
         }
 
         Value = value;

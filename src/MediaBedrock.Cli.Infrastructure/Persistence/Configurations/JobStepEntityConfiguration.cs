@@ -20,11 +20,11 @@ public sealed class JobStepEntityConfiguration : IEntityTypeConfiguration<JobSte
             .HasConversion(id => id.Value, value => new JobStepId(value));
 
         builder.Property(s => s.Name)
-            .HasConversion(name => name.Value, value => JobStepName.Create(value).Value)
+            .HasConversion(name => name.Value, value => new JobStepName(value))
             .IsRequired();
 
         builder.Property(s => s.ProcessorName)
-            .HasConversion(name => name.ToString(), value => ProcessorName.Create(value).Value)
+            .HasConversion(name => name.ToString(), value => new ProcessorName(value))
             .IsRequired();
 
         builder.OwnsMany(s => s.Inputs, i =>

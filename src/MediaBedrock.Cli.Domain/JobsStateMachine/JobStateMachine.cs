@@ -72,8 +72,8 @@ public sealed class JobStateMachine
         var asset = _assetsPool.FirstOrDefault(a => a.Name.Equals(name));
 
         return asset is null
-            ? Option<JobAsset>.None()
-            : Option<JobAsset>.Some(asset);
+            ? Option.None<JobAsset>()
+            : Option.Some(asset);
     }
 
     public Option<JobAsset> ResolveAsset(JobAssetName name, JobAssetKind kind)
@@ -81,8 +81,8 @@ public sealed class JobStateMachine
         var asset = _assetsPool.FirstOrDefault(a => a.Name.Equals(name) && a.Kind == kind);
 
         return asset is null
-            ? Option<JobAsset>.None()
-            : Option<JobAsset>.Some(asset);
+            ? Option.None<JobAsset>()
+            : Option.Some(asset);
     }
 
     public bool DoesAssetExist(JobAssetName name)

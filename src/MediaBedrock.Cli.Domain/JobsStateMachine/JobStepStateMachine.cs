@@ -1,3 +1,4 @@
+using Coderynx.Functional.Results;
 using MediaBedrock.Cli.Domain.Jobs.Steps;
 using MediaBedrock.Cli.Domain.Processors;
 
@@ -38,19 +39,46 @@ public sealed class JobStepStateMachine
         };
     }
 
-    public void TransitionToRunning()
+    public Result TransitionToRunning()
     {
+        if (ExecutionStatus is not JobStepExecutionStatus.Pending)
+        {
+            return JobStateMachineErrors.InvalidStepExecutionStatusTransition(
+                currentStatus: ExecutionStatus,
+                targetStatus: JobStepExecutionStatus.Pending);
+        }
+        
         ExecutionStatus = JobStepExecutionStatus.Running;
+        
+        return Result.Updated();
     }
 
-    public void TransitionToCompleted()
+    public Result TransitionToCompleted()
     {
+        if (ExecutionStatus is not JobStepExecutionStatus.Running)
+        {
+            return JobStateMachineErrors.InvalidStepExecutionStatusTransition(
+                currentStatus: ExecutionStatus,
+                targetStatus: JobStepExecutionStatus.Running);
+        }
+        
         ExecutionStatus = JobStepExecutionStatus.Completed;
+        
+        return Result.Updated();
     }
 
-    public void TransitionToFailed(JobStepExecutionError executionError)
+    public Result TransitionToFailed(JobStepExecutionError executionError)
     {
+        if (ExecutionStatus is not JobStepExecutionStatus.Running)
+        {
+            return JobStateMachineErrors.InvalidStepExecutionStatusTransition(
+                currentStatus: ExecutionStatus,
+                targetStatus: JobStepExecutionStatus.Running);
+        }
+        
         ExecutionStatus = JobStepExecutionStatus.Failed;
         ExecutionError = executionError;
+        
+        return Result.Updated();
     }
 }

@@ -1,9 +1,23 @@
 namespace MediaBedrock.Cli.Domain.JobsStateMachine;
 
-public sealed record JobStateMachineId(Guid Value)
+public sealed record JobStateMachineId
 {
+    public JobStateMachineId(Guid value)
+    {
+        if (value == Guid.Empty)
+        {
+            throw JobStateMachineErrors.InvalidId();
+        }
+
+        Value = value;
+    }
+
+    public Guid Value { get; }
+
     public static JobStateMachineId Create()
     {
         return new JobStateMachineId(Guid.CreateVersion7());
     }
+
+    public override string ToString() => Value.ToString();
 }

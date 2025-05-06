@@ -1,97 +1,83 @@
-using Coderynx.Functional;
-using Coderynx.Functional.Results;
+using Coderynx.Functional.Results.Errors;
 using MediaBedrock.Cli.Domain.Jobs.Steps;
 using MediaBedrock.Cli.Domain.JobsStateMachine;
 
 namespace MediaBedrock.Cli.Domain.Jobs;
 
+public static class JobErrorCodes
+{
+    public const string PropertyNotFound = "Job.PropertyNotFound";
+    public const string InvalidStepName = "Job.InvalidStepName";
+    public const string InvalidInputName = "Job.InvalidInputName";
+    public const string InvalidOutputName = "Job.InvalidOutputName";
+    public const string StepNotFound = "Job.StepNotFound";
+    public const string NotFound = "Job.NotFound";
+    public const string StateMachineNotFound = "Job.StateMachineNotFound";
+    public const string InvalidId = "Job.InvalidId";
+}
+
 public static class JobErrors
 {
-    public const string PropertyNotFoundCode = "Job.PropertyNotFound";
-
-    public const string InvalidStepNameCode = "Job.InvalidStepName";
-
-    public const string DeserializationFailedCode = "Job.DeserializationFailed";
-
-    public const string InvalidInputNameCode = "Job.InvalidInputName";
-
-    public const string InvalidOutputNameCode = "Job.InvalidOutputName";
-
-    public const string StepNotFoundCode = "Job.StepNotFound";
-
-    public const string NotFoundCode = "Job.NotFound";
-
-    public const string StateMachineNotFoundCode = "Job.StateMachineNotFound";
-
     public static Error PropertyNotFound(string key)
     {
-        return new Error(
-            ResultError: ResultError.InvalidInput,
-            Code: PropertyNotFoundCode,
-            Message: $"The job property '{key}' was not found. Please check the property name and try again.");
+        return Error.InvalidInput(
+            code: JobErrorCodes.PropertyNotFound,
+            message: $"The job property '{key}' was not found. Please check the property name and try again.");
     }
 
     public static Error InvalidStepName(string name)
     {
-        return new Error(
-            ResultError: ResultError.InvalidInput,
-            Code: InvalidStepNameCode,
-            Message: $"The job step name '{name}' is invalid. Please check the name and try again.");
+        return Error.InvalidInput(
+            code: JobErrorCodes.InvalidStepName,
+            message: $"The job step name '{name}' is invalid. Please check the name and try again.");
     }
 
     public static Error SerializationFailed(string message)
     {
-        return new Error(
-            ResultError: ResultError.InvalidInput,
-            Code: "Job.SerializationFailed",
-            Message: $"The job serialization failed with error: {message}");
-    }
-
-    public static Error DeserializationFailed(string serialized)
-    {
-        return new Error(
-            ResultError: ResultError.InvalidInput,
-            Code: DeserializationFailedCode,
-            Message: $"The job deserialization failed for the serialized job: {serialized}");
+        return Error.InvalidInput(
+            code: "Job.SerializationFailed",
+            message: $"The job serialization failed with error: {message}");
     }
 
     public static Error InvalidInputName(string name)
     {
-        return new Error(
-            ResultError: ResultError.InvalidInput,
-            Code: InvalidInputNameCode,
-            Message: $"The job step input name '{name}' is invalid. Please check the name and try again.");
+        return Error.InvalidInput(
+            code: JobErrorCodes.InvalidInputName,
+            message: $"The job step input name '{name}' is invalid. Please check the name and try again.");
     }
 
     public static Error InvalidOutputName(string name)
     {
-        return new Error(
-            ResultError: ResultError.InvalidInput,
-            Code: InvalidOutputNameCode,
-            Message: $"The job step output '{name}' is invalid. Please check the name and try again.");
+        return Error.InvalidInput(
+            code: JobErrorCodes.InvalidOutputName,
+            message: $"The job step output '{name}' is invalid. Please check the name and try again.");
     }
 
     public static Error StepNotFound(JobStepName name)
     {
-        return new Error(
-            ResultError: ResultError.InvalidInput,
-            Code: StepNotFoundCode,
-            Message: $"The job step '{name}' was not found. Please check the step name and try again.");
+        return Error.InvalidInput(
+            code: JobErrorCodes.StepNotFound,
+            message: $"The job step '{name}' was not found. Please check the step name and try again.");
     }
 
     public static Error NotFound(JobId jobId)
     {
-        return new Error(
-            ResultError: ResultError.NotFound,
-            Code: NotFoundCode,
-            Message: $"The job with ID '{jobId}' was not found.");
+        return Error.NotFound(
+            code: JobErrorCodes.NotFound,
+            message: $"The job with ID '{jobId}' was not found.");
     }
 
     public static Error StateMachineNotFound(JobStateMachineId stateMachineId)
     {
-        return new Error(
-            ResultError: ResultError.NotFound,
-            Code: StateMachineNotFoundCode,
-            Message: $"The job state machine with ID '{stateMachineId}' was not found.");
+        return Error.NotFound(
+            code: JobErrorCodes.StateMachineNotFound,
+            message: $"The job state machine with ID '{stateMachineId}' was not found.");
+    }
+
+    public static Error InvalidId()
+    {
+        return Error.InvalidInput(
+            code: JobErrorCodes.InvalidId,
+            message: "The job ID is invalid. Please check the ID and try again.");
     }
 }

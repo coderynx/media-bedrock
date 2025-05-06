@@ -8,7 +8,7 @@ public sealed record JobInputId
     {
         if (value == Guid.Empty)
         {
-            throw new DomainException(JobTemplateErrors.InvalidInputIdCode, "Input ID cannot be empty.");
+            throw JobTemplateErrors.InvalidInputId();
         }
 
         Value = value;
@@ -19,5 +19,5 @@ public sealed record JobInputId
         Value = Guid.CreateVersion7();
     }
 
-    public Guid Value { get; init; }
+    public Guid Value { get; }
 }

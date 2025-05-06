@@ -4,5 +4,5 @@ namespace MediaBedrock.Cli.Infrastructure.Messaging;
 
 public interface IMessageHandler<in TJobMessage> where TJobMessage : JobMessageBase
 {
-    Task HandleAsync(TJobMessage message, CancellationToken ct = default);
+    Task HandleAsync(TJobMessage message, CancellationToken cancellationToken = default);
 }

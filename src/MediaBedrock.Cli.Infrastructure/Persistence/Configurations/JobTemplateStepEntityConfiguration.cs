@@ -20,7 +20,7 @@ public sealed class JobTemplateStepEntityConfiguration : IEntityTypeConfiguratio
             .IsRequired();
 
         builder.Property(jts => jts.ProcessorName)
-            .HasConversion(name => name.ToString(), value => ProcessorName.Create(value).Value);
+            .HasConversion(name => name.ToString(), value => new ProcessorName(value));
 
         builder.Property(jts => jts.DisplayName)
             .HasMaxLength(100)

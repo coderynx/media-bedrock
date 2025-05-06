@@ -11,10 +11,9 @@ public sealed record JobInputParameter(string Name, string Uri)
             .Select(kvp => kvp.Split('=', StringSplitOptions.RemoveEmptyEntries))
             .ToArray();
 
-        var isInvalid = parameters.Any(kvp =>
-            kvp.Length != 2 ||
-            string.IsNullOrWhiteSpace(kvp[0]) ||
-            string.IsNullOrWhiteSpace(kvp[1]));
+        var isInvalid = parameters.Any(kvp => kvp.Length is not 2 ||
+                                              string.IsNullOrWhiteSpace(kvp[0]) ||
+                                              string.IsNullOrWhiteSpace(kvp[1]));
 
         if (isInvalid)
         {

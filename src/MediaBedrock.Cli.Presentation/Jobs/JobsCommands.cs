@@ -1,4 +1,6 @@
 using Cocona;
+using Coderynx.Functional.Results;
+using Coderynx.Functional.Results.Successes;
 using MediaBedrock.Cli.Application.Jobs.Interfaces;
 using MediaBedrock.Cli.Application.JobTemplates.Interfaces;
 using MediaBedrock.Cli.Domain.Jobs.Parameters;
@@ -14,12 +16,34 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace MediaBedrock.Cli.Presentation.Jobs;
 
-public sealed class JobsCommands(IJobsService jobsService, IJobTemplatesService jobTemplatesService)
+public sealed class JobsCommands(
+    IJobsService jobsService,
+    IJobTemplatesService jobTemplatesService,
+    IJobsStateMachinesService jobsStateMachinesService)
 {
     private readonly IDeserializer _deserializer = new DeserializerBuilder()
         .WithTypeConverter(new ReadOnlyDictionaryStringStringYamlTypeConverter())
         .WithNamingConvention(UnderscoredNamingConvention.Instance)
         .Build();
+
+    [Command("executions")]
+    public async Task GetExecutions(
+        [Argument(Name = "template-name", Description = "The name of the job template")]
+        string templateName)
+    {
+        var jobTemplateName = new JobTemplateName(templateName);
+
+        var stateMachines = await jobsStateMachinesService.GetAsync(jobTemplateName);
+        foreach (var jobStateMachine in stateMachines)
+        {
+            var tree = new Tree("Job executions");
+            tree.AddNode($"Id: [purple_2]{jobStateMachine.Id}[/]");
+            tree.AddNode($"Template name: [purple_2]{jobStateMachine.Job.Template.Name}[/]");
+            tree.AddNode($"Status: [purple_2]{jobStateMachine.ExecutionStatus.ToString()}[/]");
+
+            AnsiConsole.Write(tree);
+        }
+    }
 
     [Command("take-file")]
     public async Task TakeFile(
@@ -38,28 +62,28 @@ public sealed class JobsCommands(IJobsService jobsService, IJobTemplatesService 
 
         var yaml = await File.ReadAllTextAsync(templatePath);
 
-        JobTemplateManifestDto? dto;
-        try
+        var deserializeManifest = Result.TryCatch(
+            onTry: () => _deserializer.Deserialize<JobTemplateManifestDto>(yaml),
+            onSuccess: Success.Created,
+            onCatch: _ => JobTemplateErrors.ManifestDeserializationFailed(templatePath));
+        
+        if (deserializeManifest.IsFailure)
         {
-            dto = _deserializer.Deserialize<JobTemplateManifestDto>(yaml);
-        }
-        catch (Exception e)
-        {
-            AnsiConsole.MarkupLine($"[red]Failed to deserialize job template: {e.Message}[/]");
+            AnsiConsole.MarkupLine($"[red]Failed to deserialize job template: {deserializeManifest.Error.Message}[/]");
             return;
         }
 
-        var manifest = dto.ToDomain();
-        var addTemplate = await jobTemplatesService.CreateAsync(manifest);
-
-        if (addTemplate.IsFailure)
+        var manifest = deserializeManifest.Value.ToDomain();
+        
+        var createTemplate = await jobTemplatesService.CreateAsync(manifest);
+        if (createTemplate.IsFailure)
         {
-            AnsiConsole.MarkupLine($"[red]Failed to add the job template: {addTemplate.Error.Message}[/]");
+            AnsiConsole.MarkupLine($"[red]Failed to add the job template: {createTemplate.Error.Message}[/]");
             return;
         }
 
-        var jobParameters = await CreateParameters(
-            templateName: addTemplate.Value.Name,
+        var jobParameters = await CreateParametersAsync(
+            templateName: createTemplate.Value.Name,
             inputs: inputs,
             outputs: outputs,
             properties: properties,
@@ -71,7 +95,7 @@ public sealed class JobsCommands(IJobsService jobsService, IJobTemplatesService 
             return;
         }
 
-        var createJob = await jobsService.CreateAsync(addTemplate.Value, jobParameters);
+        var createJob = await jobsService.CreateAsync(createTemplate.Value, jobParameters);
         if (createJob.IsFailure)
         {
             AnsiConsole.MarkupLine($"[red]Failed to create the job: {createJob.Error.Message}[/]");
@@ -109,7 +133,7 @@ public sealed class JobsCommands(IJobsService jobsService, IJobTemplatesService 
 
         var template = getTemplate.ValueOrThrow();
 
-        var jobParameters = await CreateParameters(
+        var jobParameters = await CreateParametersAsync(
             templateName: template.Name,
             inputs: inputs,
             outputs: outputs,
@@ -136,7 +160,19 @@ public sealed class JobsCommands(IJobsService jobsService, IJobTemplatesService 
         }
     }
 
-    private async Task<JobParameters?> CreateParameters(
+    [Command("clear-pending-execution")]
+    public async Task ClearPendingExecution(
+        [Argument(Name = "template-name", Description = "The name of the job template")]
+        string templateName)
+    {
+        var jobTemplateName = new JobTemplateName(templateName);
+
+        await jobsStateMachinesService.DeleteAsync(jobTemplateName);
+
+        AnsiConsole.MarkupLine($"[green]Cleared pending executions for template: {templateName}[/]");
+    }
+
+    private async Task<JobParameters?> CreateParametersAsync(
         JobTemplateName templateName,
         string inputs,
         string outputs,

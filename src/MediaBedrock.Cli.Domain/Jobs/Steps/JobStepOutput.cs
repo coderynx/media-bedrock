@@ -19,12 +19,12 @@ public sealed record JobStepOutput
             return JobErrors.InvalidOutputName(name);
         }
 
-        var jonStepSource = new JobStepOutput
+        var jobStepSource = new JobStepOutput
         {
             Name = name,
             AssetName = assetName
         };
 
-        return Result.Created(jonStepSource);
+        return Result.Created(jobStepSource);
     }
 }

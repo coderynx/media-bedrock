@@ -9,7 +9,7 @@ public sealed class JobAsset
     private JobAsset()
     {
     }
-
+    
     public required JobAssetId Id { get; init; }
     public required JobStateMachine JobStateMachine { get; init; }
     public required JobAssetName Name { get; init; }

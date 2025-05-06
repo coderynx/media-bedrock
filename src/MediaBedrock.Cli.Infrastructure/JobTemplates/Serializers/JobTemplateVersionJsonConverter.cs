@@ -20,7 +20,7 @@ public sealed class JobTemplateVersionJsonConverter : JsonConverter<JobTemplateV
         var createJobTemplateVersion = JobTemplateVersion.Create(value);
         if (createJobTemplateVersion.IsFailure)
         {
-            throw new JsonException(createJobTemplateVersion.Error.Message);
+            throw createJobTemplateVersion.Error;
         }
 
         return createJobTemplateVersion.Value;

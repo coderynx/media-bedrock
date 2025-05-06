@@ -22,11 +22,11 @@ public sealed class JobStepStateMachineEntityConfiguration : IEntityTypeConfigur
             .ValueGeneratedNever();
 
         builder.Property(jssm => jssm.StepName)
-            .HasConversion(name => name.ToString(), value => JobStepName.Create(value).Value)
+            .HasConversion(name => name.ToString(), value => new JobStepName(value))
             .IsRequired();
 
         builder.Property(jssm => jssm.ProcessorName)
-            .HasConversion(name => name.ToString(), value => ProcessorName.Create(value).Value)
+            .HasConversion(name => name.ToString(), value => new ProcessorName(value))
             .IsRequired();
 
         builder.Property(jssm => jssm.ExecutionStatus)
@@ -35,7 +35,7 @@ public sealed class JobStepStateMachineEntityConfiguration : IEntityTypeConfigur
 
         builder.OwnsOne(jssm => jssm.ExecutionError, e =>
         {
-            e.Property(p => p.Kind)
+            e.Property(p => p.Reason)
                 .HasConversion<string>()
                 .IsRequired();
 

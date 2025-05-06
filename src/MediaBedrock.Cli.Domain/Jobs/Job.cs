@@ -1,5 +1,6 @@
 using MediaBedrock.Cli.Domain.Jobs.Steps;
 using MediaBedrock.Cli.Domain.JobTemplates;
+using MediaBedrock.Cli.Domain.Processors;
 
 namespace MediaBedrock.Cli.Domain.Jobs;
 
@@ -33,8 +34,13 @@ public sealed class Job
         };
     }
 
-    public void AddStepRange(IEnumerable<JobStep> steps)
+    public void CreateStep(JobStepName name,
+        ProcessorName processorName,
+        List<JobStepProperty> properties,
+        List<JobStepInput> inputs,
+        List<JobStepOutput> outputs)
     {
-        _steps.AddRange(steps);
+        var step = JobStep.Create(this, name, processorName, properties, inputs, outputs);
+        _steps.Add(step);
     }
 }

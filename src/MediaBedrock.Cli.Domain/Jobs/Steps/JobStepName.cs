@@ -4,21 +4,21 @@ namespace MediaBedrock.Cli.Domain.Jobs.Steps;
 
 public sealed record JobStepName
 {
-    private JobStepName()
-    {
-    }
-
-    public required string Value { get; init; }
-
-    public static Result<JobStepName> Create(string name)
+    public JobStepName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            return JobErrors.InvalidStepName(name);
+            throw JobErrors.InvalidStepName(name);
         }
 
-        var stepName = new JobStepName { Value = name };
-        return Result.Created(stepName);
+        Value = name;
+    }
+
+    public string Value { get; }
+
+    public static Result<JobStepName> Create(string name)
+    {
+        return Result.TryCatch(() => new JobStepName(name));
     }
 
     public override string ToString()

@@ -7,6 +7,6 @@ namespace MediaBedrock.Cli.Application.JobTemplates.Interfaces;
 
 public interface IJobTemplatesService
 {
-    Task<Result<JobTemplate>> CreateAsync(JobTemplateManifest manifest);
-    Task<Option<JobTemplate>> GetAsync(string name);
+    Task<Result<JobTemplate>> CreateAsync(JobTemplateManifest manifest, CancellationToken cancellationToken = default);
+    Task<Option<JobTemplate>> GetAsync(string name, CancellationToken cancellationToken = default);
 }

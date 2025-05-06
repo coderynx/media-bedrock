@@ -1,4 +1,3 @@
-using MediaBedrock.Cli.Infrastructure.Jobs.Bootstrap;
 using MediaBedrock.Cli.Infrastructure.Media;
 using MediaBedrock.Cli.Infrastructure.Messaging.Bootstrap;
 using MediaBedrock.Cli.Infrastructure.Persistence.Bootstrap;
@@ -16,6 +15,5 @@ public static class ServiceCollectionExtensions
 
         services.AddPlugins();
         services.AddMedia();
-        services.AddJobs();
     }
 }

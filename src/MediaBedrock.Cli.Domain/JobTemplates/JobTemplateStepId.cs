@@ -1,8 +1,23 @@
 namespace MediaBedrock.Cli.Domain.JobTemplates;
 
-public sealed record JobTemplateStepId(Guid Value)
+public sealed record JobTemplateStepId
 {
-    public JobTemplateStepId() : this(Guid.CreateVersion7())
+    public JobTemplateStepId(Guid value)
     {
+        if (value == Guid.Empty)
+        {
+            throw JobTemplateErrors.InvalidStepId();
+        }
+        
+        Value = value;
     }
+
+    public JobTemplateStepId()
+    {
+        Value = Guid.CreateVersion7();
+    }
+    
+    public Guid Value { get; }
+    
+    public override string ToString() => Value.ToString();
 }

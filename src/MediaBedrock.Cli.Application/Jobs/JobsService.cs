@@ -1,3 +1,4 @@
+using Coderynx.Functional.Options;
 using Coderynx.Functional.Results;
 using MediaBedrock.Cli.Application.Jobs.Interfaces;
 using MediaBedrock.Cli.Application.Jobs.Messages;
@@ -20,7 +21,26 @@ public sealed class JobsService(
     IMessageBus messageBus,
     IApplicationDbContext dbContext) : IJobsService
 {
-    public async Task<Result<Job>> CreateAsync(JobTemplate jobTemplate, JobParameters parameters)
+    public async Task<Option<Job>> GetAsync(JobId id, CancellationToken cancellationToken = default)
+    {
+        var job = await dbContext.Jobs
+            .Include(j => j.Template)
+            .Include(j => j.Steps)
+            .SingleOrDefaultAsync(j => j.Id.Equals(id), cancellationToken: cancellationToken);
+
+        if (job is null)
+        {
+            return Option.None<Job>();
+        }
+
+        logger.LogDebug("Retrieved job with ID {JobId} ", id);
+        return Option.Some(job);
+    }
+
+    public async Task<Result<Job>> CreateAsync(
+        JobTemplate jobTemplate,
+        JobParameters parameters,
+        CancellationToken cancellationToken = default)
     {
         var createJob = jobFactory.Create(jobTemplate, parameters);
         if (createJob.IsFailure)
@@ -28,18 +48,18 @@ public sealed class JobsService(
             return createJob.Error;
         }
 
-        await dbContext.Jobs.AddAsync(createJob.Value);
-        await dbContext.SaveChangesAsync();
+        await dbContext.Jobs.AddAsync(createJob.Value, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         return Result.Created(createJob.Value);
     }
 
-    public async Task<Result<JobStateMachineId>> StartAsync(JobId jobId, CancellationToken ct = default)
+    public async Task<Result<JobStateMachineId>> StartAsync(JobId jobId, CancellationToken cancellationToken = default)
     {
         var job = await dbContext.Jobs
             .Include(j => j.Template)
             .Include(j => j.Steps)
-            .SingleOrDefaultAsync(j => j.Id.Equals(jobId), ct);
+            .SingleOrDefaultAsync(j => j.Id.Equals(jobId), cancellationToken);
 
         if (job is null)
         {
@@ -58,11 +78,11 @@ public sealed class JobsService(
 
         var stateMachine = createContainer.Value;
 
-        await dbContext.JobsStateMachines.AddAsync(stateMachine, ct);
-        await dbContext.SaveChangesAsync(ct);
+        await dbContext.JobsStateMachines.AddAsync(stateMachine, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         var startJob = RunJob.Create(stateMachine.Id);
-        await messageBus.PublishAsync(startJob, ct);
+        await messageBus.PublishAsync(startJob, cancellationToken);
 
         logger.LogInformation("Successfully processed job {JobId}", job.Id);
 
@@ -70,9 +90,11 @@ public sealed class JobsService(
     }
 
     /// <inheritdoc />
-    public async Task<Result<List<JobStateMachineId>>> StartAsync(List<JobId> jobIds, CancellationToken ct = default)
+    public async Task<Result<List<JobStateMachineId>>> StartAsync(
+        List<JobId> jobIds,
+        CancellationToken cancellationToken = default)
     {
-        var tasks = jobIds.Select(id => StartAsync(id, ct));
+        var tasks = jobIds.Select(id => StartAsync(id, cancellationToken));
 
         logger.LogInformation("Starting batch job execution for {JobCount} jobs", jobIds.Count);
 
@@ -82,7 +104,7 @@ public sealed class JobsService(
         if (errors.Count is not 0)
         {
             logger.LogError("Batch job execution failed for {JobCount} jobs", errors.Count);
-            return Result.Failure<List<JobStateMachineId>>(errors.First().Error);
+            return errors.First().Error;
         }
 
         logger.LogInformation("Batch job execution completed for {JobCount} jobs", jobIds.Count);
@@ -94,11 +116,11 @@ public sealed class JobsService(
     public async Task<Result> WaitForCompletionAsync(
         JobStateMachineId stateMachineId,
         TimeSpan delayTime,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         var stateMachine = await dbContext.JobsStateMachines
             .AsNoTracking()
-            .SingleOrDefaultAsync(jsm => jsm.Id.Equals(stateMachineId), ct);
+            .SingleOrDefaultAsync(jsm => jsm.Id.Equals(stateMachineId), cancellationToken);
 
         if (stateMachine is null)
         {
@@ -107,7 +129,7 @@ public sealed class JobsService(
 
         while (stateMachine.ExecutionStatus is not JobExecutionStatus.Completed)
         {
-            if (ct.IsCancellationRequested)
+            if (cancellationToken.IsCancellationRequested)
             {
                 logger.LogWarning("Job execution for {JobId} was canceled", stateMachineId);
                 return Result.Accepted();
@@ -119,11 +141,11 @@ public sealed class JobsService(
                 return Result.Accepted();
             }
 
-            await Task.Delay(delayTime, ct);
+            await Task.Delay(delayTime, cancellationToken);
 
             stateMachine = await dbContext.JobsStateMachines
                 .AsNoTracking()
-                .FirstAsync(jsm => jsm.Id.Equals(stateMachineId), ct);
+                .FirstAsync(jsm => jsm.Id.Equals(stateMachineId), cancellationToken);
         }
 
         return Result.Accepted();

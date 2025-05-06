@@ -7,10 +7,13 @@ namespace MediaBedrock.Cli.Infrastructure.Jobs.Handlers;
 public sealed class ProcessStepHandler(IJobsStateMachinesService jobsStateMachinesService)
     : IMessageHandler<ProcessJobStep>
 {
-    public async Task HandleAsync(ProcessJobStep message, CancellationToken ct = default)
+    public async Task HandleAsync(ProcessJobStep message, CancellationToken cancellationToken = default)
     {
-        var run = await jobsStateMachinesService.StartStepAsync(message.JobStateMachineId, message.StepStateMachineId,
-            ct);
+        var run = await jobsStateMachinesService.StartStepAsync(
+            jobStateMachineId: message.JobStateMachineId,
+            jobStepStateMachineId: message.StepStateMachineId,
+            cancellationToken: cancellationToken);
+        
         if (run.IsFailure)
         {
             throw new InvalidOperationException(

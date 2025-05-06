@@ -40,8 +40,6 @@ public sealed partial class JobFactory : IJobFactory
             return createSteps.Error;
         }
 
-        job.AddStepRange(createSteps.Value);
-
         return Result.Created(job);
     }
 
@@ -101,23 +99,22 @@ public sealed partial class JobFactory : IJobFactory
         return Result.Created(generatedOutputs);
     }
 
-    private static Result<List<JobStep>> CreateSteps(
+    private static Result CreateSteps(
         Job job,
         JobTemplate template,
         JobPropertyParameter[] properties)
     {
-        var generatedSteps = new List<JobStep>();
-        foreach (var s in template.Steps)
+        foreach (var step in template.Steps)
         {
             var stepProperties = new List<JobStepProperty>();
-            foreach (var parameter in s.Properties)
+            foreach (var parameter in step.Properties)
             {
                 var value = parameter.Value;
                 foreach (Match match in EvaluateVariablesRegex().Matches(parameter.Value))
                 {
                     var key = match.Groups[1].Value;
 
-                    var property = properties.FirstOrDefault(p => p.Name.Equals(key));
+                    var property = properties.SingleOrDefault(p => p.Name.Equals(key));
                     if (property is not null)
                     {
                         value = value.Replace(match.Value, property.Value);
@@ -136,46 +133,47 @@ public sealed partial class JobFactory : IJobFactory
                 stepProperties.Add(JobStepProperty.Create(parameter.Name, value));
             }
 
-            var createStepInputs = s.Inputs.Select(im =>
-            {
-                var assetName = new JobAssetName(im.Source);
-                return JobStepInput.Create(im.Name, assetName);
-            }).ToList();
+            var createStepInputs = step.Inputs
+                .Select(im => JobStepInput.Create(im.Name, new JobAssetName(im.Source)))
+                .ToList();
 
             if (createStepInputs.Any(i => i.IsFailure))
             {
-                return createStepInputs.First(i => i.IsFailure).Error;
+                return createStepInputs.First(i => i.IsFailure);
             }
 
-            var createStepOutputs = s.Outputs.Select(om =>
-            {
-                var assetName = new JobAssetName(om.Destination);
-                return JobStepOutput.Create(om.Name, assetName);
-            }).ToList();
+            var stepInputs = createStepInputs
+                .Select(i => i.Value)
+                .ToList();
+
+            var createStepOutputs = step.Outputs
+                .Select(om => JobStepOutput.Create(om.Name, new JobAssetName(om.Destination)))
+                .ToList();
 
             if (createStepOutputs.Any(o => o.IsFailure))
             {
-                return createStepOutputs.First(o => o.IsFailure).Error;
+                return createStepOutputs.First(o => o.IsFailure);
             }
 
-            var createJobStepName = JobStepName.Create(s.Name.Value);
+            var stepOutputs = createStepOutputs
+                .Select(o => o.Value)
+                .ToList();
+
+            var createJobStepName = JobStepName.Create(step.Name.Value);
             if (createJobStepName.IsFailure)
             {
                 return createJobStepName.Error;
             }
 
-            var jobStep = JobStep.Create(
-                job: job,
+            job.CreateStep(
                 name: createJobStepName.Value,
-                processorName: s.ProcessorName,
+                processorName: step.ProcessorName,
                 properties: stepProperties,
-                inputs: createStepInputs.Select(i => i.Value).ToList(),
-                outputs: createStepOutputs.Select(o => o.Value).ToList());
-
-            generatedSteps.Add(jobStep);
+                inputs: stepInputs,
+                outputs: stepOutputs);
         }
 
-        return Result.Created(generatedSteps);
+        return Result.Updated();
     }
 
     [GeneratedRegex(@"\$\{(\w+)\}")]

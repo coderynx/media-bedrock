@@ -7,14 +7,9 @@ public sealed partial record JobTemplateVersion
 {
     public JobTemplateVersion(string value)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        if (string.IsNullOrWhiteSpace(value) || !SemverRegex().IsMatch(value))
         {
-            throw new DomainException(JobTemplateErrors.InvalidVersionCode, "Version cannot be null or empty.");
-        }
-
-        if (!SemverRegex().IsMatch(value))
-        {
-            throw new DomainException(JobTemplateErrors.InvalidVersionCode, "Version is not a valid semantic version.");
+            throw JobTemplateErrors.InvalidVersion(value);
         }
 
         Value = value;
@@ -29,13 +24,7 @@ public sealed partial record JobTemplateVersion
 
     public static Result<JobTemplateVersion> Create(string value)
     {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return JobTemplateErrors.InvalidVersion(value);
-        }
-
-        var semverRegex = SemverRegex();
-        if (!semverRegex.IsMatch(value))
+        if (string.IsNullOrWhiteSpace(value) || !SemverRegex().IsMatch(value))
         {
             return JobTemplateErrors.InvalidVersion(value);
         }
