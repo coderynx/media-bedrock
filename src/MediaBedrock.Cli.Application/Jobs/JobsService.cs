@@ -49,9 +49,10 @@ public sealed class JobsService(
         }
 
         await dbContext.Jobs.AddAsync(createJob.Value, cancellationToken);
-        await dbContext.SaveChangesAsync(cancellationToken);
 
-        return Result.Created(createJob.Value);
+        return await dbContext.SaveChangesAsync(cancellationToken) > 0
+            ? Result.Created(createJob.Value)
+            : JobErrors.StoreFailed(createJob.Value.Id);
     }
 
     public async Task<Result<JobStateMachineId>> StartAsync(JobId jobId, CancellationToken cancellationToken = default)

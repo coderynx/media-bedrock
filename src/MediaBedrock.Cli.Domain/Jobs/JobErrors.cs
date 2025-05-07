@@ -14,6 +14,7 @@ public static class JobErrorCodes
     public const string NotFound = "Job.NotFound";
     public const string StateMachineNotFound = "Job.StateMachineNotFound";
     public const string InvalidId = "Job.InvalidId";
+    public const string StoreFailed = "Job.StoreFailed";
 }
 
 public static class JobErrors
@@ -79,5 +80,12 @@ public static class JobErrors
         return Error.InvalidInput(
             code: JobErrorCodes.InvalidId,
             message: "The job ID is invalid. Please check the ID and try again.");
+    }
+
+    public static Error StoreFailed(JobId valueId)
+    {
+        return Error.Custom(
+            code: JobErrorCodes.StoreFailed,
+            message: $"The job with ID '{valueId}' could not be stored. Please check the job and try again.");
     }
 }
