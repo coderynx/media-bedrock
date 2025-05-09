@@ -1,7 +1,7 @@
 using Coderynx.Functional.Results;
-using MediaBedrock.Cli.Domain.Jobs.Parameters;
-using MediaBedrock.Cli.Domain.JobTemplates;
 using MediaBedrock.Cli.Presentation.Jobs.Contracts;
+using MediaBedrock.Domain.Jobs.Parameters;
+using MediaBedrock.Domain.JobTemplates;
 
 namespace MediaBedrock.Cli.Presentation.Jobs.Mappers;
 

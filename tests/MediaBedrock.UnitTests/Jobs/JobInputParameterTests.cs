@@ -1,4 +1,4 @@
-using MediaBedrock.Cli.Domain.Jobs.Parameters;
+using MediaBedrock.Domain.Jobs.Parameters;
 using Shouldly;
 
 namespace MediaBedrock.UnitTests.Jobs;

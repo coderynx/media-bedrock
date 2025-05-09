@@ -6,7 +6,7 @@ namespace MediaBedrock.Plugins.Core;
 [Processor("core", "probe")]
 public sealed class Probe : IProcessor
 {
-    public Task<ProcessorResult> ProcessAsync(ProcessorContext context, CancellationToken ct = default)
+    public Task<ProcessorResult> ProcessAsync(ProcessorContext context, CancellationToken cancellationToken = default)
     {
         context.Logger.LogInformation("Received ProcessorContext: {@Context}", context);
 

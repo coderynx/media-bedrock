@@ -1,15 +1,15 @@
 using Cocona;
 using Coderynx.Functional.Results;
 using Coderynx.Functional.Results.Successes;
-using MediaBedrock.Cli.Application.Jobs.Interfaces;
-using MediaBedrock.Cli.Application.JobTemplates.Interfaces;
-using MediaBedrock.Cli.Domain.Jobs.Parameters;
-using MediaBedrock.Cli.Domain.JobTemplates;
+using MediaBedrock.Application.Jobs.Interfaces;
+using MediaBedrock.Application.JobTemplates.Interfaces;
 using MediaBedrock.Cli.Presentation.Jobs.Contracts;
 using MediaBedrock.Cli.Presentation.Jobs.Mappers;
 using MediaBedrock.Cli.Presentation.JobTemplates.Contracts;
 using MediaBedrock.Cli.Presentation.JobTemplates.Converters;
 using MediaBedrock.Cli.Presentation.JobTemplates.Mappers;
+using MediaBedrock.Domain.Jobs.Parameters;
+using MediaBedrock.Domain.JobTemplates;
 using Spectre.Console;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -19,7 +19,7 @@ namespace MediaBedrock.Cli.Presentation.Jobs;
 public sealed class JobsCommands(
     IJobsService jobsService,
     IJobTemplatesService jobTemplatesService,
-    IJobsStateMachinesService jobsStateMachinesService)
+    IJobStateMachinesService jobStateMachinesService)
 {
     private readonly IDeserializer _deserializer = new DeserializerBuilder()
         .WithTypeConverter(new ReadOnlyDictionaryStringStringYamlTypeConverter())
@@ -32,9 +32,7 @@ public sealed class JobsCommands(
         string templateName)
     {
         var jobTemplateName = new JobTemplateName(templateName);
-
-        var stateMachines = await jobsStateMachinesService.GetAsync(jobTemplateName);
-        foreach (var jobStateMachine in stateMachines)
+        foreach (var jobStateMachine in await jobStateMachinesService.GetAsync(jobTemplateName))
         {
             var tree = new Tree("Job executions");
             tree.AddNode($"Id: [purple_2]{jobStateMachine.Id}[/]");
@@ -66,7 +64,7 @@ public sealed class JobsCommands(
             onTry: () => _deserializer.Deserialize<JobTemplateManifestDto>(yaml),
             onSuccess: Success.Created,
             onCatch: _ => JobTemplateErrors.ManifestDeserializationFailed(templatePath));
-        
+
         if (deserializeManifest.IsFailure)
         {
             AnsiConsole.MarkupLine($"[red]Failed to deserialize job template: {deserializeManifest.Error.Message}[/]");
@@ -74,7 +72,7 @@ public sealed class JobsCommands(
         }
 
         var manifest = deserializeManifest.Value.ToDomain();
-        
+
         var createTemplate = await jobTemplatesService.CreateAsync(manifest);
         if (createTemplate.IsFailure)
         {
@@ -167,7 +165,7 @@ public sealed class JobsCommands(
     {
         var jobTemplateName = new JobTemplateName(templateName);
 
-        await jobsStateMachinesService.DeleteAsync(jobTemplateName);
+        await jobStateMachinesService.DeleteAsync(jobTemplateName);
 
         AnsiConsole.MarkupLine($"[green]Cleared pending executions for template: {templateName}[/]");
     }

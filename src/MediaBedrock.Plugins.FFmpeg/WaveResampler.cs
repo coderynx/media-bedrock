@@ -6,7 +6,8 @@ namespace MediaBedrock.Plugins.FFmpeg;
 [Processor("ffmpeg", "wave_resampler")]
 public sealed class WaveResampler : IProcessor
 {
-    public async Task<ProcessorResult> ProcessAsync(ProcessorContext context, CancellationToken ct = default)
+    public async Task<ProcessorResult> ProcessAsync(ProcessorContext context,
+        CancellationToken cancellationToken = default)
     {
         const string inputKey = "input";
         const string outputKey = "output";
@@ -53,10 +54,6 @@ public sealed class WaveResampler : IProcessor
                     if (message.Message.Contains("Error", StringComparison.OrdinalIgnoreCase))
                     {
                         context.Logger.LogError("Received error from FFmpeg {Message}", message);
-                    }
-                    else
-                    {
-                        context.Logger.LogInformation("Received message from FFmpeg {Message}", message);
                     }
                 });
         }

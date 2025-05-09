@@ -1,5 +1,5 @@
 using Coderynx.Functional.Results.Errors;
-using MediaBedrock.Cli.Domain.JobTemplates;
+using MediaBedrock.Domain.JobTemplates;
 using Shouldly;
 
 namespace MediaBedrock.UnitTests.Jobs;

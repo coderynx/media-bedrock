@@ -1,4 +1,4 @@
-using MediaBedrock.Cli.Domain.Processors;
+using MediaBedrock.Domain.Processors;
 using Shouldly;
 
 namespace MediaBedrock.UnitTests.Jobs.Processors;

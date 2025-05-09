@@ -1,6 +1,6 @@
-using MediaBedrock.Cli.Domain.JobTemplates;
-using MediaBedrock.Cli.Domain.JobTemplates.Manifests;
 using MediaBedrock.Cli.Presentation.JobTemplates.Contracts;
+using MediaBedrock.Domain.JobTemplates;
+using MediaBedrock.Domain.JobTemplates.Manifests;
 
 namespace MediaBedrock.Cli.Presentation.JobTemplates.Mappers;
 

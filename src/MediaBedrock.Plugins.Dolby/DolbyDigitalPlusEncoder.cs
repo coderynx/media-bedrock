@@ -14,7 +14,8 @@ namespace MediaBedrock.Plugins.Dolby;
 public sealed class DolbyDigitalPlusEncoder
     : IProcessor
 {
-    public async Task<ProcessorResult> ProcessAsync(ProcessorContext context, CancellationToken ct = default)
+    public async Task<ProcessorResult> ProcessAsync(ProcessorContext context,
+        CancellationToken cancellationToken = default)
     {
         const string inputKey = "input";
         const string outputKey = "output";
