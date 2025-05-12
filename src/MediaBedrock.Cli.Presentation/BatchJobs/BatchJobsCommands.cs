@@ -1,11 +1,11 @@
 using Cocona;
 using Coderynx.Functional.Results;
-using MediaBedrock.Cli.Domain.BatchJobs.Interfaces;
-using MediaBedrock.Cli.Domain.Jobs.Interfaces;
-using MediaBedrock.Cli.Domain.JobTemplates;
-using MediaBedrock.Cli.Domain.JobTemplates.Manifests;
 using MediaBedrock.Cli.Presentation.BatchJobs.Contracts;
 using MediaBedrock.Cli.Presentation.BatchJobs.Mappers;
+using MediaBedrock.Domain.BatchJobs.Interfaces;
+using MediaBedrock.Domain.Jobs.Interfaces;
+using MediaBedrock.Domain.JobTemplates;
+using MediaBedrock.Domain.JobTemplates.Manifests;
 using Spectre.Console;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -22,7 +22,7 @@ public sealed class BatchJobsCommands(
         var readTemplateFromYaml = await ReadTemplatesFromYamlAsync(templatesPaths);
         if (readTemplateFromYaml.IsFailure)
         {
-            AnsiConsole.MarkupLine($"Failed to read job template: {readTemplateFromYaml.Error}");
+            AnsiConsole.MarkupLine(readTemplateFromYaml.Error.Message);
             return;
         }
 

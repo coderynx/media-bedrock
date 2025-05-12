@@ -27,5 +27,5 @@ public sealed record ProcessorResult
 
 public interface IProcessor
 {
-    Task<ProcessorResult> ProcessAsync(ProcessorContext context, CancellationToken ct = default);
+    Task<ProcessorResult> ProcessAsync(ProcessorContext context, CancellationToken cancellationToken = default);
 }

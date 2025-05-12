@@ -1,9 +1,9 @@
-using MediaBedrock.Cli.Domain.BatchJobs;
-using MediaBedrock.Cli.Domain.Jobs.Parameters;
-using MediaBedrock.Cli.Domain.JobTemplates;
-using MediaBedrock.Cli.Domain.Processors;
+using MediaBedrock.Domain.BatchJobs;
+using MediaBedrock.Domain.Jobs;
+using MediaBedrock.Domain.Jobs.Parameters;
+using MediaBedrock.Domain.JobTemplates;
+using MediaBedrock.Domain.Processors;
 using Shouldly;
-using JobFactory = MediaBedrock.Cli.Domain.Jobs.JobFactory;
 
 namespace MediaBedrock.UnitTests.Jobs;
 
@@ -30,7 +30,7 @@ public sealed class JobFactoryTests
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        result.Error.Code.ShouldBe(JobTemplateErrors.NotFoundCode);
+        result.Error.Code.ShouldBe(JobTemplateErrorCodes.NotFound);
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public sealed class JobFactoryTests
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        result.Error.Code.ShouldBe(JobTemplateErrors.NotFoundCode);
+        result.Error.Code.ShouldBe(JobTemplateErrorCodes.NotFound);
     }
 
     [Fact]

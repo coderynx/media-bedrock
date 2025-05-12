@@ -1,8 +1,8 @@
 ﻿using Cocona;
-using MediaBedrock.Cli.Application.Bootstrap;
-using MediaBedrock.Cli.Domain.Bootstrap;
-using MediaBedrock.Cli.Infrastructure.Bootstrap;
+using MediaBedrock.Application.Bootstrap;
 using MediaBedrock.Cli.Presentation.Bootstrap;
+using MediaBedrock.Domain.Bootstrap;
+using MediaBedrock.Infrastructure.Bootstrap;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

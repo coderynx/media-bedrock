@@ -1,7 +1,7 @@
 using Coderynx.Functional.Results;
-using MediaBedrock.Cli.Domain.BatchJobs;
 using MediaBedrock.Cli.Presentation.BatchJobs.Contracts;
 using MediaBedrock.Cli.Presentation.Jobs.Mappers;
+using MediaBedrock.Domain.BatchJobs;
 
 namespace MediaBedrock.Cli.Presentation.BatchJobs.Mappers;
 

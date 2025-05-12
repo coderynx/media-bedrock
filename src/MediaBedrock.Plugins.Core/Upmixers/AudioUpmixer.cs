@@ -6,7 +6,7 @@ namespace MediaBedrock.Plugins.Core.Upmixers;
 [Processor("core", "audio_upmixer")]
 public sealed class AudioUpmixer : IProcessor
 {
-    public Task<ProcessorResult> ProcessAsync(ProcessorContext context, CancellationToken ct = default)
+    public Task<ProcessorResult> ProcessAsync(ProcessorContext context, CancellationToken cancellationToken = default)
     {
         const string targetChannelLayoutKey = "target_channel_layout";
         const string inputKey = "input";
