@@ -13,6 +13,6 @@ public sealed record JobFailed : JobMessageBase
         Message = message;
     }
 
-    public JobFailureReason FailureReason { get; } = JobFailureReason.Unknown;
+    public JobFailureReason FailureReason { get; }
     public string Message { get; }
 }
