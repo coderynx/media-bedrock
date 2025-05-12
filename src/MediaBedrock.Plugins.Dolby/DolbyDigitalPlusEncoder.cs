@@ -11,10 +11,10 @@ using Microsoft.Extensions.Logging;
 namespace MediaBedrock.Plugins.Dolby;
 
 [Processor("dolby", "ddp_encoder")]
-public sealed class DolbyDigitalPlusEncoder
-    : IProcessor
+public sealed class DolbyDigitalPlusEncoder : IProcessor
 {
-    public async Task<ProcessorResult> ProcessAsync(ProcessorContext context,
+    public async Task<ProcessorResult> ProcessAsync(
+        ProcessorContext context,
         CancellationToken cancellationToken = default)
     {
         const string inputKey = "input";
@@ -66,10 +66,10 @@ public sealed class DolbyDigitalPlusEncoder
         }
 
         var lineDrc = context.GetPropertyRequired(lineDrcProfileKey)
-            .Transform(input => Enum.TryParse<DrcProfile>(input, out var profile) ? profile : DrcProfile.MusicStandard);
+            .GetValue(input => Enum.TryParse<DrcProfile>(input, out var profile) ? profile : DrcProfile.MusicStandard);
 
         var rightLeftDrc = context.GetPropertyRequired(rightLeftDrcKey)
-            .Transform(input => Enum.TryParse<DrcProfile>(input, out var profile) ? profile : DrcProfile.MusicStandard);
+            .GetValue(input => Enum.TryParse<DrcProfile>(input, out var profile) ? profile : DrcProfile.MusicStandard);
 
         job.WithFilter(
             EncodeToAtmosDolbyDigitalPlus.CreateBuilder()
@@ -91,8 +91,8 @@ public sealed class DolbyDigitalPlusEncoder
         }
 
         var useWine = context.GetPropertyRequired(useWineKey)
-            .GetValue("true")
-            .Equals("true", StringComparison.OrdinalIgnoreCase);
+            .GetValue("true")?
+            .Equals("true", StringComparison.OrdinalIgnoreCase) ?? false;
 
         try
         {

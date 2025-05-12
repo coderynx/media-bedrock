@@ -36,13 +36,12 @@ public sealed class MetadataWriter : IProcessor
 
         var track = new Track(inputStream)
         {
-            Title = context.GetProperty(titleKey)?.GetValue(string.Empty),
-            Artist = context.GetProperty(artistKey)?.GetValue(string.Empty),
-            Album = context.GetProperty(albumKey)?.GetValue(string.Empty),
-            Genre = context.GetProperty(genreKey)?.GetValue(string.Empty),
-            Comment = context.GetProperty(commentKey)?.GetValue(string.Empty),
-            Year = context.GetProperty(yearKey)?
-                .Transform<int?>(input => int.TryParse(input, out var year) ? year : null)
+            Title = context.GetProperty(titleKey).GetValue(string.Empty),
+            Artist = context.GetProperty(artistKey).GetValue(string.Empty),
+            Album = context.GetProperty(albumKey).GetValue(string.Empty),
+            Genre = context.GetProperty(genreKey).GetValue(string.Empty),
+            Comment = context.GetProperty(commentKey).GetValue(string.Empty),
+            Year = context.GetProperty(yearKey).GetValue<int?>(input => int.TryParse(input, out var year) ? year : null)
         };
 
         if (int.TryParse(context.GetProperty(trackNumberKey)?.GetValue(), out var trackNumber))

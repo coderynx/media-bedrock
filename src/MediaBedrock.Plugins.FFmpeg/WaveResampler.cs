@@ -33,7 +33,7 @@ public sealed class WaveResampler : IProcessor
         }
 
         var targetSampleRate = context.GetPropertyRequired(targetSampleRateKey)
-            .Transform(sampleRate => int.TryParse(sampleRate, out var value) ? value : 0);
+            .GetValue(sampleRate => int.TryParse(sampleRate, out var value) ? value : 0);
 
         var ffmpegPath = context.GetProperty(executablePathKey)?.GetValue();
         var wrapper = new FFmpegWrapper(ffmpegPath ?? "ffmpeg");
