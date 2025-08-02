@@ -4,12 +4,12 @@ using MediaBedrock.Infrastructure.Messaging;
 
 namespace MediaBedrock.Infrastructure.Jobs.Consumers;
 
-public sealed class JobFailedConsumer(IJobStateMachinesService jobStateMachinesService) : IMessageConsumer<JobFailed>
+public sealed class JobFailedConsumer(IJobRunService jobRunService) : IMessageConsumer<JobFailed>
 {
     public async Task HandleAsync(JobFailed message, CancellationToken cancellationToken = default)
     {
-        var failJob = await jobStateMachinesService.FailJobAsync(
-            jobStateMachineId: message.JobStateMachineId,
+        var failJob = await jobRunService.FailJobAsync(
+            jobRunId: message.JobRunId,
             failureReason: message.FailureReason,
             message: message.Message,
             cancellationToken: cancellationToken);
@@ -17,7 +17,7 @@ public sealed class JobFailedConsumer(IJobStateMachinesService jobStateMachinesS
         if (failJob.IsFailure)
         {
             throw new InvalidOperationException(
-                $"Failed to fail job {message.JobStateMachineId} with reason {message.FailureReason}");
+                $"Failed to fail job {message.JobRunId} with reason {message.FailureReason}");
         }
     }
 }

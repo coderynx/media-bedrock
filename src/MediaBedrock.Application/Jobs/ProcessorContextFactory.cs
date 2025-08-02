@@ -1,8 +1,8 @@
 using Coderynx.Functional.Results;
 using MediaBedrock.Domain.JobAssets;
+using MediaBedrock.Domain.JobRuns;
 using MediaBedrock.Domain.Jobs;
 using MediaBedrock.Domain.Jobs.Steps;
-using MediaBedrock.Domain.JobStateMachines;
 using MediaBedrock.Domain.Processors.Interfaces;
 using MediaBedrock.Sdk.Processors;
 using Microsoft.Extensions.Logging;
@@ -15,22 +15,22 @@ public sealed class ProcessorContextFactory(
 {
     public Result<ProcessorContext> Create(
         Type processorType,
-        JobStateMachine jobStateMachine,
+        JobRun jobRun,
         JobStepName jobStepName)
     {
-        var stepStateMachine = jobStateMachine.StepStateMachines
+        var jobRunStep = jobRun.Steps
             .SingleOrDefault(ja => ja.StepName.Equals(jobStepName));
 
-        if (stepStateMachine is null)
+        if (jobRunStep is null)
         {
             return JobErrors.StepNotFound(jobStepName);
         }
 
-        var properties = stepStateMachine.StepProperties
+        var properties = jobRunStep.StepProperties
             .Select(p => new ProcessorProperty(p.Name, p.Value))
             .ToList();
 
-        var processorConfiguration = processorProvider.ResolveConfiguration(stepStateMachine.ProcessorName);
+        var processorConfiguration = processorProvider.ResolveConfiguration(jobRunStep.ProcessorName);
         if (processorConfiguration.IsFailure)
         {
             return processorConfiguration.Error;
@@ -41,9 +41,9 @@ public sealed class ProcessorContextFactory(
         );
 
         var processorInputs = new List<ProcessorInput>();
-        foreach (var input in stepStateMachine.StepInputs)
+        foreach (var input in jobRunStep.StepInputs)
         {
-            var resolveAsset = jobStateMachine.ResolveAsset(input.AssetName);
+            var resolveAsset = jobRun.ResolveAsset(input.AssetName);
             if (!resolveAsset.IsSome)
             {
                 return JobAssetErrors.NotFound(input.AssetName);
@@ -60,9 +60,9 @@ public sealed class ProcessorContextFactory(
         }
 
         var processorOutputs = new List<ProcessorOutput>();
-        foreach (var output in stepStateMachine.StepOutputs)
+        foreach (var output in jobRunStep.StepOutputs)
         {
-            var resolveAsset = jobStateMachine.ResolveAsset(output.AssetName, JobAssetKind.Output);
+            var resolveAsset = jobRun.ResolveAsset(output.AssetName, JobAssetKind.Output);
 
             if (resolveAsset.IsSome)
             {
@@ -78,7 +78,7 @@ public sealed class ProcessorContextFactory(
             var tempPath = Path.Combine(
                 path1: AppDomain.CurrentDomain.BaseDirectory,
                 path2: "temp",
-                path3: jobStateMachine.Job.Id.ToString());
+                path3: jobRun.Job.Id.ToString());
 
             Directory.CreateDirectory(tempPath);
 

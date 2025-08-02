@@ -1,19 +1,19 @@
 using MediaBedrock.Domain.JobAssets;
-using MediaBedrock.Domain.JobStateMachines;
+using MediaBedrock.Domain.JobRuns;
 
 namespace MediaBedrock.Application.Jobs.Messages;
 
 public sealed record JobStepCompleted : JobMessageBase
 {
     public JobStepCompleted(
-        JobStateMachineId jobStateMachineId,
-        JobStepStateMachineId jobStepStateMachineId,
-        List<JobAssetName> updatedAssetNames) : base(jobStateMachineId)
+        JobRunId jobRunId,
+        JobRunStepId jobRunStepId,
+        List<JobAssetName> updatedAssetNames) : base(jobRunId)
     {
-        JobStepStateMachineId = jobStepStateMachineId;
+        JobRunStepId = jobRunStepId;
         UpdatedAssetNames = updatedAssetNames;
     }
 
-    public JobStepStateMachineId JobStepStateMachineId { get; }
+    public JobRunStepId JobRunStepId { get; }
     public List<JobAssetName> UpdatedAssetNames { get; }
 }

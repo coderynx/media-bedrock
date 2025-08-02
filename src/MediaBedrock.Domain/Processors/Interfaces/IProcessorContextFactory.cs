@@ -1,6 +1,6 @@
 using Coderynx.Functional.Results;
+using MediaBedrock.Domain.JobRuns;
 using MediaBedrock.Domain.Jobs.Steps;
-using MediaBedrock.Domain.JobStateMachines;
 using MediaBedrock.Sdk.Processors;
 
 namespace MediaBedrock.Domain.Processors.Interfaces;
@@ -12,6 +12,6 @@ public interface IProcessorContextFactory
 {
     Result<ProcessorContext> Create(
         Type processorType,
-        JobStateMachine jobStateMachine,
+        JobRun jobRun,
         JobStepName jobStepName);
 }

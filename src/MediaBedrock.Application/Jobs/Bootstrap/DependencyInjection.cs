@@ -9,7 +9,7 @@ internal static class DependencyInjection
     internal static void AddJobs(this IServiceCollection services)
     {
         services.AddScoped<IJobsService, JobsService>();
-        services.AddScoped<IJobStateMachinesService, JobStateMachinesService>();
+        services.AddScoped<IJobRunService, JobRunService>();
         services.AddSingleton<IProcessorContextFactory, ProcessorContextFactory>();
     }
 }

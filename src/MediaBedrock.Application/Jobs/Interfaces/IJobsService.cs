@@ -1,8 +1,8 @@
 using Coderynx.Functional.Options;
 using Coderynx.Functional.Results;
+using MediaBedrock.Domain.JobRuns;
 using MediaBedrock.Domain.Jobs;
 using MediaBedrock.Domain.Jobs.Parameters;
-using MediaBedrock.Domain.JobStateMachines;
 using MediaBedrock.Domain.JobTemplates;
 
 namespace MediaBedrock.Application.Jobs.Interfaces;
@@ -16,11 +16,11 @@ public interface IJobsService
         JobParameters parameters,
         CancellationToken cancellationToken = default);
 
-    Task<Result<JobStateMachineId>> StartAsync(JobId jobId, CancellationToken cancellationToken = default);
-    Task<Result<List<JobStateMachineId>>> StartAsync(List<JobId> jobIds, CancellationToken cancellationToken = default);
+    Task<Result<JobRunId>> StartAsync(JobId jobId, CancellationToken cancellationToken = default);
+    Task<Result<List<JobRunId>>> StartAsync(List<JobId> jobIds, CancellationToken cancellationToken = default);
 
     Task<Result> WaitForCompletionAsync(
-        JobStateMachineId stateMachineId,
+        JobRunId runId,
         TimeSpan delayTime,
         CancellationToken cancellationToken = default);
 

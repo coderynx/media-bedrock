@@ -10,7 +10,7 @@ public sealed class JobAssetEntityConfiguration : IEntityTypeConfiguration<JobAs
     {
         builder.HasKey(ja => ja.Id);
 
-        builder.HasOne(ja => ja.JobStateMachine)
+        builder.HasOne(ja => ja.JobRun)
             .WithMany(jsm => jsm.AssetsPool)
             .OnDelete(DeleteBehavior.Cascade);
 

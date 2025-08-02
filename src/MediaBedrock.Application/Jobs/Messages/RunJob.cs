@@ -1,10 +1,10 @@
-using MediaBedrock.Domain.JobStateMachines;
+using MediaBedrock.Domain.JobRuns;
 
 namespace MediaBedrock.Application.Jobs.Messages;
 
 public sealed record RunJob : JobMessageBase
 {
-    public RunJob(JobStateMachineId jobStateMachineId) : base(jobStateMachineId)
+    public RunJob(JobRunId jobRunId) : base(jobRunId)
     {
     }
 }

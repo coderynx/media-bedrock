@@ -1,12 +1,12 @@
-using MediaBedrock.Domain.JobStateMachines;
+using MediaBedrock.Domain.JobRuns;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace MediaBedrock.Infrastructure.Persistence.Configurations;
 
-public sealed class JobStateMachineEntityConfiguration : IEntityTypeConfiguration<JobStateMachine>
+public sealed class JobRunEntityConfiguration : IEntityTypeConfiguration<JobRun>
 {
-    public void Configure(EntityTypeBuilder<JobStateMachine> builder)
+    public void Configure(EntityTypeBuilder<JobRun> builder)
     {
         builder.HasKey(jsm => jsm.Id);
 
@@ -14,7 +14,7 @@ public sealed class JobStateMachineEntityConfiguration : IEntityTypeConfiguratio
             .WithMany()
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.OwnsOne(jsm => jsm.ExecutionError, e =>
+        builder.OwnsOne(jsm => jsm.Error, e =>
         {
             e.Property(p => p.FailureReason)
                 .HasConversion<string>()
@@ -26,14 +26,14 @@ public sealed class JobStateMachineEntityConfiguration : IEntityTypeConfiguratio
         });
 
         builder.HasMany(jsm => jsm.AssetsPool)
-            .WithOne(ja => ja.JobStateMachine)
+            .WithOne(ja => ja.JobRun)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(jsm => jsm.Id)
-            .HasConversion(id => id.Value, value => new JobStateMachineId(value))
+            .HasConversion(id => id.Value, value => new JobRunId(value))
             .ValueGeneratedNever();
 
-        builder.Property(jsm => jsm.ExecutionStatus)
+        builder.Property(jsm => jsm.Status)
             .HasConversion<string>();
     }
 }

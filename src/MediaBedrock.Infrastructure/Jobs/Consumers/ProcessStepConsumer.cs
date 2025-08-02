@@ -4,20 +4,20 @@ using MediaBedrock.Infrastructure.Messaging;
 
 namespace MediaBedrock.Infrastructure.Jobs.Consumers;
 
-public sealed class ProcessStepConsumer(IJobStateMachinesService jobStateMachinesService)
+public sealed class ProcessStepConsumer(IJobRunService jobRunService)
     : IMessageConsumer<ProcessJobStep>
 {
     public async Task HandleAsync(ProcessJobStep message, CancellationToken cancellationToken = default)
     {
-        var run = await jobStateMachinesService.StartStepAsync(
-            jobStateMachineId: message.JobStateMachineId,
-            jobStepStateMachineId: message.JobStepStateMachineId,
+        var run = await jobRunService.StartStepAsync(
+            jobRunId: message.JobRunId,
+            jobRunStepId: message.JobRunStepId,
             cancellationToken: cancellationToken);
 
         if (run.IsFailure)
         {
             throw new InvalidOperationException(
-                $"Failed to run job step {message.JobStepStateMachineId} for job {message.JobStateMachineId}");
+                $"Failed to run job step {message.JobRunStepId} for job {message.JobRunId}");
         }
     }
 }

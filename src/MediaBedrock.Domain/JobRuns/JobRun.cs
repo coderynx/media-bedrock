@@ -3,55 +3,55 @@ using MediaBedrock.Domain.JobAssets;
 using MediaBedrock.Domain.Jobs;
 using MediaBedrock.Domain.Jobs.Steps;
 
-namespace MediaBedrock.Domain.JobStateMachines;
+namespace MediaBedrock.Domain.JobRuns;
 
-public sealed class JobStateMachine
+public sealed class JobRun
 {
     private readonly List<JobAsset> _assetsPool = [];
-    private readonly List<JobStepStateMachine> _stepStateMachines = [];
+    private readonly List<JobRunStep> _steps = [];
 
-    private JobStateMachine()
+    private JobRun()
     {
     }
 
-    public required JobStateMachineId Id { get; init; }
+    public required JobRunId Id { get; init; }
     public required Job Job { get; init; }
-    public JobExecutionStatus ExecutionStatus { get; private set; } = JobExecutionStatus.Pending;
-    public JobExecutionError? ExecutionError { get; private set; }
-    public IReadOnlyList<JobStepStateMachine> StepStateMachines => _stepStateMachines;
+    public JobRunStatus Status { get; private set; } = JobRunStatus.Pending;
+    public JobRunError? Error { get; private set; }
+    public IReadOnlyList<JobRunStep> Steps => _steps;
     public IReadOnlyList<JobAsset> AssetsPool => _assetsPool;
 
-    public static JobStateMachine Create(Job job)
+    public static JobRun Create(Job job)
     {
-        var stateMachine = new JobStateMachine
+        var jobRun = new JobRun
         {
-            Id = JobStateMachineId.Create(),
+            Id = JobRunId.Create(),
             Job = job
         };
 
-        return stateMachine;
+        return jobRun;
     }
 
     public void TransitionToRunning()
     {
-        ExecutionStatus = JobExecutionStatus.Running;
+        Status = JobRunStatus.Running;
     }
 
     public void TransitionToFailed(JobFailureReason failureReason, string message)
     {
-        ExecutionError = new JobExecutionError(failureReason, message);
-        ExecutionStatus = JobExecutionStatus.Failed;
+        Error = new JobRunError(failureReason, message);
+        Status = JobRunStatus.Failed;
     }
 
     public void TransitionToCompleted()
     {
-        ExecutionStatus = JobExecutionStatus.Completed;
+        Status = JobRunStatus.Completed;
     }
 
     public void AddStep(JobStep jobStep)
     {
-        var jobStepStateMachine = JobStepStateMachine.Create(this, jobStep);
-        _stepStateMachines.AddRange(jobStepStateMachine);
+        var jobRunStep = JobRunStep.Create(this, jobStep);
+        _steps.AddRange(jobRunStep);
     }
 
     public void AddAsset(JobAsset asset)

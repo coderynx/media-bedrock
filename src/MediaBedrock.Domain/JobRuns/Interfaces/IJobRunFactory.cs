@@ -1,12 +1,12 @@
 using Coderynx.Functional.Results;
 using MediaBedrock.Domain.Jobs;
 
-namespace MediaBedrock.Domain.JobStateMachines.Interfaces;
+namespace MediaBedrock.Domain.JobRuns.Interfaces;
 
 /// <summary>
 ///     Interface for creating job containers.
 /// </summary>
-public interface IJobStateMachineFactory
+public interface IJobRunFactory
 {
     /// <summary>
     ///     Asynchronously creates a job container for the specified job.
@@ -16,5 +16,5 @@ public interface IJobStateMachineFactory
     ///     A task that represents the asynchronous operation. The task result contains a
     ///     <see cref="Result" />.
     /// </returns>
-    Task<Result<JobStateMachine>> CreateAsync(Job job);
+    Task<Result<JobRun>> CreateAsync(Job job);
 }

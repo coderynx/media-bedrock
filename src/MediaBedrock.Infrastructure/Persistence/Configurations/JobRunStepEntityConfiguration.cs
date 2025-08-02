@@ -1,24 +1,24 @@
 using MediaBedrock.Domain.JobAssets;
+using MediaBedrock.Domain.JobRuns;
 using MediaBedrock.Domain.Jobs.Steps;
-using MediaBedrock.Domain.JobStateMachines;
 using MediaBedrock.Domain.Processors;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace MediaBedrock.Infrastructure.Persistence.Configurations;
 
-public sealed class JobStepStateMachineEntityConfiguration : IEntityTypeConfiguration<JobStepStateMachine>
+public sealed class JobRunStepEntityConfiguration : IEntityTypeConfiguration<JobRunStep>
 {
-    public void Configure(EntityTypeBuilder<JobStepStateMachine> builder)
+    public void Configure(EntityTypeBuilder<JobRunStep> builder)
     {
         builder.HasKey(jssm => jssm.Id);
 
-        builder.HasOne(jssm => jssm.JobStateMachine)
-            .WithMany(jsm => jsm.StepStateMachines)
+        builder.HasOne(jssm => jssm.JobRun)
+            .WithMany(jsm => jsm.Steps)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(jssm => jssm.Id)
-            .HasConversion(id => id.Value, value => new JobStepStateMachineId(value))
+            .HasConversion(id => id.Value, value => new JobRunStepId(value))
             .ValueGeneratedNever();
 
         builder.Property(jssm => jssm.StepName)
@@ -29,7 +29,7 @@ public sealed class JobStepStateMachineEntityConfiguration : IEntityTypeConfigur
             .HasConversion(name => name.ToString(), value => new ProcessorName(value))
             .IsRequired();
 
-        builder.Property(jssm => jssm.ExecutionStatus)
+        builder.Property(jssm => jssm.Status)
             .HasConversion<string>()
             .IsRequired();
 

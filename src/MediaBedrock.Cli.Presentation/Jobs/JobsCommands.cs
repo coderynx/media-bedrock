@@ -19,7 +19,7 @@ namespace MediaBedrock.Cli.Presentation.Jobs;
 public sealed class JobsCommands(
     IJobsService jobsService,
     IJobTemplatesService jobTemplatesService,
-    IJobStateMachinesService jobStateMachinesService)
+    IJobRunService jobRunService)
 {
     private readonly IDeserializer _deserializer = new DeserializerBuilder()
         .WithTypeConverter(new ReadOnlyDictionaryStringStringYamlTypeConverter())
@@ -32,12 +32,12 @@ public sealed class JobsCommands(
         string templateName)
     {
         var jobTemplateName = new JobTemplateName(templateName);
-        foreach (var jobStateMachine in await jobStateMachinesService.GetAsync(jobTemplateName))
+        foreach (var jobRun in await jobRunService.GetAsync(jobTemplateName))
         {
             var tree = new Tree("Job executions");
-            tree.AddNode($"Id: [purple_2]{jobStateMachine.Id}[/]");
-            tree.AddNode($"Template name: [purple_2]{jobStateMachine.Job.Template.Name}[/]");
-            tree.AddNode($"Status: [purple_2]{jobStateMachine.ExecutionStatus.ToString()}[/]");
+            tree.AddNode($"Id: [purple_2]{jobRun.Id}[/]");
+            tree.AddNode($"Template name: [purple_2]{jobRun.Job.Template.Name}[/]");
+            tree.AddNode($"Status: [purple_2]{jobRun.Status.ToString()}[/]");
 
             AnsiConsole.Write(tree);
         }
@@ -165,7 +165,7 @@ public sealed class JobsCommands(
     {
         var jobTemplateName = new JobTemplateName(templateName);
 
-        await jobStateMachinesService.DeleteAsync(jobTemplateName);
+        await jobRunService.DeleteAsync(jobTemplateName);
 
         AnsiConsole.MarkupLine($"[green]Cleared pending executions for template: {templateName}[/]");
     }

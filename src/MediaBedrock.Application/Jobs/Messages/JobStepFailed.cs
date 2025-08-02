@@ -1,21 +1,21 @@
-using MediaBedrock.Domain.JobStateMachines;
+using MediaBedrock.Domain.JobRuns;
 
 namespace MediaBedrock.Application.Jobs.Messages;
 
 public sealed record JobStepFailed : JobMessageBase
 {
     public JobStepFailed(
-        JobStateMachineId jobStateMachineId,
-        JobStepStateMachineId jobStepStateMachineId,
+        JobRunId jobRunId,
+        JobRunStepId jobRunStepId,
         JobStepFailureReason failureReason = JobStepFailureReason.Unknown,
-        string message = "") : base(jobStateMachineId)
+        string message = "") : base(jobRunId)
     {
-        JobStepStateMachineId = jobStepStateMachineId;
+        JobRunStepId = jobRunStepId;
         FailureReason = failureReason;
         Message = message;
     }
 
-    public JobStepStateMachineId JobStepStateMachineId { get; }
+    public JobRunStepId JobRunStepId { get; }
     public JobStepFailureReason FailureReason { get; }
     public string Message { get; }
 }

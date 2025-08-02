@@ -1,6 +1,6 @@
 using Coderynx.Functional.Results.Errors;
+using MediaBedrock.Domain.JobRuns;
 using MediaBedrock.Domain.Jobs.Steps;
-using MediaBedrock.Domain.JobStateMachines;
 
 namespace MediaBedrock.Domain.Jobs;
 
@@ -12,7 +12,7 @@ public static class JobErrorCodes
     public const string InvalidOutputName = "Job.InvalidOutputName";
     public const string StepNotFound = "Job.StepNotFound";
     public const string NotFound = "Job.NotFound";
-    public const string StateMachineNotFound = "Job.StateMachineNotFound";
+    public const string RunNotFound = "Job.RunNotFound";
     public const string InvalidId = "Job.InvalidId";
     public const string StoreFailed = "Job.StoreFailed";
 }
@@ -68,11 +68,11 @@ public static class JobErrors
             message: $"The job with ID '{jobId}' was not found.");
     }
 
-    public static Error StateMachineNotFound(JobStateMachineId stateMachineId)
+    public static Error RunNotFound(JobRunId runId)
     {
         return Error.NotFound(
-            code: JobErrorCodes.StateMachineNotFound,
-            message: $"The job state machine with ID '{stateMachineId}' was not found.");
+            code: JobErrorCodes.RunNotFound,
+            message: $"The job run with ID '{runId}' was not found.");
     }
 
     public static Error InvalidId()

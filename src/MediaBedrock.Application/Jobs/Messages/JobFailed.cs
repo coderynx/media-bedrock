@@ -1,13 +1,13 @@
-using MediaBedrock.Domain.JobStateMachines;
+using MediaBedrock.Domain.JobRuns;
 
 namespace MediaBedrock.Application.Jobs.Messages;
 
 public sealed record JobFailed : JobMessageBase
 {
     public JobFailed(
-        JobStateMachineId jobStateMachineId,
+        JobRunId jobRunId,
         JobFailureReason failureReason,
-        string message = "") : base(jobStateMachineId)
+        string message = "") : base(jobRunId)
     {
         FailureReason = failureReason;
         Message = message;
