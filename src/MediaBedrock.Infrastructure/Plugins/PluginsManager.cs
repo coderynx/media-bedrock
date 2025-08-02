@@ -10,12 +10,15 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBedrock.Infrastructure.Plugins;
 
-public sealed record PluginConfiguration
+public record UserPluginConfiguration
 {
-    public List<ProcessorConfiguration> Processors { get; init; } = [];
+    public List<UserProcessorConfiguration> Processors { get; init; } = [];
 }
 
-internal sealed record PluginEntry(Assembly Assembly, PluginConfiguration Configuration);
+internal sealed record PluginEntry(
+    Assembly Assembly,
+    string PluginPath,
+    UserPluginConfiguration Configuration);
 
 public sealed class PluginsManager(ILogger<PluginsManager> logger) : IPluginsManager
 {
@@ -45,17 +48,24 @@ public sealed class PluginsManager(ILogger<PluginsManager> logger) : IPluginsMan
                 var processorInfo = GetProcessorInfo(type);
                 var fullName = $"{processorInfo.Namespace}/{processorInfo.Name}";
 
-                serviceCollection.AddKeyedTransient(fullName, (sp, _) =>
-                    (IProcessor)ActivatorUtilities.CreateInstance(sp, type));
+                serviceCollection.AddKeyedTransient(
+                    fullName,
+                    (sp, _) => (IProcessor)ActivatorUtilities.CreateInstance(sp, type));
 
                 logger.LogInformation("Registered processor {ProcessorFullName}", fullName);
+
+                var configuration = ProcessorConfiguration.Create(fullName, plugin.PluginPath);
+                serviceCollection.AddKeyedSingleton(configuration.Name, configuration);
+
+                logger.LogInformation("Registered processor configuration {ProcessorConfigurationName}",
+                    configuration.Name);
             }
 
             foreach (var processorConfiguration in plugin.Configuration.Processors)
             {
-                serviceCollection.AddKeyedSingleton(processorConfiguration.Name, processorConfiguration);
-                logger.LogInformation("Registered processor configuration {ProcessorConfigurationName}",
-                    processorConfiguration.Name);
+                var configuration = ProcessorConfiguration.Create(processorConfiguration, plugin.PluginPath);
+
+                serviceCollection.AddKeyedSingleton(processorConfiguration.Name, configuration);
             }
         }
 
@@ -134,12 +144,12 @@ public sealed class PluginsManager(ILogger<PluginsManager> logger) : IPluginsMan
             var configurationFile = Directory.GetFiles(directory, configurationsPattern, SearchOption.TopDirectoryOnly)
                 .FirstOrDefault();
 
-            var pluginConfiguration = new PluginConfiguration();
+            var pluginConfiguration = new UserPluginConfiguration();
             if (configurationFile is not null)
             {
                 var json = File.ReadAllText(configurationFile);
 
-                pluginConfiguration = JsonSerializer.Deserialize<PluginConfiguration>(json, _jsonOptions);
+                pluginConfiguration = JsonSerializer.Deserialize<UserPluginConfiguration>(json, _jsonOptions);
                 if (pluginConfiguration is null)
                 {
                     // TODO: Add error handling.
@@ -148,7 +158,11 @@ public sealed class PluginsManager(ILogger<PluginsManager> logger) : IPluginsMan
                 }
             }
 
-            var pluginEntry = new PluginEntry(Assembly.LoadFrom(libraryFile), pluginConfiguration);
+            var pluginEntry = new PluginEntry(
+                Assembly.LoadFrom(libraryFile),
+                directory,
+                pluginConfiguration);
+
             pluginEntries.Add(pluginEntry);
         }
 

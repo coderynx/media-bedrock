@@ -1,5 +1,5 @@
 using MediaBedrock.Domain.Jobs.Bootstrap;
-using MediaBedrock.Domain.JobStateMachine.Bootstrap;
+using MediaBedrock.Domain.JobStateMachines.Bootstrap;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaBedrock.Domain.Bootstrap;

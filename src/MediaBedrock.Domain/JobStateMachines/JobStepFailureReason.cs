@@ -1,6 +1,6 @@
-namespace MediaBedrock.Domain.JobStateMachine;
+namespace MediaBedrock.Domain.JobStateMachines;
 
-public enum JobFailureReason
+public enum JobStepFailureReason
 {
     InputValidation = 0,
     Processing = 1,

@@ -1,6 +1,6 @@
 using MediaBedrock.Application.Persistence;
 using MediaBedrock.Domain.Jobs;
-using MediaBedrock.Domain.JobStateMachine;
+using MediaBedrock.Domain.JobStateMachines;
 using MediaBedrock.Domain.JobTemplates;
 using Microsoft.EntityFrameworkCore;
 

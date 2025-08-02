@@ -1,4 +1,4 @@
-namespace MediaBedrock.Domain.JobStateMachine;
+namespace MediaBedrock.Domain.JobStateMachines;
 
 public enum JobExecutionStatus
 {

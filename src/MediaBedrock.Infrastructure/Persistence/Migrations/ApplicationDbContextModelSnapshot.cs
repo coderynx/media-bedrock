@@ -42,7 +42,53 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("JobStateMachineId");
 
-                    b.ToTable("JobAssets");
+                    b.ToTable("JobAsset");
+                });
+
+            modelBuilder.Entity("MediaBedrock.Domain.JobStateMachine.JobStateMachine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExecutionStatus")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("JobId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobId");
+
+                    b.ToTable("JobStateMachines");
+                });
+
+            modelBuilder.Entity("MediaBedrock.Domain.JobStateMachine.JobStepStateMachine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExecutionStatus")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("JobStateMachineId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProcessorName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("StepName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobStateMachineId");
+
+                    b.ToTable("JobStepStateMachines");
                 });
 
             modelBuilder.Entity("MediaBedrock.Domain.JobTemplates.JobTemplate", b =>
@@ -106,7 +152,7 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("TemplateId");
 
-                    b.ToTable("JobTemplateSteps");
+                    b.ToTable("JobTemplateStep");
                 });
 
             modelBuilder.Entity("MediaBedrock.Domain.Jobs.Job", b =>
@@ -144,58 +190,12 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("JobId");
 
-                    b.ToTable("JobSteps");
-                });
-
-            modelBuilder.Entity("MediaBedrock.Domain.JobsStateMachine.JobStateMachine", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ExecutionStatus")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("JobId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("JobId");
-
-                    b.ToTable("JobsStateMachines");
-                });
-
-            modelBuilder.Entity("MediaBedrock.Domain.JobsStateMachine.JobStepStateMachine", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ExecutionStatus")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("JobStateMachineId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ProcessorName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("StepName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("JobStateMachineId");
-
-                    b.ToTable("JobStepStateMachines");
+                    b.ToTable("JobStep");
                 });
 
             modelBuilder.Entity("MediaBedrock.Domain.JobAssets.JobAsset", b =>
                 {
-                    b.HasOne("MediaBedrock.Domain.JobsStateMachine.JobStateMachine", "JobStateMachine")
+                    b.HasOne("MediaBedrock.Domain.JobStateMachine.JobStateMachine", "JobStateMachine")
                         .WithMany("AssetsPool")
                         .HasForeignKey("JobStateMachineId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -213,7 +213,7 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
 
                             b1.HasKey("JobAssetId");
 
-                            b1.ToTable("JobAssets");
+                            b1.ToTable("JobAsset");
 
                             b1.WithOwner()
                                 .HasForeignKey("JobAssetId");
@@ -222,6 +222,160 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
                     b.Navigation("JobStateMachine");
 
                     b.Navigation("MediaInformation");
+                });
+
+            modelBuilder.Entity("MediaBedrock.Domain.JobStateMachine.JobStateMachine", b =>
+                {
+                    b.HasOne("MediaBedrock.Domain.Jobs.Job", "Job")
+                        .WithMany()
+                        .HasForeignKey("JobId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("MediaBedrock.Domain.JobStateMachine.JobExecutionError", "ExecutionError", b1 =>
+                        {
+                            b1.Property<Guid>("JobStateMachineId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<string>("FailureReason")
+                                .IsRequired()
+                                .HasColumnType("TEXT");
+
+                            b1.Property<string>("Message")
+                                .HasMaxLength(500)
+                                .HasColumnType("TEXT");
+
+                            b1.HasKey("JobStateMachineId");
+
+                            b1.ToTable("JobStateMachines");
+
+                            b1.WithOwner()
+                                .HasForeignKey("JobStateMachineId");
+                        });
+
+                    b.Navigation("ExecutionError");
+
+                    b.Navigation("Job");
+                });
+
+            modelBuilder.Entity("MediaBedrock.Domain.JobStateMachine.JobStepStateMachine", b =>
+                {
+                    b.HasOne("MediaBedrock.Domain.JobStateMachine.JobStateMachine", "JobStateMachine")
+                        .WithMany("StepStateMachines")
+                        .HasForeignKey("JobStateMachineId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("MediaBedrock.Domain.JobStateMachine.JobStepExecutionError", "ExecutionError", b1 =>
+                        {
+                            b1.Property<Guid>("JobStepStateMachineId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<string>("Message")
+                                .HasMaxLength(500)
+                                .HasColumnType("TEXT");
+
+                            b1.Property<string>("Reason")
+                                .IsRequired()
+                                .HasColumnType("TEXT");
+
+                            b1.HasKey("JobStepStateMachineId");
+
+                            b1.ToTable("JobStepStateMachines");
+
+                            b1.WithOwner()
+                                .HasForeignKey("JobStepStateMachineId");
+                        });
+
+                    b.OwnsMany("MediaBedrock.Domain.Jobs.Steps.JobStepInput", "StepInputs", b1 =>
+                        {
+                            b1.Property<Guid>("JobStepStateMachineId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAddOrUpdate()
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<string>("AssetName")
+                                .IsRequired()
+                                .HasColumnType("TEXT");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasColumnType("TEXT");
+
+                            b1.HasKey("JobStepStateMachineId", "__synthesizedOrdinal");
+
+                            b1.ToTable("JobStepStateMachines");
+
+                            b1.ToJson("StepInputs");
+
+                            b1.WithOwner()
+                                .HasForeignKey("JobStepStateMachineId");
+                        });
+
+                    b.OwnsMany("MediaBedrock.Domain.Jobs.Steps.JobStepOutput", "StepOutputs", b1 =>
+                        {
+                            b1.Property<Guid>("JobStepStateMachineId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAddOrUpdate()
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<string>("AssetName")
+                                .IsRequired()
+                                .HasColumnType("TEXT");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasColumnType("TEXT");
+
+                            b1.HasKey("JobStepStateMachineId", "__synthesizedOrdinal");
+
+                            b1.ToTable("JobStepStateMachines");
+
+                            b1.ToJson("StepOutputs");
+
+                            b1.WithOwner()
+                                .HasForeignKey("JobStepStateMachineId");
+                        });
+
+                    b.OwnsMany("MediaBedrock.Domain.Jobs.Steps.JobStepProperty", "StepProperties", b1 =>
+                        {
+                            b1.Property<Guid>("JobStepStateMachineId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAddOrUpdate()
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasColumnType("TEXT");
+
+                            b1.Property<string>("Value")
+                                .HasColumnType("TEXT");
+
+                            b1.HasKey("JobStepStateMachineId", "__synthesizedOrdinal");
+
+                            b1.ToTable("JobStepStateMachines");
+
+                            b1.ToJson("StepProperties");
+
+                            b1.WithOwner()
+                                .HasForeignKey("JobStepStateMachineId");
+                        });
+
+                    b.Navigation("ExecutionError");
+
+                    b.Navigation("JobStateMachine");
+
+                    b.Navigation("StepInputs");
+
+                    b.Navigation("StepOutputs");
+
+                    b.Navigation("StepProperties");
                 });
 
             modelBuilder.Entity("MediaBedrock.Domain.JobTemplates.JobTemplate", b =>
@@ -357,7 +511,7 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
 
                             b1.HasKey("JobTemplateStepId", "__synthesizedOrdinal");
 
-                            b1.ToTable("JobTemplateSteps");
+                            b1.ToTable("JobTemplateStep");
 
                             b1.ToJson("Inputs");
 
@@ -384,7 +538,7 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
 
                             b1.HasKey("JobTemplateStepId", "__synthesizedOrdinal");
 
-                            b1.ToTable("JobTemplateSteps");
+                            b1.ToTable("JobTemplateStep");
 
                             b1.ToJson("Outputs");
 
@@ -411,7 +565,7 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
 
                             b1.HasKey("JobTemplateStepId", "__synthesizedOrdinal");
 
-                            b1.ToTable("JobTemplateSteps");
+                            b1.ToTable("JobTemplateStep");
 
                             b1.ToJson("Properties");
 
@@ -530,7 +684,7 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
 
                             b1.HasKey("JobStepId", "__synthesizedOrdinal");
 
-                            b1.ToTable("JobSteps");
+                            b1.ToTable("JobStep");
 
                             b1.ToJson("Inputs");
 
@@ -557,7 +711,7 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
 
                             b1.HasKey("JobStepId", "__synthesizedOrdinal");
 
-                            b1.ToTable("JobSteps");
+                            b1.ToTable("JobStep");
 
                             b1.ToJson("Outputs");
 
@@ -583,7 +737,7 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
 
                             b1.HasKey("JobStepId", "__synthesizedOrdinal");
 
-                            b1.ToTable("JobSteps");
+                            b1.ToTable("JobStep");
 
                             b1.ToJson("Properties");
 
@@ -600,135 +754,11 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
                     b.Navigation("Properties");
                 });
 
-            modelBuilder.Entity("MediaBedrock.Domain.JobsStateMachine.JobStateMachine", b =>
+            modelBuilder.Entity("MediaBedrock.Domain.JobStateMachine.JobStateMachine", b =>
                 {
-                    b.HasOne("MediaBedrock.Domain.Jobs.Job", "Job")
-                        .WithMany()
-                        .HasForeignKey("JobId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("AssetsPool");
 
-                    b.Navigation("Job");
-                });
-
-            modelBuilder.Entity("MediaBedrock.Domain.JobsStateMachine.JobStepStateMachine", b =>
-                {
-                    b.HasOne("MediaBedrock.Domain.JobsStateMachine.JobStateMachine", "JobStateMachine")
-                        .WithMany("StepsStateMachines")
-                        .HasForeignKey("JobStateMachineId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.OwnsOne("MediaBedrock.Domain.JobsStateMachine.JobStepExecutionError", "ExecutionError", b1 =>
-                        {
-                            b1.Property<Guid>("JobStepStateMachineId")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<string>("Kind")
-                                .IsRequired()
-                                .HasColumnType("TEXT");
-
-                            b1.Property<string>("Message")
-                                .HasMaxLength(500)
-                                .HasColumnType("TEXT");
-
-                            b1.HasKey("JobStepStateMachineId");
-
-                            b1.ToTable("JobStepStateMachines");
-
-                            b1.WithOwner()
-                                .HasForeignKey("JobStepStateMachineId");
-                        });
-
-                    b.OwnsMany("MediaBedrock.Domain.Jobs.Steps.JobStepInput", "StepInputs", b1 =>
-                        {
-                            b1.Property<Guid>("JobStepStateMachineId")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<int>("__synthesizedOrdinal")
-                                .ValueGeneratedOnAddOrUpdate()
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<string>("AssetName")
-                                .IsRequired()
-                                .HasColumnType("TEXT");
-
-                            b1.Property<string>("Name")
-                                .IsRequired()
-                                .HasColumnType("TEXT");
-
-                            b1.HasKey("JobStepStateMachineId", "__synthesizedOrdinal");
-
-                            b1.ToTable("JobStepStateMachines");
-
-                            b1.ToJson("StepInputs");
-
-                            b1.WithOwner()
-                                .HasForeignKey("JobStepStateMachineId");
-                        });
-
-                    b.OwnsMany("MediaBedrock.Domain.Jobs.Steps.JobStepOutput", "StepOutputs", b1 =>
-                        {
-                            b1.Property<Guid>("JobStepStateMachineId")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<int>("__synthesizedOrdinal")
-                                .ValueGeneratedOnAddOrUpdate()
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<string>("AssetName")
-                                .IsRequired()
-                                .HasColumnType("TEXT");
-
-                            b1.Property<string>("Name")
-                                .IsRequired()
-                                .HasColumnType("TEXT");
-
-                            b1.HasKey("JobStepStateMachineId", "__synthesizedOrdinal");
-
-                            b1.ToTable("JobStepStateMachines");
-
-                            b1.ToJson("StepOutputs");
-
-                            b1.WithOwner()
-                                .HasForeignKey("JobStepStateMachineId");
-                        });
-
-                    b.OwnsMany("MediaBedrock.Domain.Jobs.Steps.JobStepProperty", "StepProperties", b1 =>
-                        {
-                            b1.Property<Guid>("JobStepStateMachineId")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<int>("__synthesizedOrdinal")
-                                .ValueGeneratedOnAddOrUpdate()
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<string>("Name")
-                                .IsRequired()
-                                .HasColumnType("TEXT");
-
-                            b1.Property<string>("Value")
-                                .HasColumnType("TEXT");
-
-                            b1.HasKey("JobStepStateMachineId", "__synthesizedOrdinal");
-
-                            b1.ToTable("JobStepStateMachines");
-
-                            b1.ToJson("StepProperties");
-
-                            b1.WithOwner()
-                                .HasForeignKey("JobStepStateMachineId");
-                        });
-
-                    b.Navigation("ExecutionError");
-
-                    b.Navigation("JobStateMachine");
-
-                    b.Navigation("StepInputs");
-
-                    b.Navigation("StepOutputs");
-
-                    b.Navigation("StepProperties");
+                    b.Navigation("StepStateMachines");
                 });
 
             modelBuilder.Entity("MediaBedrock.Domain.JobTemplates.JobTemplate", b =>
@@ -739,13 +769,6 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("MediaBedrock.Domain.Jobs.Job", b =>
                 {
                     b.Navigation("Steps");
-                });
-
-            modelBuilder.Entity("MediaBedrock.Domain.JobsStateMachine.JobStateMachine", b =>
-                {
-                    b.Navigation("AssetsPool");
-
-                    b.Navigation("StepsStateMachines");
                 });
 #pragma warning restore 612, 618
         }

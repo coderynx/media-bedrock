@@ -1,6 +1,6 @@
 using MediaBedrock.Domain.JobAssets;
 using MediaBedrock.Domain.Jobs.Steps;
-using MediaBedrock.Domain.JobStateMachine;
+using MediaBedrock.Domain.JobStateMachines;
 using MediaBedrock.Domain.Processors;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

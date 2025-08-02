@@ -10,11 +10,11 @@ public sealed record ProcessorProperty(string Name, string? Value)
 
 public static class ProcessPropertyExtensions
 {
-    public static string? GetValue(this ProcessorProperty? processorProperty, string? defaultValue)
+    public static string GetValue(this ProcessorProperty? processorProperty, string defaultValue)
     {
         return processorProperty?.Value ?? defaultValue;
     }
-    
+
     public static T? GetValue<T>(this ProcessorProperty? processorProperty, Func<string?, T> transform)
     {
         if (processorProperty?.Value is null)

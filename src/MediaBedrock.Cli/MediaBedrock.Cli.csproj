@@ -22,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\MediaBedrock.Infrastructure\MediaBedrock.Infrastructure.csproj" />
+        <ProjectReference Include="..\MediaBedrock.Infrastructure\MediaBedrock.Infrastructure.csproj"/>
         <ProjectReference Include="..\MediaBedrock.Cli.Presentation\MediaBedrock.Cli.Presentation.csproj"/>
         <ProjectReference Include="..\MediaBedrock.Dolby.Extensions.DependencyInjection\MediaBedrock.Dolby.Extensions.DependencyInjection.csproj"/>
     </ItemGroup>

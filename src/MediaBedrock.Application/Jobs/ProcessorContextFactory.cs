@@ -2,7 +2,7 @@ using Coderynx.Functional.Results;
 using MediaBedrock.Domain.JobAssets;
 using MediaBedrock.Domain.Jobs;
 using MediaBedrock.Domain.Jobs.Steps;
-using MediaBedrock.Domain.JobStateMachine;
+using MediaBedrock.Domain.JobStateMachines;
 using MediaBedrock.Domain.Processors.Interfaces;
 using MediaBedrock.Sdk.Processors;
 using Microsoft.Extensions.Logging;
@@ -13,7 +13,10 @@ public sealed class ProcessorContextFactory(
     IProcessorProvider processorProvider,
     ILoggerFactory loggerFactory) : IProcessorContextFactory
 {
-    public Result<ProcessorContext> Create(Type processorType, JobStateMachine jobStateMachine, JobStepName jobStepName)
+    public Result<ProcessorContext> Create(
+        Type processorType,
+        JobStateMachine jobStateMachine,
+        JobStepName jobStepName)
     {
         var stepStateMachine = jobStateMachine.StepStateMachines
             .SingleOrDefault(ja => ja.StepName.Equals(jobStepName));
@@ -28,12 +31,14 @@ public sealed class ProcessorContextFactory(
             .ToList();
 
         var processorConfiguration = processorProvider.ResolveConfiguration(stepStateMachine.ProcessorName);
-        if (processorConfiguration.IsSuccess)
+        if (processorConfiguration.IsFailure)
         {
-            properties.AddRange(
-                processorConfiguration.Value.Settings.Select(p => new ProcessorProperty(p.Key, p.Value))
-            );
+            return processorConfiguration.Error;
         }
+
+        properties.AddRange(
+            processorConfiguration.Value.Settings.Select(p => new ProcessorProperty(p.Key, p.Value))
+        );
 
         var processorInputs = new List<ProcessorInput>();
         foreach (var input in stepStateMachine.StepInputs)
@@ -87,6 +92,7 @@ public sealed class ProcessorContextFactory(
 
         var context = ProcessorContext.Create(
             logger: loggerFactory.CreateLogger(processorType),
+            pluginPath: processorConfiguration.Value.PluginPath,
             inputs: processorInputs,
             outputs: processorOutputs,
             properties: properties);

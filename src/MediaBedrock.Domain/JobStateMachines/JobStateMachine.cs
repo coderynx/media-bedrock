@@ -3,11 +3,10 @@ using MediaBedrock.Domain.JobAssets;
 using MediaBedrock.Domain.Jobs;
 using MediaBedrock.Domain.Jobs.Steps;
 
-namespace MediaBedrock.Domain.JobStateMachine;
+namespace MediaBedrock.Domain.JobStateMachines;
 
 public sealed class JobStateMachine
 {
-    private readonly List<JobStateMachineTag> _tags = [];
     private readonly List<JobAsset> _assetsPool = [];
     private readonly List<JobStepStateMachine> _stepStateMachines = [];
 
@@ -19,7 +18,6 @@ public sealed class JobStateMachine
     public required Job Job { get; init; }
     public JobExecutionStatus ExecutionStatus { get; private set; } = JobExecutionStatus.Pending;
     public JobExecutionError? ExecutionError { get; private set; }
-    public IReadOnlyCollection<JobStateMachineTag> Tags => _tags;
     public IReadOnlyList<JobStepStateMachine> StepStateMachines => _stepStateMachines;
     public IReadOnlyList<JobAsset> AssetsPool => _assetsPool;
 
@@ -32,26 +30,6 @@ public sealed class JobStateMachine
         };
 
         return stateMachine;
-    }
-
-    public void Tag(JobStateMachineTag tag)
-    {
-        if (_tags.Any(t => t.Equals(tag)))
-        {
-            return;
-        }
-
-        _tags.Add(tag);
-    }
-
-    public void Untag(JobStateMachineTag tag)
-    {
-        if (!_tags.Any(t => t.Equals(tag)))
-        {
-            return;
-        }
-
-        _tags.Remove(tag);
     }
 
     public void TransitionToRunning()

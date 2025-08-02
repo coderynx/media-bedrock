@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\MediaBedrock.Domain\MediaBedrock.Domain.csproj" />
+        <ProjectReference Include="..\MediaBedrock.Domain\MediaBedrock.Domain.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

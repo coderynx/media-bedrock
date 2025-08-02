@@ -1,4 +1,4 @@
-using MediaBedrock.Domain.JobStateMachine;
+using MediaBedrock.Domain.JobStateMachines;
 
 namespace MediaBedrock.Application.Jobs.Messages;
 

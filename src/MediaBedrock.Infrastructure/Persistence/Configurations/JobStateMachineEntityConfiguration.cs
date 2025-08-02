@@ -1,4 +1,4 @@
-using MediaBedrock.Domain.JobStateMachine;
+using MediaBedrock.Domain.JobStateMachines;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -14,10 +14,16 @@ public sealed class JobStateMachineEntityConfiguration : IEntityTypeConfiguratio
             .WithMany()
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.OwnsMany(
-            jsm => jsm.Tags,
-            t => t.Property(tag => tag.Value)
-                .HasConversion(value => new JobStateMachineTag(value), tag => tag.Value));
+        builder.OwnsOne(jsm => jsm.ExecutionError, e =>
+        {
+            e.Property(p => p.FailureReason)
+                .HasConversion<string>()
+                .IsRequired();
+
+            e.Property(p => p.Message)
+                .HasMaxLength(500)
+                .IsRequired(false);
+        });
 
         builder.HasMany(jsm => jsm.AssetsPool)
             .WithOne(ja => ja.JobStateMachine)

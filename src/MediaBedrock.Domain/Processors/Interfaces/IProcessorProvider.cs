@@ -23,7 +23,7 @@ public interface IProcessorProvider
     /// </summary>
     /// <param name="name">The name of the processor whose configuration is to be resolved.</param>
     /// <returns>
-    ///     A <see cref="Result{T}" /> containing the resolved <see cref="ProcessorConfiguration" /> if successful,
+    ///     A <see cref="Result{T}" /> containing the resolved <see cref="UserProcessorConfiguration" /> if successful,
     ///     or an error result if the configuration cannot be resolved.
     /// </returns>
     Result<ProcessorConfiguration> ResolveConfiguration(ProcessorName name);
