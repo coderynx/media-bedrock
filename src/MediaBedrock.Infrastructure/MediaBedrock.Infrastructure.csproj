@@ -7,8 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\MediaBedrock.Application\MediaBedrock.Application.csproj" />
-        <ProjectReference Include="..\MediaBedrock.Domain\MediaBedrock.Domain.csproj" />
+        <ProjectReference Include="..\MediaBedrock.Application\MediaBedrock.Application.csproj"/>
+        <ProjectReference Include="..\MediaBedrock.Domain\MediaBedrock.Domain.csproj"/>
         <ProjectReference Include="..\MediaBedrock.Sdk\MediaBedrock.Sdk.csproj"/>
     </ItemGroup>
 

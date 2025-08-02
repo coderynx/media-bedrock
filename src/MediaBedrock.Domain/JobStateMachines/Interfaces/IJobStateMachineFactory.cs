@@ -1,7 +1,7 @@
 using Coderynx.Functional.Results;
 using MediaBedrock.Domain.Jobs;
 
-namespace MediaBedrock.Domain.JobStateMachine.Interfaces;
+namespace MediaBedrock.Domain.JobStateMachines.Interfaces;
 
 /// <summary>
 ///     Interface for creating job containers.

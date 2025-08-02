@@ -2,10 +2,10 @@ using Coderynx.Functional.Results;
 using MediaBedrock.Domain.JobAssets;
 using MediaBedrock.Domain.JobAssets.Interfaces;
 using MediaBedrock.Domain.Jobs;
-using MediaBedrock.Domain.JobStateMachine.Interfaces;
+using MediaBedrock.Domain.JobStateMachines.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBedrock.Domain.JobStateMachine;
+namespace MediaBedrock.Domain.JobStateMachines;
 
 /// <inheritdoc />
 public sealed class JobStateMachineFactory(

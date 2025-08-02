@@ -2,7 +2,7 @@ using Coderynx.Functional.Options;
 using Coderynx.Functional.Results;
 using MediaBedrock.Domain.Jobs;
 using MediaBedrock.Domain.Jobs.Parameters;
-using MediaBedrock.Domain.JobStateMachine;
+using MediaBedrock.Domain.JobStateMachines;
 using MediaBedrock.Domain.JobTemplates;
 
 namespace MediaBedrock.Application.Jobs.Interfaces;

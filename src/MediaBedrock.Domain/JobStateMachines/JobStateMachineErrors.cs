@@ -1,6 +1,6 @@
 using Coderynx.Functional.Results.Errors;
 
-namespace MediaBedrock.Domain.JobStateMachine;
+namespace MediaBedrock.Domain.JobStateMachines;
 
 public static class JobStateMachineErrorCodes
 {

@@ -1,6 +1,6 @@
 using Coderynx.Functional.Results.Errors;
 using MediaBedrock.Domain.Jobs.Steps;
-using MediaBedrock.Domain.JobStateMachine;
+using MediaBedrock.Domain.JobStateMachines;
 
 namespace MediaBedrock.Domain.Jobs;
 

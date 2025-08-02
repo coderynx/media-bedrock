@@ -8,9 +8,12 @@ public sealed record ProcessorContext
     private IEnumerable<ProcessorOutput> _outputs = [];
     private IEnumerable<ProcessorProperty> _properties = [];
 
-    public IReadOnlyCollection<ProcessorOutput> Outputs => _outputs.ToArray();
-
     public required ILogger Logger { get; init; }
+    public required string PluginPath { get; init; }
+
+    public IReadOnlyList<ProcessorInput> Inputs => _inputs.ToArray();
+    public IReadOnlyList<ProcessorOutput> Outputs => _outputs.ToArray();
+    public IReadOnlyList<ProcessorProperty> Properties => _properties.ToArray();
 
     public ProcessorInput GetInputRequired(string name)
     {
@@ -47,6 +50,7 @@ public sealed record ProcessorContext
 
     public static ProcessorContext Create(
         ILogger logger,
+        string pluginPath,
         IEnumerable<ProcessorInput> inputs,
         IEnumerable<ProcessorOutput> outputs,
         IEnumerable<ProcessorProperty> properties)
@@ -54,6 +58,7 @@ public sealed record ProcessorContext
         return new ProcessorContext
         {
             Logger = logger,
+            PluginPath = pluginPath,
             _inputs = inputs,
             _outputs = outputs,
             _properties = properties

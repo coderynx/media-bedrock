@@ -1,7 +1,7 @@
-using MediaBedrock.Domain.JobStateMachine.Interfaces;
+using MediaBedrock.Domain.JobStateMachines.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace MediaBedrock.Domain.JobStateMachine.Bootstrap;
+namespace MediaBedrock.Domain.JobStateMachines.Bootstrap;
 
 internal static class DependencyInjection
 {

@@ -2,7 +2,7 @@ using Coderynx.Functional.Results;
 using MediaBedrock.Domain.Jobs.Steps;
 using MediaBedrock.Domain.Processors;
 
-namespace MediaBedrock.Domain.JobStateMachine;
+namespace MediaBedrock.Domain.JobStateMachines;
 
 public sealed class JobStepStateMachine
 {

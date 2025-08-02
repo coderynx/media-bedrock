@@ -51,7 +51,7 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "JobTemplateSteps",
+                name: "JobTemplateStep",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -66,9 +66,9 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_JobTemplateSteps", x => x.Id);
+                    table.PrimaryKey("PK_JobTemplateStep", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_JobTemplateSteps_JobTemplates_TemplateId",
+                        name: "FK_JobTemplateStep_JobTemplates_TemplateId",
                         column: x => x.TemplateId,
                         principalTable: "JobTemplates",
                         principalColumn: "Id",
@@ -76,18 +76,20 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "JobsStateMachines",
+                name: "JobStateMachines",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     JobId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ExecutionStatus = table.Column<string>(type: "TEXT", nullable: false)
+                    ExecutionStatus = table.Column<string>(type: "TEXT", nullable: false),
+                    ExecutionError_FailureReason = table.Column<string>(type: "TEXT", nullable: true),
+                    ExecutionError_Message = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_JobsStateMachines", x => x.Id);
+                    table.PrimaryKey("PK_JobStateMachines", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_JobsStateMachines_Jobs_JobId",
+                        name: "FK_JobStateMachines_Jobs_JobId",
                         column: x => x.JobId,
                         principalTable: "Jobs",
                         principalColumn: "Id",
@@ -95,7 +97,7 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "JobSteps",
+                name: "JobStep",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -108,9 +110,9 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_JobSteps", x => x.Id);
+                    table.PrimaryKey("PK_JobStep", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_JobSteps_Jobs_JobId",
+                        name: "FK_JobStep_Jobs_JobId",
                         column: x => x.JobId,
                         principalTable: "Jobs",
                         principalColumn: "Id",
@@ -118,7 +120,7 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "JobAssets",
+                name: "JobAsset",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -130,11 +132,11 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_JobAssets", x => x.Id);
+                    table.PrimaryKey("PK_JobAsset", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_JobAssets_JobsStateMachines_JobStateMachineId",
+                        name: "FK_JobAsset_JobStateMachines_JobStateMachineId",
                         column: x => x.JobStateMachineId,
-                        principalTable: "JobsStateMachines",
+                        principalTable: "JobStateMachines",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -148,7 +150,7 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
                     StepName = table.Column<string>(type: "TEXT", nullable: false),
                     ProcessorName = table.Column<string>(type: "TEXT", nullable: false),
                     ExecutionStatus = table.Column<string>(type: "TEXT", nullable: false),
-                    ExecutionError_Kind = table.Column<string>(type: "TEXT", nullable: true),
+                    ExecutionError_Reason = table.Column<string>(type: "TEXT", nullable: true),
                     ExecutionError_Message = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     StepInputs = table.Column<string>(type: "TEXT", nullable: true),
                     StepOutputs = table.Column<string>(type: "TEXT", nullable: true),
@@ -158,16 +160,16 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
                 {
                     table.PrimaryKey("PK_JobStepStateMachines", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_JobStepStateMachines_JobsStateMachines_JobStateMachineId",
+                        name: "FK_JobStepStateMachines_JobStateMachines_JobStateMachineId",
                         column: x => x.JobStateMachineId,
-                        principalTable: "JobsStateMachines",
+                        principalTable: "JobStateMachines",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_JobAssets_JobStateMachineId",
-                table: "JobAssets",
+                name: "IX_JobAsset_JobStateMachineId",
+                table: "JobAsset",
                 column: "JobStateMachineId");
 
             migrationBuilder.CreateIndex(
@@ -176,13 +178,13 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
                 column: "TemplateId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_JobsStateMachines_JobId",
-                table: "JobsStateMachines",
+                name: "IX_JobStateMachines_JobId",
+                table: "JobStateMachines",
                 column: "JobId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_JobSteps_JobId",
-                table: "JobSteps",
+                name: "IX_JobStep_JobId",
+                table: "JobStep",
                 column: "JobId");
 
             migrationBuilder.CreateIndex(
@@ -191,8 +193,8 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
                 column: "JobStateMachineId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_JobTemplateSteps_TemplateId",
-                table: "JobTemplateSteps",
+                name: "IX_JobTemplateStep_TemplateId",
+                table: "JobTemplateStep",
                 column: "TemplateId");
         }
 
@@ -200,19 +202,19 @@ namespace MediaBedrock.Infrastructure.Persistence.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "JobAssets");
+                name: "JobAsset");
 
             migrationBuilder.DropTable(
-                name: "JobSteps");
+                name: "JobStep");
 
             migrationBuilder.DropTable(
                 name: "JobStepStateMachines");
 
             migrationBuilder.DropTable(
-                name: "JobTemplateSteps");
+                name: "JobTemplateStep");
 
             migrationBuilder.DropTable(
-                name: "JobsStateMachines");
+                name: "JobStateMachines");
 
             migrationBuilder.DropTable(
                 name: "Jobs");
