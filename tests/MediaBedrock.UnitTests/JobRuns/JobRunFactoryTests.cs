@@ -222,7 +222,7 @@ public sealed class JobRunFactoryTests
         result.Value.Steps.Count.ShouldBe(0);
     }
 
-    private Job CreateValidJob()
+    private static Job CreateValidJob()
     {
         var template = JobTemplate.Create(
             name: new JobTemplateName("TestTemplate"),
@@ -252,7 +252,7 @@ public sealed class JobRunFactoryTests
         return jobFactory.Create(template, parameters).Value;
     }
 
-    private Job CreateJobWithInputs(int inputCount)
+    private static Job CreateJobWithInputs(int inputCount)
     {
         var inputs = Enumerable.Range(1, inputCount)
             .Select(i => new JobTemplateInput($"input{i}"))
@@ -280,7 +280,7 @@ public sealed class JobRunFactoryTests
         return jobFactory.Create(template, parameters).Value;
     }
 
-    private Job CreateJobWithOutputs(int outputCount)
+    private static Job CreateJobWithOutputs(int outputCount)
     {
         var outputs = Enumerable.Range(1, outputCount)
             .Select(i => new JobTemplateOutput($"output{i}"))
@@ -308,7 +308,7 @@ public sealed class JobRunFactoryTests
         return jobFactory.Create(template, parameters).Value;
     }
 
-    private Job CreateJobWithStepsRequiringMezzanines()
+    private static Job CreateJobWithStepsRequiringMezzanines()
     {
         var template = JobTemplate.Create(
             name: new JobTemplateName("TestTemplate"),
@@ -338,7 +338,7 @@ public sealed class JobRunFactoryTests
         return jobFactory.Create(template, parameters).Value;
     }
 
-    private Job CreateJobWithDuplicateAssetReferences()
+    private static Job CreateJobWithDuplicateAssetReferences()
     {
         var template = JobTemplate.Create(
             name: new JobTemplateName("TestTemplate"),
@@ -376,7 +376,7 @@ public sealed class JobRunFactoryTests
         return jobFactory.Create(template, parameters).Value;
     }
 
-    private Job CreateJobWithMultipleSteps(int stepCount)
+    private static Job CreateJobWithMultipleSteps(int stepCount)
     {
         var template = JobTemplate.Create(
             name: new JobTemplateName("TestTemplate"),
@@ -412,7 +412,7 @@ public sealed class JobRunFactoryTests
         return jobFactory.Create(template, parameters).Value;
     }
 
-    private Job CreateJobWithNoInputs()
+    private static Job CreateJobWithNoInputs()
     {
         var template = JobTemplate.Create(
             name: new JobTemplateName("TestTemplate"),
@@ -432,7 +432,7 @@ public sealed class JobRunFactoryTests
         return jobFactory.Create(template, parameters).Value;
     }
 
-    private Job CreateJobWithNoOutputs()
+    private static Job CreateJobWithNoOutputs()
     {
         var template = JobTemplate.Create(
             name: new JobTemplateName("TestTemplate"),
@@ -452,7 +452,7 @@ public sealed class JobRunFactoryTests
         return jobFactory.Create(template, parameters).Value;
     }
 
-    private Job CreateJobWithNoSteps()
+    private static Job CreateJobWithNoSteps()
     {
         var template = JobTemplate.Create(
             name: new JobTemplateName("TestTemplate"),
