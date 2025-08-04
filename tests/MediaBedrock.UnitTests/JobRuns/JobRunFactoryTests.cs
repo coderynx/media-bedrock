@@ -18,14 +18,14 @@ namespace MediaBedrock.UnitTests.JobRuns;
 public sealed class JobRunFactoryTests
 {
     private readonly IFixture _fixture;
-    private readonly IMediaInformationRetriever _mediaInformationRetriever;
     private readonly JobRunFactory _jobRunFactory;
+    private readonly IMediaInformationRetriever _mediaInformationRetriever;
 
     public JobRunFactoryTests()
     {
         _fixture = new Fixture();
         _mediaInformationRetriever = Substitute.For<IMediaInformationRetriever>();
-        
+
         var logger = Substitute.For<ILogger<JobRunFactory>>();
         _jobRunFactory = new JobRunFactory(_mediaInformationRetriever, logger);
     }
@@ -36,7 +36,7 @@ public sealed class JobRunFactoryTests
         // Arrange
         var mediaInformation = _fixture.Create<MediaInformation>();
         var job = CreateValidJob();
-        
+
         _mediaInformationRetriever
             .GetMediaInfoAsync(Arg.Any<string>())
             .Returns(Task.FromResult(Result.Created(mediaInformation)));
@@ -59,7 +59,7 @@ public sealed class JobRunFactoryTests
         // Arrange
         var job = CreateValidJob();
         var error = Error.NotFound("MediaInfo.Failed", "Failed to retrieve media information");
-        
+
         _mediaInformationRetriever
             .GetMediaInfoAsync(Arg.Any<string>())
             .Returns(Task.FromResult(new Result<MediaInformation>(error)));
@@ -78,7 +78,7 @@ public sealed class JobRunFactoryTests
         // Arrange
         var mediaInformation = _fixture.Create<MediaInformation>();
         var job = CreateJobWithInputs(2);
-        
+
         _mediaInformationRetriever
             .GetMediaInfoAsync(Arg.Any<string>())
             .Returns(Task.FromResult(Result.Created(mediaInformation)));
@@ -98,7 +98,7 @@ public sealed class JobRunFactoryTests
         // Arrange
         var mediaInformation = _fixture.Create<MediaInformation>();
         var job = CreateJobWithOutputs(3);
-        
+
         _mediaInformationRetriever
             .GetMediaInfoAsync(Arg.Any<string>())
             .Returns(Task.FromResult(Result.Created(mediaInformation)));
@@ -117,7 +117,7 @@ public sealed class JobRunFactoryTests
         // Arrange
         var mediaInformation = _fixture.Create<MediaInformation>();
         var job = CreateJobWithStepsRequiringMezzanines();
-        
+
         _mediaInformationRetriever
             .GetMediaInfoAsync(Arg.Any<string>())
             .Returns(Task.FromResult(Result.Created(mediaInformation)));
@@ -136,7 +136,7 @@ public sealed class JobRunFactoryTests
         // Arrange
         var mediaInformation = _fixture.Create<MediaInformation>();
         var job = CreateJobWithDuplicateAssetReferences();
-        
+
         _mediaInformationRetriever
             .GetMediaInfoAsync(Arg.Any<string>())
             .Returns(Task.FromResult(Result.Created(mediaInformation)));
@@ -156,7 +156,7 @@ public sealed class JobRunFactoryTests
         // Arrange
         var mediaInformation = _fixture.Create<MediaInformation>();
         var job = CreateJobWithMultipleSteps(3);
-        
+
         _mediaInformationRetriever
             .GetMediaInfoAsync(Arg.Any<string>())
             .Returns(Task.FromResult(Result.Created(mediaInformation)));
@@ -190,7 +190,7 @@ public sealed class JobRunFactoryTests
         // Arrange
         var mediaInformation = _fixture.Create<MediaInformation>();
         var job = CreateJobWithNoOutputs();
-        
+
         _mediaInformationRetriever
             .GetMediaInfoAsync(Arg.Any<string>())
             .Returns(Task.FromResult(Result.Created(mediaInformation)));
@@ -209,7 +209,7 @@ public sealed class JobRunFactoryTests
         // Arrange
         var mediaInformation = _fixture.Create<MediaInformation>();
         var job = CreateJobWithNoSteps();
-        
+
         _mediaInformationRetriever
             .GetMediaInfoAsync(Arg.Any<string>())
             .Returns(Task.FromResult(Result.Created(mediaInformation)));
