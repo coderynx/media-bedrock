@@ -8,8 +8,8 @@ public sealed class RunConsumer(IJobRunService jobRunService) : IMessageConsumer
 {
     public async Task HandleAsync(RunJob message, CancellationToken cancellationToken = default)
     {
-        var run = await jobRunService.StartAsync(message.JobRunId, cancellationToken);
-        if (run.IsFailure)
+        var startJob = await jobRunService.StartAsync(message.JobRunId, cancellationToken);
+        if (startJob.IsFailure)
         {
             throw new InvalidOperationException(
                 $"Failed to run job {message.JobRunId}");

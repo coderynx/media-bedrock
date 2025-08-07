@@ -9,11 +9,11 @@ public sealed class JobCompletedConsumer(IJobRunService jobRunService)
 {
     public async Task HandleAsync(JobCompleted message, CancellationToken cancellationToken = default)
     {
-        var completeJobs = await jobRunService.CompleteJobAsync(
+        var completeJob = await jobRunService.CompleteJobAsync(
             jobRunId: message.JobRunId,
             cancellationToken: cancellationToken);
 
-        if (completeJobs.IsFailure)
+        if (completeJob.IsFailure)
         {
             throw new InvalidOperationException($"Failed to complete job {message.JobRunId}");
         }

@@ -9,12 +9,12 @@ public sealed class ProcessStepConsumer(IJobRunService jobRunService)
 {
     public async Task HandleAsync(ProcessJobStep message, CancellationToken cancellationToken = default)
     {
-        var run = await jobRunService.StartStepAsync(
+        var startStep = await jobRunService.StartStepAsync(
             jobRunId: message.JobRunId,
             jobRunStepId: message.JobRunStepId,
             cancellationToken: cancellationToken);
 
-        if (run.IsFailure)
+        if (startStep.IsFailure)
         {
             throw new InvalidOperationException(
                 $"Failed to run job step {message.JobRunStepId} for job {message.JobRunId}");

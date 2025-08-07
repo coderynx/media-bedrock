@@ -9,13 +9,13 @@ public sealed class JobStepFailedConsumer(IJobRunService jobRunService)
 {
     public async Task HandleAsync(JobStepFailed message, CancellationToken cancellationToken = default)
     {
-        var stop = await jobRunService.FailStepAsync(
+        var failStep = await jobRunService.FailStepAsync(
             jobRunStepId: message.JobRunStepId,
             reason: message.FailureReason,
             message: message.Message,
             cancellationToken: cancellationToken);
 
-        if (stop.IsFailure)
+        if (failStep.IsFailure)
         {
             throw new InvalidOperationException(
                 $"Failed to stop job step {message.JobRunStepId} for job {message.JobRunId}");
