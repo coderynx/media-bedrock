@@ -9,12 +9,12 @@ public sealed class JobStepCompletedConsumer(IJobRunService jobRunService)
 {
     public async Task HandleAsync(JobStepCompleted message, CancellationToken cancellationToken = default)
     {
-        var stop = await jobRunService.CompleteStepAsync(
+        var completeStep = await jobRunService.CompleteStepAsync(
             jobRunStepId: message.JobRunStepId,
             updatedAssetNames: message.UpdatedAssetNames,
             cancellationToken: cancellationToken);
 
-        if (stop.IsFailure)
+        if (completeStep.IsFailure)
         {
             throw new InvalidOperationException(
                 $"Failed to stop job step {message.JobRunStepId} for job {message.JobRunId}");
