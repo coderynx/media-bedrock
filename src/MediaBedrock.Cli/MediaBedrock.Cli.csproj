@@ -9,16 +9,16 @@
 
     <ItemGroup>
         <PackageReference Include="Cocona" Version="2.2.0"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.4">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.4"/>
-        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="9.0.4"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.9" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="9.0.9" />
         <PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0"/>
         <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0"/>
-        <PackageReference Include="Spectre.Console" Version="0.50.0"/>
-        <PackageReference Include="Spectre.Console.Json" Version="0.50.0"/>
+        <PackageReference Include="Spectre.Console" Version="0.51.1" />
+        <PackageReference Include="Spectre.Console.Json" Version="0.51.1" />
     </ItemGroup>
 
     <ItemGroup>
