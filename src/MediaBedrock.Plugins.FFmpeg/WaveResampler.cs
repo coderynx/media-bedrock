@@ -6,7 +6,8 @@ namespace MediaBedrock.Plugins.FFmpeg;
 [Processor("ffmpeg", "wave_resampler")]
 public sealed class WaveResampler : IProcessor
 {
-    public async Task<ProcessorResult> ProcessAsync(ProcessorContext context,
+    public async Task<ProcessorResult> ProcessAsync(
+        ProcessorContext context,
         CancellationToken cancellationToken = default)
     {
         const string inputKey = "input";
