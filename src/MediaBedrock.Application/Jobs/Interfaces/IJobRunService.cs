@@ -9,6 +9,9 @@ namespace MediaBedrock.Application.Jobs.Interfaces;
 
 public interface IJobRunService
 {
+    Task<Option<JobRun>> GetAsync(JobId jobId, CancellationToken ct = default);
+    Task<List<JobRun>> GetAsync(JobTemplateName jobTemplateName, CancellationToken ct = default);
+    
     Task<Result> StartAsync(JobRunId jobRunId, CancellationToken cancellationToken = default);
 
     Task<Result> CompleteJobAsync(JobRunId jobRunId, CancellationToken cancellationToken = default);
@@ -28,9 +31,6 @@ public interface IJobRunService
         JobStepFailureReason reason,
         string message = "",
         CancellationToken cancellationToken = default);
-
-    Task<Option<JobRun>> GetAsync(JobId jobId, CancellationToken ct = default);
-    Task<List<JobRun>> GetAsync(JobTemplateName jobTemplateName, CancellationToken ct = default);
 
     Task DeleteAsync(
         JobTemplateName jobTemplateName,

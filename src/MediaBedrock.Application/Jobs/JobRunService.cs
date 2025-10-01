@@ -44,6 +44,28 @@ public sealed class JobRunService(
         logger.LogDebug("Retrieved job run with JobId {JobId} ", jobId);
         return Option.Some(jobRuns);
     }
+    
+    public async Task<List<JobRun>> GetAsync(
+        JobRunStatus runStatus,
+        CancellationToken ct = default)
+    {
+        var jobRun = await dbContext.JobRuns
+            .Include(jsm => jsm.AssetsPool)
+            .Include(jsm => jsm.Job)
+            .ThenInclude(j => j.Template)
+            .Include(jsm => jsm.Steps)
+            .ThenInclude(jssm => jssm.StepInputs)
+            .Include(jsm => jsm.Steps)
+            .ThenInclude(jssm => jssm.StepOutputs)
+            .Where(jsm => jsm.Status.Equals(runStatus))
+            .ToListAsync(cancellationToken: ct);
+
+        logger.LogDebug("Retrieved {JobCount} job runs with execution status {ExecutionStatus}",
+            jobRun.Count,
+            runStatus);
+
+        return jobRun;
+    }
 
     public async Task<List<JobRun>> GetAsync(JobTemplateName jobTemplateName, CancellationToken ct = default)
     {
@@ -127,10 +149,6 @@ public sealed class JobRunService(
         const string jobStepNamePropertyName = "JobStepName";
         const string jobActivityIdPropertyName = "JobActivityId";
         const string processorNamePropertyName = "ProcessorName";
-
-        logger.LogInformation("Processing job run step {JobRunStepId} for job run {JobRunId}",
-            jobRunStepId,
-            jobRunId);
 
         var jobRun = await dbContext.JobRuns
             .Include(j => j.AssetsPool)
@@ -372,28 +390,6 @@ public sealed class JobRunService(
         return await dbContext.SaveChangesAsync(cancellationToken) > 0
             ? Result.Updated()
             : JobRunErrors.UpdateFailed(jobRunId);
-    }
-
-    public async Task<List<JobRun>> GetAsync(
-        JobRunStatus runStatus,
-        CancellationToken ct = default)
-    {
-        var jobRun = await dbContext.JobRuns
-            .Include(jsm => jsm.AssetsPool)
-            .Include(jsm => jsm.Job)
-            .ThenInclude(j => j.Template)
-            .Include(jsm => jsm.Steps)
-            .ThenInclude(jssm => jssm.StepInputs)
-            .Include(jsm => jsm.Steps)
-            .ThenInclude(jssm => jssm.StepOutputs)
-            .Where(jsm => jsm.Status.Equals(runStatus))
-            .ToListAsync(cancellationToken: ct);
-
-        logger.LogDebug("Retrieved {JobCount} job runs with execution status {ExecutionStatus}",
-            jobRun.Count,
-            runStatus);
-
-        return jobRun;
     }
 
     private async Task PublishProcessJobStepMessagesAsync(
