@@ -78,8 +78,6 @@ public sealed class JobsService(
             return JobErrors.NotFound(jobId);
         }
 
-        logger.LogInformation("Starting job execution for {JobId}", job.Id);
-
         var createJobRun = await jobRunFactory.CreateAsync(job);
         if (createJobRun.IsFailure)
         {
@@ -118,7 +116,7 @@ public sealed class JobsService(
         if (errors.Count is not 0)
         {
             logger.LogError("Batch job execution failed for {JobCount} jobs", errors.Count);
-            return errors.First().Error;
+            return errors[0].Error;
         }
 
         logger.LogInformation("Batch job execution completed for {JobCount} jobs", jobIds.Count);
