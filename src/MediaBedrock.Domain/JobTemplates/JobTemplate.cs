@@ -50,4 +50,9 @@ public sealed class JobTemplate
     {
         _steps.AddRange(steps);
     }
+
+    public void AddStep(JobTemplateStep step)
+    {
+        _steps.Add(step);
+    }
 }

@@ -30,10 +30,11 @@ public sealed record JobTemplateManifestStep
     public IReadOnlyDictionary<string, string> OutputsMappings { get; }
     public IReadOnlyDictionary<string, string> Properties { get; }
 
-    public JobTemplateStep ToTemplateStep(JobTemplate template)
+    public JobTemplateStep ToTemplateStep(JobTemplate template, JobTemplateStepOrder order)
     {
         return JobTemplateStep.Create(
             template: template,
+            order: order,
             name: Name,
             processorName: ProcessorName,
             inputs: InputsMappings.Select(i => new JobTemplateStepInput(i.Key, i.Value)).ToList(),

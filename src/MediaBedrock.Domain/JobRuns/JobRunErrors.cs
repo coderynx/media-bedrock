@@ -11,6 +11,7 @@ public static class JobRunErrorCodes
     public const string NotFoundStep = "JobRune.NotFoundJobStep";
     public const string InvalidStepStatusTransition = "JobRune.InvalidStepStatusTransition";
     public const string UpdatedFailed = "JobRune.UpdateFailed";
+    public const string InvalidStepOrder = "JobRune.InvalidStepOrder";
 }
 
 public static class JobRunErrors
@@ -64,5 +65,12 @@ public static class JobRunErrors
         return Error.InvalidInput(
             code: JobRunErrorCodes.InvalidTag,
             message: $"The job run tag '{tag}' is invalid.");
+    }
+
+    public static Error InvalidStepOrder(uint value)
+    {
+        return Error.InvalidInput(
+            code: JobRunErrorCodes.InvalidStepOrder,
+            message: $"The job run step order '{value}' is invalid. It must be greater than zero.");
     }
 }

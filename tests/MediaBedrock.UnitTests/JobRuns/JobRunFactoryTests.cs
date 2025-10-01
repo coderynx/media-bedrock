@@ -234,6 +234,7 @@ public sealed class JobRunFactoryTests
 
         var step = JobTemplateStep.Create(
             template: template,
+            order: new JobTemplateStepOrder(1),
             name: new JobTemplateStepName("step1"),
             processorName: ProcessorName.Create("test/processor").Value,
             inputs: [new JobTemplateStepInput("input1", "input1")],
@@ -320,6 +321,7 @@ public sealed class JobRunFactoryTests
 
         var step = JobTemplateStep.Create(
             template: template,
+            order: new JobTemplateStepOrder(1),
             name: new JobTemplateStepName("step1"),
             processorName: ProcessorName.Create("test/processor").Value,
             inputs: [new JobTemplateStepInput("mezzanine1", "mezzanine1")],
@@ -350,6 +352,7 @@ public sealed class JobRunFactoryTests
 
         var step1 = JobTemplateStep.Create(
             template: template,
+            order: new JobTemplateStepOrder(1),
             name: new JobTemplateStepName("step1"),
             processorName: ProcessorName.Create("test/processor").Value,
             inputs: [new JobTemplateStepInput("shared_asset", "shared_asset")],
@@ -358,6 +361,7 @@ public sealed class JobRunFactoryTests
 
         var step2 = JobTemplateStep.Create(
             template: template,
+            order: new JobTemplateStepOrder(2),
             name: new JobTemplateStepName("step2"),
             processorName: ProcessorName.Create("test/processor").Value,
             inputs: [new JobTemplateStepInput("shared_asset", "shared_asset")],
@@ -391,6 +395,7 @@ public sealed class JobRunFactoryTests
         {
             var step = JobTemplateStep.Create(
                 template: template,
+                order: new JobTemplateStepOrder((uint)i),
                 name: new JobTemplateStepName($"step{i}"),
                 processorName: ProcessorName.Create("test/processor").Value,
                 inputs: [],

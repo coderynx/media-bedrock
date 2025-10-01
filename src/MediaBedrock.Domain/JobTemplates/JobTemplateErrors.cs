@@ -15,6 +15,7 @@ public static class JobTemplateErrorCodes
     public const string InvalidInputId = "JobTemplate.InvalidInputId";
     public const string StoreFailed = "JobTemplate.StoreFailed";
     public const string InvalidStepId = "JobTemplate.InvalidStepId";
+    public const string InvalidStepOrder = "JobTemplate.InvalidStepOrder";
 }
 
 public static class JobTemplateErrors
@@ -94,5 +95,12 @@ public static class JobTemplateErrors
         return Error.InvalidInput(
             code: JobTemplateErrorCodes.InvalidStepId,
             message: "The job template step ID is invalid.");
+    }
+
+    public static Error InvalidStepOrder(uint value)
+    {
+        return Error.InvalidInput(
+            code: JobTemplateErrorCodes.InvalidStepOrder,
+            message: $"The job template step order '{value}' is invalid. It must be greater than zero.");
     }
 }

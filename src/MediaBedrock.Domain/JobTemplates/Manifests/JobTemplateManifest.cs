@@ -46,7 +46,10 @@ public sealed record JobTemplateManifest
             displayName: DisplayName,
             description: Description);
 
-        var steps = Steps.Select(s => s.ToTemplateStep(template)).ToList();
+        var steps = Steps
+            .Select((step, index) => step.ToTemplateStep(template, new JobTemplateStepOrder((uint)(index + 1))))
+            .ToList();
+
         template.AddStepRange(steps);
 
         return template;

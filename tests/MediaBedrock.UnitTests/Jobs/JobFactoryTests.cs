@@ -47,6 +47,7 @@ public sealed class JobFactoryTests
 
         var step = JobTemplateStep.Create(
             template: template,
+            order: new JobTemplateStepOrder(1),
             name: new JobTemplateStepName("Step1"),
             processorName: ProcessorName.Create("namespace/processor").Value,
             inputs: [],
@@ -102,6 +103,7 @@ public sealed class JobFactoryTests
 
         var step = JobTemplateStep.Create(
             template: template,
+            order: new JobTemplateStepOrder(1),
             name: new JobTemplateStepName("Step1"),
             processorName: ProcessorName.Create("namespace/processor").Value,
             inputs: [],

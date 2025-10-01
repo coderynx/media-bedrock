@@ -15,6 +15,10 @@ public sealed class JobTemplateStepEntityConfiguration : IEntityTypeConfiguratio
             .HasConversion(id => id.Value, value => new JobTemplateStepId(value))
             .ValueGeneratedNever();
 
+        builder.Property(jts => jts.Order)
+            .HasConversion(order => order.Value, value => new JobTemplateStepOrder(value))
+            .IsRequired();
+
         builder.Property(jts => jts.Name)
             .HasConversion(name => name.Value, value => new JobTemplateStepName(value))
             .IsRequired();

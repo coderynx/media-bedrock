@@ -15,6 +15,7 @@ public static class JobErrorCodes
     public const string RunNotFound = "Job.RunNotFound";
     public const string InvalidId = "Job.InvalidId";
     public const string StoreFailed = "Job.StoreFailed";
+    public const string InvalidStepOrder = "Job.InvalidStepOrder";
 }
 
 public static class JobErrors
@@ -87,5 +88,12 @@ public static class JobErrors
         return Error.Custom(
             code: JobErrorCodes.StoreFailed,
             message: $"The job with ID '{valueId}' could not be stored. Please check the job and try again.");
+    }
+
+    public static Error InvalidStepOrder(uint value)
+    {
+        return Error.InvalidInput(
+            code: JobErrorCodes.InvalidStepOrder,
+            message: $"The job step order '{value}' is invalid. Step order must be greater than zero.");
     }
 }

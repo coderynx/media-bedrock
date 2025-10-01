@@ -354,6 +354,7 @@ public sealed class ProcessorContextFactoryTests
 
         return JobStep.Create(
             job: job,
+            order: new JobStepOrder(1),
             name: new JobStepName(stepName),
             processorName: ProcessorName.Create("test/processor").Value,
             properties: stepProperties,

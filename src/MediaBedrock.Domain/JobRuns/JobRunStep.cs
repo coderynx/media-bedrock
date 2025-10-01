@@ -16,6 +16,7 @@ public sealed class JobRunStep
 
     public required JobRunStepId Id { get; init; }
     public required JobRun JobRun { get; init; }
+    public required JobRunStepOrder Order { get; init; }
     public required JobStepName StepName { get; init; }
     public required ProcessorName ProcessorName { get; init; }
     public IReadOnlyList<JobStepInput> StepInputs => _inputs;
@@ -30,6 +31,7 @@ public sealed class JobRunStep
         {
             Id = new JobRunStepId(),
             JobRun = jobRun,
+            Order = JobRunStepOrder.Create(step.Order),
             StepName = step.Name,
             ProcessorName = step.ProcessorName,
             _properties = step.Properties.ToList(),

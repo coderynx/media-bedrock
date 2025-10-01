@@ -34,13 +34,15 @@ public sealed class Job
         };
     }
 
-    public void CreateStep(JobStepName name,
+    public void CreateStep(
+        JobStepName name,
+        JobStepOrder order,
         ProcessorName processorName,
         List<JobStepProperty> properties,
         List<JobStepInput> inputs,
         List<JobStepOutput> outputs)
     {
-        var step = JobStep.Create(this, name, processorName, properties, inputs, outputs);
+        var step = JobStep.Create(this, order, name, processorName, properties, inputs, outputs);
         _steps.Add(step);
     }
 }

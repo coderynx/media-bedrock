@@ -14,6 +14,7 @@ public sealed class JobTemplateStep
 
     public required JobTemplateStepId Id { get; init; }
     public required JobTemplate Template { get; init; }
+    public required JobTemplateStepOrder Order { get; init; }
     public required JobTemplateStepName Name { get; init; }
     public string DisplayName { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;
@@ -25,6 +26,7 @@ public sealed class JobTemplateStep
 
     public static JobTemplateStep Create(
         JobTemplate template,
+        JobTemplateStepOrder order,
         JobTemplateStepName name,
         ProcessorName processorName,
         List<JobTemplateStepInput> inputs,
@@ -37,6 +39,7 @@ public sealed class JobTemplateStep
         {
             Id = new JobTemplateStepId(),
             Template = template,
+            Order = order,
             Name = name,
             ProcessorName = processorName,
             _inputs = inputs,

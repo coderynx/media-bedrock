@@ -14,6 +14,7 @@ public sealed class JobStep
 
     public required JobStepId Id { get; init; }
     public required Job Job { get; init; }
+    public required JobStepOrder Order { get; init; }
     public required JobStepName Name { get; init; }
     public required ProcessorName ProcessorName { get; init; }
     public IReadOnlyList<JobStepProperty> Properties => _properties.AsReadOnly();
@@ -22,6 +23,7 @@ public sealed class JobStep
 
     public static JobStep Create(
         Job job,
+        JobStepOrder order,
         JobStepName name,
         ProcessorName processorName,
         List<JobStepProperty> properties,
@@ -32,6 +34,7 @@ public sealed class JobStep
         {
             Id = JobStepId.Create(),
             Job = job,
+            Order = order,
             Name = name,
             ProcessorName = processorName,
             _properties = properties,
