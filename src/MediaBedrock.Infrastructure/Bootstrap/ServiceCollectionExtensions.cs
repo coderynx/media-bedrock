@@ -1,6 +1,8 @@
+using Coderynx.MessagingKit;
+using Coderynx.MessagingKit.Transports.InMemory;
+using MediaBedrock.Contracts.JobRuns;
 using MediaBedrock.Infrastructure.Database.Bootstrap;
 using MediaBedrock.Infrastructure.Media;
-using MediaBedrock.Infrastructure.Messaging.Bootstrap;
 using MediaBedrock.Infrastructure.Plugins;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,8 +12,16 @@ public static class ServiceCollectionExtensions
 {
     public static void AddInfrastructure(this IServiceCollection services)
     {
-        services.AddMessaging();
         services.AddPersistence();
+        services.AddMessaging(messaging =>
+            messaging.AddInMemory(inMemory =>
+            {
+                inMemory.WithEvent<JobRunCompleted>();
+                inMemory.WithEvent<JobRunFailed>();
+                inMemory.WithEvent<JobRunStepCompleted>();
+                inMemory.WithEvent<JobRunStepFailed>();
+                inMemory.WithEvent<ProcessJobRunStep>();
+            }));
 
         services.AddPlugins();
         services.AddMedia();

@@ -7,11 +7,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\MediaBedrock.Contracts\MediaBedrock.Contracts.csproj" />
+        <ProjectReference Include="..\MediaBedrock.Contracts\MediaBedrock.Contracts.csproj"/>
         <ProjectReference Include="..\MediaBedrock.Domain\MediaBedrock.Domain.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Coderynx.MessagingKit.Abstractions" Version="0.0.1"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.9"/>
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.9"/>
         <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.9"/>

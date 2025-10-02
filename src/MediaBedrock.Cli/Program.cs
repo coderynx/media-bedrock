@@ -23,8 +23,8 @@ builder.Services.Configure<HostOptions>(options =>
 });
 
 builder.Services.AddDomain();
-builder.Services.AddInfrastructure();
 builder.Services.AddApplication();
+builder.Services.AddInfrastructure();
 
 var app = builder.Build();
 

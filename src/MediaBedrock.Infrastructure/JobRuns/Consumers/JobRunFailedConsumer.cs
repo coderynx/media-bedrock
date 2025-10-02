@@ -1,14 +1,16 @@
+using Coderynx.MessagingKit.Abstractions;
 using MediaBedrock.Application.JobRuns.Interfaces;
 using MediaBedrock.Contracts.JobRuns;
 using MediaBedrock.Domain.JobRuns;
-using MediaBedrock.Infrastructure.Messaging;
 
 namespace MediaBedrock.Infrastructure.JobRuns.Consumers;
 
-public sealed class JobRunFailedConsumer(IJobRunsOrchestrator jobRunsOrchestrator) : IMessageConsumer<JobRunFailed>
+public sealed class JobRunFailedConsumer(IJobRunsOrchestrator jobRunsOrchestrator) : IConsumer<JobRunFailed>
 {
-    public async Task HandleAsync(JobRunFailed message, CancellationToken cancellationToken = default)
+    public async Task ConsumeAsync(ConsumerContext<JobRunFailed> context, CancellationToken ct = new())
     {
+        var message = context.Message;
+
         var createJobRunId = JobRunId.Create(message.JobRunId);
         if (createJobRunId.IsFailure)
         {
@@ -25,7 +27,7 @@ public sealed class JobRunFailedConsumer(IJobRunsOrchestrator jobRunsOrchestrato
             jobRunId: createJobRunId.Value,
             failureReason: failureReason,
             message: message.Message,
-            cancellationToken: cancellationToken);
+            cancellationToken: ct);
 
         if (failJob.IsFailure)
         {

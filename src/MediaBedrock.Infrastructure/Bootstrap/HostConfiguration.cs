@@ -1,3 +1,4 @@
+using Coderynx.MessagingKit;
 using MediaBedrock.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,20 @@ public static class HostConfiguration
 
             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             dbContext.Database.Migrate();
+        }
+
+        services.UseMessaging();
+    }
+
+    // TODO: This should be removed and use the library method instead.
+    private static void UseMessaging(this IServiceProvider services, bool waitForInitialization = false)
+    {
+        var busProvider = services.GetRequiredService<MessageBusManager>();
+        busProvider.InitializeBuses();
+
+        if (waitForInitialization)
+        {
+            busProvider.WaitForBusesInitialization();
         }
     }
 }

@@ -1,8 +1,7 @@
 using Coderynx.Functional.Results;
+using Coderynx.MessagingKit.Abstractions;
 using MediaBedrock.Application.Database;
 using MediaBedrock.Application.JobRuns.Interfaces;
-using MediaBedrock.Application.Jobs.Interfaces;
-using MediaBedrock.Application.Messaging;
 using MediaBedrock.Contracts.JobRuns;
 using MediaBedrock.Domain.JobAssets;
 using MediaBedrock.Domain.JobRuns;
@@ -14,7 +13,7 @@ namespace MediaBedrock.Application.JobRuns.Services;
 
 public sealed class JobRunsOrchestrator(
     IApplicationDbContext dbContext,
-    IMessageBus messageBus,
+    IMessagePublisher messagePublisher,
     ILogger<JobRunsOrchestrator> logger) : IJobRunsOrchestrator
 {
     public async Task<Result> StartAsync(
@@ -42,7 +41,7 @@ public sealed class JobRunsOrchestrator(
             .Where(s => s.StepInputs.Any(a => inputAssets.Any(i => i.Name.Equals(a.AssetName))))
             .Select(jobStep => new ProcessJobRunStep(jobRun.Id.Value, jobStep.Id.Value));
 
-        await messageBus.PublishAsync(processJobSteps, cancellationToken);
+        await messagePublisher.PublishAsync(processJobSteps, cancellationToken);
 
         jobRun.TransitionToRunning();
         await dbContext.SaveChangesAsync(cancellationToken);
