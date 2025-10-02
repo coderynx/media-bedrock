@@ -1,8 +1,8 @@
 using Coderynx.Functional.Results;
+using MediaBedrock.Application.Database;
 using MediaBedrock.Application.JobRuns.Interfaces;
+using MediaBedrock.Application.JobRuns.Messages;
 using MediaBedrock.Application.Jobs.Interfaces;
-using MediaBedrock.Application.Jobs.Messages;
-using MediaBedrock.Application.Persistence;
 using MediaBedrock.Domain.JobAssets;
 using MediaBedrock.Domain.JobRuns;
 using MediaBedrock.Domain.Jobs;
@@ -39,7 +39,7 @@ public sealed class JobRunsOrchestrator(
 
         var processJobSteps = jobRun.Steps
             .Where(s => s.StepInputs.Any(a => inputAssets.Any(i => i.Name.Equals(a.AssetName))))
-            .Select(jobStep => new ProcessJobStep(jobRun.Id, jobStep.Id));
+            .Select(jobStep => new ProcessJobRunStep(jobRun.Id, jobStep.Id));
 
         await messageBus.PublishAsync(processJobSteps, cancellationToken);
 

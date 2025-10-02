@@ -1,4 +1,4 @@
-using MediaBedrock.Infrastructure.Persistence;
+using MediaBedrock.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

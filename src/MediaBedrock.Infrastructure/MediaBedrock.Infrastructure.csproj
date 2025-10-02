@@ -22,4 +22,8 @@
         <PackageReference Include="Serilog.Settings.Configuration" Version="9.0.0"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="JobRuns\" />
+    </ItemGroup>
+
 </Project>

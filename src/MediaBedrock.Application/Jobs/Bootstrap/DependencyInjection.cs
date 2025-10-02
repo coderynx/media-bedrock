@@ -1,4 +1,5 @@
 using MediaBedrock.Application.Jobs.Interfaces;
+using MediaBedrock.Application.Jobs.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaBedrock.Application.Jobs.Bootstrap;

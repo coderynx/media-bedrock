@@ -1,7 +1,7 @@
 using AutoFixture;
 using Coderynx.Functional.Results;
 using Coderynx.Functional.Results.Errors;
-using MediaBedrock.Application.Jobs;
+using MediaBedrock.Application.JobRuns.Factories;
 using MediaBedrock.Domain.JobAssets;
 using MediaBedrock.Domain.JobRuns;
 using MediaBedrock.Domain.Jobs;

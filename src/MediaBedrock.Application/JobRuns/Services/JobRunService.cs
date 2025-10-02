@@ -1,6 +1,6 @@
 using Coderynx.Functional.Options;
+using MediaBedrock.Application.Database;
 using MediaBedrock.Application.JobRuns.Interfaces;
-using MediaBedrock.Application.Persistence;
 using MediaBedrock.Domain.JobRuns;
 using MediaBedrock.Domain.Jobs;
 using MediaBedrock.Domain.JobTemplates;

@@ -1,6 +1,6 @@
+using MediaBedrock.Infrastructure.Database.Bootstrap;
 using MediaBedrock.Infrastructure.Media;
 using MediaBedrock.Infrastructure.Messaging.Bootstrap;
-using MediaBedrock.Infrastructure.Persistence.Bootstrap;
 using MediaBedrock.Infrastructure.Plugins;
 using Microsoft.Extensions.DependencyInjection;
 
