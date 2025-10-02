@@ -11,7 +11,7 @@ public interface IJobsService
     Task<Result<Job>> CreateAsync(
         JobTemplate jobTemplate,
         JobParameters parameters,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = new());
 
-    Task<Result<JobRunId>> StartAsync(JobId jobId, CancellationToken cancellationToken = default);
+    Task<Result<JobRunId>> StartAsync(JobId jobId, CancellationToken cancellationToken = new());
 }

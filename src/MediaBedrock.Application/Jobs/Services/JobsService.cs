@@ -23,7 +23,7 @@ public sealed class JobsService(
     public async Task<Result<Job>> CreateAsync(
         JobTemplate jobTemplate,
         JobParameters parameters,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = new())
     {
         var createJob = jobFactory.Create(jobTemplate, parameters);
         if (createJob.IsFailure)
@@ -38,7 +38,7 @@ public sealed class JobsService(
             : JobErrors.StoreFailed(createJob.Value.Id);
     }
 
-    public async Task<Result<JobRunId>> StartAsync(JobId jobId, CancellationToken cancellationToken = default)
+    public async Task<Result<JobRunId>> StartAsync(JobId jobId, CancellationToken cancellationToken = new())
     {
         var job = await dbContext.Jobs
             .AsNoTracking()
