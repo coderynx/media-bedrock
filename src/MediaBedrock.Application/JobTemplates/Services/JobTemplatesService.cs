@@ -34,9 +34,15 @@ public sealed class JobTemplatesService(IApplicationDbContext dbContext) : IJobT
 
     public async Task<Option<JobTemplate>> GetAsync(string name, CancellationToken cancellationToken = new())
     {
+        var createJobTemplateName = JobTemplateName.Create(name);
+        if (createJobTemplateName.IsFailure)
+        {
+            return Option.None<JobTemplate>();
+        }
+
         var template = await dbContext.JobTemplates
             .AsNoTracking()
-            .FirstOrDefaultAsync(j => j.Name.Equals(name), cancellationToken);
+            .FirstOrDefaultAsync(j => j.Name.Equals(createJobTemplateName.Value), cancellationToken);
 
         return template is null
             ? Option.None<JobTemplate>()
