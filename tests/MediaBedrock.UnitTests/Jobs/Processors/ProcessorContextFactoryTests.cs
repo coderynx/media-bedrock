@@ -270,26 +270,6 @@ public sealed class ProcessorContextFactoryTests
         return jobRun;
     }
 
-    private JobRun CreateJobRunWithExistingOutputAsset()
-    {
-        var job = CreateTestJob();
-        var jobRun = JobRun.Create(job);
-
-        // Create input asset
-        var inputAsset = CreateInputAsset(jobRun, "input1", "test://input1.mp4");
-        jobRun.AddAsset(inputAsset);
-
-        // Create output asset
-        var outputAsset = CreateOutputAsset(jobRun, "output1", "test://output1.mp4");
-        jobRun.AddAsset(outputAsset);
-
-        // Create job step
-        var jobStep = CreateJobStep("step1", ["input1"], ["output1"], []);
-        jobRun.AddStep(jobStep);
-
-        return jobRun;
-    }
-
     private JobRun CreateJobRunWithMultipleInputsAndOutputs()
     {
         var job = CreateTestJob();
@@ -370,14 +350,6 @@ public sealed class ProcessorContextFactoryTests
             name: new JobAssetName(name),
             uri: uri,
             mediaInformation: mediaInformation).Value;
-    }
-
-    private JobAsset CreateOutputAsset(JobRun jobRun, string name, string uri)
-    {
-        return JobAsset.CreateOutput(
-            jobRun: jobRun,
-            name: new JobAssetName(name),
-            uri: uri).Value;
     }
 
     private ProcessorConfiguration CreateValidProcessorConfiguration()
