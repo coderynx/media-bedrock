@@ -1,15 +1,15 @@
-using MediaBedrock.Application.Jobs.Interfaces;
+using MediaBedrock.Application.JobRuns.Interfaces;
 using MediaBedrock.Application.Jobs.Messages;
 using MediaBedrock.Infrastructure.Messaging;
 
 namespace MediaBedrock.Infrastructure.Jobs.Consumers;
 
-public sealed class JobStepCompletedConsumer(IJobRunService jobRunService)
+public sealed class JobStepCompletedConsumer(IJobRunStepsOrchestrator jobRunStepsOrchestrator)
     : IMessageConsumer<JobStepCompleted>
 {
     public async Task HandleAsync(JobStepCompleted message, CancellationToken cancellationToken = default)
     {
-        var completeStep = await jobRunService.CompleteStepAsync(
+        var completeStep = await jobRunStepsOrchestrator.CompleteAsync(
             jobRunStepId: message.JobRunStepId,
             updatedAssetNames: message.UpdatedAssetNames,
             cancellationToken: cancellationToken);

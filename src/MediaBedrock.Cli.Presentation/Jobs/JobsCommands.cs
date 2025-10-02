@@ -1,6 +1,7 @@
 using Cocona;
 using Coderynx.Functional.Results;
 using Coderynx.Functional.Results.Successes;
+using MediaBedrock.Application.JobRuns.Interfaces;
 using MediaBedrock.Application.Jobs.Interfaces;
 using MediaBedrock.Application.JobTemplates.Interfaces;
 using MediaBedrock.Cli.Presentation.Jobs.Contracts;
@@ -19,6 +20,7 @@ namespace MediaBedrock.Cli.Presentation.Jobs;
 public sealed class JobsCommands(
     IJobsService jobsService,
     IJobTemplatesService jobTemplatesService,
+    IJobRunsOrchestrator jobRunsOrchestrator,
     IJobRunService jobRunService)
 {
     private readonly IDeserializer _deserializer = new DeserializerBuilder()
@@ -106,7 +108,10 @@ public sealed class JobsCommands(
             AnsiConsole.MarkupLine($"[red]Failed to run the job: {startJob.Error.Message}[/]");
         }
 
-        var waitForCompletion = await jobsService.WaitForCompletionAsync(startJob.Value, TimeSpan.FromSeconds(5));
+        var waitForCompletion = await jobRunsOrchestrator.WaitForCompletionAsync(
+            runId: startJob.Value,
+            delayTime: TimeSpan.FromSeconds(5));
+        
         if (waitForCompletion.IsFailure)
         {
             AnsiConsole.MarkupLine($"[red]Failed to wait for job completion: {waitForCompletion.Error.Message}[/]");

@@ -19,10 +19,5 @@ public interface IJobsService
     Task<Result<JobRunId>> StartAsync(JobId jobId, CancellationToken cancellationToken = default);
     Task<Result<List<JobRunId>>> StartAsync(List<JobId> jobIds, CancellationToken cancellationToken = default);
 
-    Task<Result> WaitForCompletionAsync(
-        JobRunId runId,
-        TimeSpan delayTime,
-        CancellationToken cancellationToken = default);
-
     Task<List<Job>> GetAsync(CancellationToken cancellationToken = default);
 }

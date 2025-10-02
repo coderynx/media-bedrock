@@ -124,42 +124,4 @@ public sealed class JobsService(
         var jobRuns = results.Select(r => r.Value).ToList();
         return Result.Created(jobRuns);
     }
-
-    public async Task<Result> WaitForCompletionAsync(
-        JobRunId runId,
-        TimeSpan delayTime,
-        CancellationToken cancellationToken = default)
-    {
-        var jobRun = await dbContext.JobRuns
-            .AsNoTracking()
-            .SingleOrDefaultAsync(jsm => jsm.Id.Equals(runId), cancellationToken);
-
-        if (jobRun is null)
-        {
-            return JobErrors.RunNotFound(runId);
-        }
-
-        while (jobRun.Status is not JobRunStatus.Completed)
-        {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                logger.LogWarning("Job execution for {JobId} was canceled", runId);
-                return Result.Accepted();
-            }
-
-            if (jobRun.Status is JobRunStatus.Failed)
-            {
-                logger.LogError("Job execution for {JobId} failed", runId);
-                return Result.Accepted();
-            }
-
-            await Task.Delay(delayTime, cancellationToken);
-
-            jobRun = await dbContext.JobRuns
-                .AsNoTracking()
-                .FirstAsync(jsm => jsm.Id.Equals(runId), cancellationToken);
-        }
-
-        return Result.Accepted();
-    }
 }

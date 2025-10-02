@@ -1,13 +1,11 @@
-using Coderynx.Functional.Options;
 using Coderynx.Functional.Results;
+using MediaBedrock.Application.JobRuns.Interfaces;
 using MediaBedrock.Application.Jobs.Interfaces;
 using MediaBedrock.Application.Jobs.Messages;
 using MediaBedrock.Application.Persistence;
 using MediaBedrock.Domain.JobAssets;
 using MediaBedrock.Domain.JobAssets.Interfaces;
 using MediaBedrock.Domain.JobRuns;
-using MediaBedrock.Domain.Jobs;
-using MediaBedrock.Domain.JobTemplates;
 using MediaBedrock.Domain.Processors;
 using MediaBedrock.Domain.Processors.Interfaces;
 using MediaBedrock.Sdk.Processors;
@@ -15,113 +13,20 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Serilog.Context;
 
-namespace MediaBedrock.Application.Jobs;
+namespace MediaBedrock.Application.JobRuns.Services;
 
-public sealed class JobRunService(
+public sealed class JobRunStepsOrchestrator(
     IApplicationDbContext dbContext,
+    IMessageBus messageBus,
     IProcessorProvider processorProvider,
     IProcessorContextFactory processorContextFactory,
-    IMessageBus messageBus,
     IMediaInformationRetriever mediaInformationRetriever,
-    ILogger<JobRunService> logger) : IJobRunService
+    ILogger<JobRunStepsOrchestrator> logger) : IJobRunStepsOrchestrator
 {
-    public async Task<Option<JobRun>> GetAsync(JobId jobId, CancellationToken ct = default)
-    {
-        var jobRuns = await dbContext.JobRuns
-            .Include(j => j.AssetsPool)
-            .Include(j => j.Job)
-            .Include(j => j.Steps)
-            .ThenInclude(s => s.StepInputs)
-            .Include(j => j.Steps)
-            .ThenInclude(s => s.StepOutputs)
-            .SingleOrDefaultAsync(j => j.Job.Id.Equals(jobId), cancellationToken: ct);
-
-        if (jobRuns is null)
-        {
-            return Option.None<JobRun>();
-        }
-
-        logger.LogDebug("Retrieved job run with JobId {JobId} ", jobId);
-        return Option.Some(jobRuns);
-    }
-
-    public async Task<List<JobRun>> GetAsync(JobTemplateName jobTemplateName, CancellationToken ct = default)
-    {
-        var jobRuns = await dbContext.JobRuns
-            .Include(jsm => jsm.AssetsPool)
-            .Include(jsm => jsm.Job)
-            .ThenInclude(j => j.Template)
-            .Include(jsm => jsm.Steps)
-            .ThenInclude(jssm => jssm.StepInputs)
-            .Include(jsm => jsm.Steps)
-            .ThenInclude(jssm => jssm.StepOutputs)
-            .Where(jsm => jsm.Job.Template.Name.Equals(jobTemplateName))
-            .AsNoTracking()
-            .ToListAsync(cancellationToken: ct);
-
-        logger.LogDebug("Retrieved job run with JobTemplateName {JobTemplateName} ", jobTemplateName);
-        return jobRuns;
-    }
-
     public async Task<Result> StartAsync(
         JobRunId jobRunId,
-        CancellationToken cancellationToken = default)
-    {
-        var jobRun = await dbContext.JobRuns
-            .Include(j => j.AssetsPool)
-            .Include(j => j.Job)
-            .Include(j => j.Steps)
-            .ThenInclude(s => s.StepInputs)
-            .Include(j => j.Steps)
-            .ThenInclude(s => s.StepOutputs)
-            .AsNoTracking()
-            .SingleOrDefaultAsync(j => j.Id.Equals(jobRunId), cancellationToken);
-
-        if (jobRun is null)
-        {
-            return JobRunErrors.NotFound(jobRunId);
-        }
-
-        var inputAssets = jobRun.ResolveAssets(JobAssetKind.Input);
-
-        var processJobSteps = jobRun.Steps
-            .Where(s => s.StepInputs.Any(a => inputAssets.Any(i => i.Name.Equals(a.AssetName))))
-            .Select(jobStep => new ProcessJobStep(jobRun.Id, jobStep.Id));
-
-        await messageBus.PublishAsync(processJobSteps, cancellationToken);
-
-        jobRun.TransitionToRunning();
-        await dbContext.SaveChangesAsync(cancellationToken);
-
-        logger.LogInformation("Started job execution {JobRunId} for job {JobId}",
-            jobRun.Id,
-            jobRun.Job.Id);
-
-        return Result.Accepted();
-    }
-
-    public async Task<Result> CompleteJobAsync(
-        JobRunId jobRunId,
-        CancellationToken cancellationToken = default)
-    {
-        var jobRun = await dbContext.JobRuns
-            .SingleOrDefaultAsync(j => j.Id.Equals(jobRunId), cancellationToken: cancellationToken);
-
-        if (jobRun is null)
-        {
-            return JobRunErrors.NotFound(jobRunId);
-        }
-
-        jobRun.TransitionToCompleted();
-        await dbContext.SaveChangesAsync(cancellationToken);
-
-        return Result.Updated();
-    }
-
-    public async Task<Result> StartStepAsync(
-        JobRunId jobRunId,
         JobRunStepId jobRunStepId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = new())
     {
         const string jobIdPropertyName = "JobId";
         const string jobStepNamePropertyName = "JobStepName";
@@ -255,10 +160,10 @@ public sealed class JobRunService(
         return Result.Accepted();
     }
 
-    public async Task<Result> CompleteStepAsync(
+    public async Task<Result> CompleteAsync(
         JobRunStepId jobRunStepId,
         List<JobAssetName> updatedAssetNames,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = new())
     {
         var jobRunSteps = await dbContext.JobRunSteps
             .Include(jssm => jssm.JobRun)
@@ -290,17 +195,21 @@ public sealed class JobRunService(
         }
         else
         {
-            await PublishProcessJobStepMessagesAsync(jobRun, updatedAssetNames, cancellationToken);
+            var startJobStepMessages = jobRun.Steps
+                .Where(ssm => ssm.StepInputs.Any(ss => updatedAssetNames.Any(ua => ua.Equals(ss.AssetName))))
+                .Select(jobStep => new ProcessJobStep(jobRun.Id, jobStep.Id));
+
+            await messageBus.PublishAsync(startJobStepMessages, cancellationToken);
         }
 
         return Result.Updated();
     }
 
-    public async Task<Result> FailStepAsync(
+    public async Task<Result> FailAsync(
         JobRunStepId jobRunStepId,
         JobStepFailureReason reason,
         string message = "",
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = new())
     {
         var jobRunStep = await dbContext.JobRunSteps
             .Include(jssm => jssm.JobRun)
@@ -332,60 +241,10 @@ public sealed class JobRunService(
         return Result.Updated();
     }
 
-    public async Task DeleteAsync(
-        JobTemplateName jobTemplateName,
-        JobRunStatus jobRunStatus = JobRunStatus.Pending,
-        CancellationToken cancellationToken = default)
-    {
-        var jobRunCount = await dbContext.JobRuns
-            .Include(j => j.AssetsPool)
-            .Include(j => j.Job)
-            .ThenInclude(j => j.Template)
-            .Where(j => j.Job.Template.Name.Equals(jobTemplateName) && j.Status.Equals(jobRunStatus))
-            .ExecuteDeleteAsync(cancellationToken: cancellationToken);
-
-        logger.LogInformation("Deleted {JobRunCount} job runs for template {JobTemplateName}",
-            jobRunCount,
-            jobTemplateName);
-    }
-
-    public async Task<Result> FailJobAsync(
-        JobRunId jobRunId,
-        JobFailureReason failureReason,
-        string message,
-        CancellationToken cancellationToken)
-    {
-        var jobRun = await dbContext.JobRuns
-            .SingleOrDefaultAsync(j => j.Id.Equals(jobRunId), cancellationToken);
-
-        if (jobRun is null)
-        {
-            return JobRunErrors.NotFound(jobRunId);
-        }
-
-        jobRun.TransitionToFailed(failureReason, message);
-
-        return await dbContext.SaveChangesAsync(cancellationToken) > 0
-            ? Result.Updated()
-            : JobRunErrors.UpdateFailed(jobRunId);
-    }
-
-    private async Task PublishProcessJobStepMessagesAsync(
-        JobRun jobRun,
-        IEnumerable<JobAssetName> updatedAssets,
-        CancellationToken ct = default)
-    {
-        var startJobStepMessages = jobRun.Steps
-            .Where(ssm => ssm.StepInputs.Any(ss => updatedAssets.Any(ua => ua.Equals(ss.AssetName))))
-            .Select(jobStep => new ProcessJobStep(jobRun.Id, jobStep.Id));
-
-        await messageBus.PublishAsync(startJobStepMessages, ct);
-    }
-
     private async Task<Result<List<JobAssetName>>> UpdateAssetPoolAsync(
         JobRun run,
         IReadOnlyCollection<ProcessorOutput> outputs,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = new())
     {
         var updatedAssets = new List<JobAssetName>();
 
