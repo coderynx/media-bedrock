@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBedrock.Application.JobRuns.Services;
 
 public sealed class JobRunsOrchestrator(
-    IApplicationDbContext dbContext, 
+    IApplicationDbContext dbContext,
     IMessageBus messageBus,
     ILogger<JobRunsOrchestrator> logger) : IJobRunsOrchestrator
 {
@@ -70,7 +70,7 @@ public sealed class JobRunsOrchestrator(
 
         return Result.Updated();
     }
-    
+
     public async Task<Result> FailAsync(
         JobRunId jobRunId,
         JobFailureReason failureReason,
@@ -91,7 +91,7 @@ public sealed class JobRunsOrchestrator(
             ? Result.Updated()
             : JobRunErrors.UpdateFailed(jobRunId);
     }
-    
+
     public async Task<Result> WaitForCompletionAsync(
         JobRunId runId,
         TimeSpan delayTime,

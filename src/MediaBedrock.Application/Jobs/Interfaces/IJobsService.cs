@@ -1,5 +1,4 @@
 using Coderynx.Functional.Results;
-using MediaBedrock.Domain.JobRuns;
 using MediaBedrock.Domain.Jobs;
 using MediaBedrock.Domain.Jobs.Parameters;
 using MediaBedrock.Domain.JobTemplates;
@@ -12,6 +11,4 @@ public interface IJobsService
         JobTemplate jobTemplate,
         JobParameters parameters,
         CancellationToken cancellationToken = new());
-
-    Task<Result<JobRunId>> StartAsync(JobId jobId, CancellationToken cancellationToken = new());
 }

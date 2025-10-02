@@ -12,9 +12,9 @@ public interface IJobRunsOrchestrator
         JobFailureReason failureReason,
         string message,
         CancellationToken cancellationToken = new());
-    
+
     Task<Result> CompleteAsync(JobRunId jobRunId, CancellationToken cancellationToken = new());
-    
+
     Task<Result> WaitForCompletionAsync(
         JobRunId runId,
         TimeSpan delayTime,

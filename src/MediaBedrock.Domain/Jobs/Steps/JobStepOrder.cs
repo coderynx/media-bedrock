@@ -8,16 +8,16 @@ public sealed record JobStepOrder
     {
         if (value is 0)
         {
-            throw JobErrors.InvalidStepOrder(value);       
+            throw JobErrors.InvalidStepOrder(value);
         }
-        
+
         Value = value;
     }
 
     public uint Value { get; init; }
-    
+
     public static Result<JobStepOrder> Create(uint value)
     {
-        return Result.TryCatch(() => new JobStepOrder(value));   
+        return Result.TryCatch(() => new JobStepOrder(value));
     }
 }

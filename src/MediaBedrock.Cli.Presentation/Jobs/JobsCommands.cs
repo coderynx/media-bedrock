@@ -102,16 +102,16 @@ public sealed class JobsCommands(
             return;
         }
 
-        var startJob = await jobsService.StartAsync(createJob.Value.Id);
-        if (startJob.IsFailure)
+        var startJobRun = await jobRunService.CreateAsync(createJob.Value.Id);
+        if (startJobRun.IsFailure)
         {
-            AnsiConsole.MarkupLine($"[red]Failed to run the job: {startJob.Error.Message}[/]");
+            AnsiConsole.MarkupLine($"[red]Failed to run the job: {startJobRun.Error.Message}[/]");
         }
 
         var waitForCompletion = await jobRunsOrchestrator.WaitForCompletionAsync(
-            runId: startJob.Value,
+            runId: startJobRun.Value,
             delayTime: TimeSpan.FromSeconds(5));
-        
+
         if (waitForCompletion.IsFailure)
         {
             AnsiConsole.MarkupLine($"[red]Failed to wait for job completion: {waitForCompletion.Error.Message}[/]");
@@ -156,10 +156,25 @@ public sealed class JobsCommands(
             return;
         }
 
-        var result = await jobsService.StartAsync(createJob.Value.Id);
-        if (result.IsFailure)
+        var createJobRun = await jobRunService.CreateAsync(createJob.Value.Id);
+        if (createJobRun.IsFailure)
         {
-            AnsiConsole.MarkupLine($"[red]Failed to run the job: {result.Error.Message}[/]");
+            AnsiConsole.MarkupLine($"[red]Failed to run the job: {createJobRun.Error.Message}[/]");
+        }
+
+        var startJobRun = await jobRunsOrchestrator.StartAsync(createJobRun.Value);
+        if (startJobRun.IsFailure)
+        {
+            AnsiConsole.MarkupLine($"[red]Failed to run the job: {startJobRun.Error.Message}[/]");
+        }
+
+        var waitForCompletion = await jobRunsOrchestrator.WaitForCompletionAsync(
+            runId: createJobRun.Value,
+            delayTime: TimeSpan.FromSeconds(5));
+
+        if (waitForCompletion.IsFailure)
+        {
+            AnsiConsole.MarkupLine($"[red]Failed to wait for job completion: {waitForCompletion.Error.Message}[/]");
         }
     }
 

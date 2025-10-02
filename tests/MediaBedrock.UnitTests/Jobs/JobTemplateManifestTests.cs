@@ -28,7 +28,7 @@ public sealed class JobTemplateManifestTests
             properties: new Dictionary<string, string>().AsReadOnly(),
             displayName: "Step2",
             description: "Step2 description");
-        
+
         var manifest = new JobTemplateManifest(
             name: new JobTemplateName("Template1"),
             version: new JobTemplateVersion(),
@@ -37,17 +37,17 @@ public sealed class JobTemplateManifestTests
             inputs: [],
             outputs: [],
             steps: [firstStep, secondStep]);
-        
+
         // Act
         var template = manifest.ToTemplate();
-        
+
         // Assert
         template.Id.Value.ShouldNotBe(Guid.Empty);
         template.Name.ShouldBe(manifest.Name);
         template.Version.ShouldBe(manifest.Version);
         template.Author.ShouldBe(manifest.Author);
         template.Steps.Count.ShouldBe(2);
-        
+
         template.Steps[0].Name.ShouldBe(firstStep.Name);
         template.Steps[0].Order.Value.ShouldBe((uint)1);
         template.Steps[0].ProcessorName.ShouldBe(firstStep.ProcessorName);
@@ -56,7 +56,7 @@ public sealed class JobTemplateManifestTests
         template.Steps[0].Inputs.ShouldBeEmpty();
         template.Steps[0].Outputs.ShouldBeEmpty();
         template.Steps[0].Properties.ShouldBeEmpty();
-        
+
         template.Steps[1].Name.ShouldBe(secondStep.Name);
         template.Steps[1].Order.Value.ShouldBe((uint)2);
         template.Steps[1].ProcessorName.ShouldBe(secondStep.ProcessorName);
@@ -64,6 +64,5 @@ public sealed class JobTemplateManifestTests
         template.Steps[1].Description.ShouldBe(secondStep.Description);
         template.Steps[1].Inputs.ShouldBeEmpty();
         template.Steps[1].Outputs.ShouldBeEmpty();
-        
     }
 }

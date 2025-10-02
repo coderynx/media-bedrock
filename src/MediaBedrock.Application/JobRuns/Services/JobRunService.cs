@@ -1,7 +1,9 @@
 using Coderynx.Functional.Options;
+using Coderynx.Functional.Results;
 using MediaBedrock.Application.Database;
 using MediaBedrock.Application.JobRuns.Interfaces;
 using MediaBedrock.Domain.JobRuns;
+using MediaBedrock.Domain.JobRuns.Interfaces;
 using MediaBedrock.Domain.Jobs;
 using MediaBedrock.Domain.JobTemplates;
 using Microsoft.EntityFrameworkCore;
@@ -9,26 +11,40 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBedrock.Application.JobRuns.Services;
 
-public sealed class JobRunService(IApplicationDbContext dbContext, ILogger<JobRunService> logger) : IJobRunService
+public sealed class JobRunService(
+    IApplicationDbContext dbContext,
+    IJobRunFactory jobRunFactory,
+    ILogger<JobRunService> logger) : IJobRunService
 {
-    public async Task<Option<JobRun>> GetAsync(JobId jobId, CancellationToken ct = default)
+    public async Task<Result<JobRunId>> CreateAsync(JobId jobId, CancellationToken cancellationToken = new())
     {
-        var jobRuns = await dbContext.JobRuns
-            .Include(j => j.AssetsPool)
-            .Include(j => j.Job)
+        var job = await dbContext.Jobs
+            .AsNoTracking()
+            .Include(j => j.Template)
             .Include(j => j.Steps)
-            .ThenInclude(s => s.StepInputs)
-            .Include(j => j.Steps)
-            .ThenInclude(s => s.StepOutputs)
-            .SingleOrDefaultAsync(j => j.Job.Id.Equals(jobId), cancellationToken: ct);
+            .SingleOrDefaultAsync(j => j.Id.Equals(jobId), cancellationToken);
 
-        if (jobRuns is null)
+        if (job is null)
         {
-            return Option.None<JobRun>();
+            return JobErrors.NotFound(jobId);
         }
 
-        logger.LogDebug("Retrieved job run with JobId {JobId} ", jobId);
-        return Option.Some(jobRuns);
+        var createJobRun = await jobRunFactory.CreateAsync(job);
+        if (createJobRun.IsFailure)
+        {
+            return createJobRun.Error;
+        }
+
+        var jobRun = createJobRun.Value;
+
+        await dbContext.JobRuns.AddAsync(jobRun, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        logger.LogInformation("Successfully initialized JobRun {JobRunId} from Job {JobId}",
+            jobRun.Id,
+            job.Id);
+
+        return Result.Created(jobRun.Id);
     }
 
     public async Task<List<JobRun>> GetAsync(JobTemplateName jobTemplateName, CancellationToken ct = default)
@@ -64,5 +80,25 @@ public sealed class JobRunService(IApplicationDbContext dbContext, ILogger<JobRu
         logger.LogInformation("Deleted {JobRunCount} job runs for template {JobTemplateName}",
             jobRunCount,
             jobTemplateName);
+    }
+
+    public async Task<Option<JobRun>> GetAsync(JobId jobId, CancellationToken ct = default)
+    {
+        var jobRuns = await dbContext.JobRuns
+            .Include(j => j.AssetsPool)
+            .Include(j => j.Job)
+            .Include(j => j.Steps)
+            .ThenInclude(s => s.StepInputs)
+            .Include(j => j.Steps)
+            .ThenInclude(s => s.StepOutputs)
+            .SingleOrDefaultAsync(j => j.Job.Id.Equals(jobId), cancellationToken: ct);
+
+        if (jobRuns is null)
+        {
+            return Option.None<JobRun>();
+        }
+
+        logger.LogDebug("Retrieved job run with JobId {JobId} ", jobId);
+        return Option.Some(jobRuns);
     }
 }

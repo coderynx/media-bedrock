@@ -22,7 +22,7 @@ public sealed class JobStepEntityConfiguration : IEntityTypeConfiguration<JobSte
         builder.Property(jssm => jssm.Order)
             .HasConversion(order => order.Value, value => new JobStepOrder(value))
             .IsRequired();
-        
+
         builder.Property(s => s.Name)
             .HasConversion(name => name.Value, value => new JobStepName(value))
             .IsRequired();

@@ -168,9 +168,9 @@ public sealed partial class JobFactory : IJobFactory
             var createJobStepOrder = JobStepOrder.Create(step.Order.Value);
             if (createJobStepOrder.IsFailure)
             {
-                return createJobStepOrder.Error;           
+                return createJobStepOrder.Error;
             }
-            
+
             job.CreateStep(
                 name: createJobStepName.Value,
                 order: createJobStepOrder.Value,

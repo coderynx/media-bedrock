@@ -24,7 +24,7 @@ public sealed class JobRunStepEntityConfiguration : IEntityTypeConfiguration<Job
         builder.Property(jssm => jssm.Order)
             .HasConversion(order => order.Value, value => new JobRunStepOrder(value))
             .IsRequired();
-        
+
         builder.Property(jssm => jssm.StepName)
             .HasConversion(name => name.ToString(), value => new JobStepName(value))
             .IsRequired();
