@@ -1,4 +1,5 @@
 using MediaBedrock.Application.Jobs.Interfaces;
+using MediaBedrock.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

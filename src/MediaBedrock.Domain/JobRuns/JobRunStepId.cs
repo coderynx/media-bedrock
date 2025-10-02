@@ -1,3 +1,5 @@
+using Coderynx.Functional.Results;
+
 namespace MediaBedrock.Domain.JobRuns;
 
 public sealed record JobRunStepId
@@ -18,4 +20,9 @@ public sealed record JobRunStepId
     }
 
     public Guid Value { get; }
+
+    public static Result<JobRunStepId> Create(Guid value)
+    {
+        return Result.TryCatch(() => new JobRunStepId(value));
+    }
 }

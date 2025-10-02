@@ -1,8 +1,9 @@
 using Coderynx.Functional.Results;
 using MediaBedrock.Application.Database;
 using MediaBedrock.Application.JobRuns.Interfaces;
-using MediaBedrock.Application.JobRuns.Messages;
 using MediaBedrock.Application.Jobs.Interfaces;
+using MediaBedrock.Application.Messaging;
+using MediaBedrock.Contracts.JobRuns;
 using MediaBedrock.Domain.JobAssets;
 using MediaBedrock.Domain.JobAssets.Interfaces;
 using MediaBedrock.Domain.JobRuns;
@@ -111,10 +112,10 @@ public sealed class JobRunStepsOrchestrator(
             if (processorResult.IsFailure)
             {
                 var jobStepFailed = new JobRunStepFailed(
-                    jobRunId: jobRunId,
-                    jobRunStepId: jobRunStepId,
-                    failureReason: JobStepFailureReason.Processing,
-                    message: processorResult.Error.Message);
+                    JobRunId: jobRunId.Value,
+                    JobRunStepId: jobRunStepId.Value,
+                    FailureReason: nameof(JobStepFailureReason.Processing),
+                    Message: processorResult.Error.Message);
 
                 await messageBus.PublishAsync(jobStepFailed, cancellationToken);
 
@@ -135,10 +136,10 @@ public sealed class JobRunStepsOrchestrator(
         if (updateAssetPool.IsFailure)
         {
             var jobStepFailed = new JobRunStepFailed(
-                jobRunId: jobRunId,
-                jobRunStepId: jobRunStepId,
-                failureReason: JobStepFailureReason.OutputAssetsAssessment,
-                message: updateAssetPool.Error.Message);
+                JobRunId: jobRunId.Value,
+                JobRunStepId: jobRunStepId.Value,
+                FailureReason: nameof(JobStepFailureReason.OutputAssetsAssessment),
+                Message: updateAssetPool.Error.Message);
 
             await messageBus.PublishAsync(jobStepFailed, cancellationToken);
 
@@ -149,7 +150,11 @@ public sealed class JobRunStepsOrchestrator(
             return updateAssetPool.Error;
         }
 
-        var jobStepCompleted = new JobRunStepCompleted(jobRunId, jobRunStepId, updateAssetPool.Value);
+        var jobStepCompleted = new JobRunStepCompleted(
+            JobRunId: jobRunId.Value,
+            JobRunStepId: jobRunStepId.Value,
+            UpdatedAssetNames: updateAssetPool.Value.Select(assetNames => assetNames.Value).ToList());
+        
         await messageBus.PublishAsync(jobStepCompleted, cancellationToken);
 
         logger.LogInformation("Successfully processed step {StepName} of job execution {JobRunId}",
@@ -190,14 +195,14 @@ public sealed class JobRunStepsOrchestrator(
 
         if (isJobCompleted)
         {
-            var jobCompleted = new JobRunCompleted(jobRun.Id);
+            var jobCompleted = new JobRunCompleted(jobRun.Id.Value);
             await messageBus.PublishAsync(jobCompleted, cancellationToken);
         }
         else
         {
             var startJobStepMessages = jobRun.Steps
                 .Where(ssm => ssm.StepInputs.Any(ss => updatedAssetNames.Any(ua => ua.Equals(ss.AssetName))))
-                .Select(jobStep => new ProcessJobRunStep(jobRun.Id, jobStep.Id));
+                .Select(jobStep => new ProcessJobRunStep(jobRun.Id.Value, jobStep.Id.Value));
 
             await messageBus.PublishAsync(startJobStepMessages, cancellationToken);
         }
@@ -232,8 +237,8 @@ public sealed class JobRunStepsOrchestrator(
 
         // TODO: Implement failure reason creation.
         var jobFailed = new JobRunFailed(
-            jobRunStep.JobRun.Id,
-            JobFailureReason.Processing,
+            jobRunStep.JobRun.Id.Value,
+            nameof(JobFailureReason.Processing),
             message);
 
         await messageBus.PublishAsync(jobFailed, cancellationToken);

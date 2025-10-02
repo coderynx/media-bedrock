@@ -1,4 +1,5 @@
 using MediaBedrock.Application.Jobs.Interfaces;
+using MediaBedrock.Contracts;
 
 namespace MediaBedrock.Infrastructure.Messaging;
 

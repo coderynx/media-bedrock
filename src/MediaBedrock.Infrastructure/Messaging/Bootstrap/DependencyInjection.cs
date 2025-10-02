@@ -1,4 +1,5 @@
 using MediaBedrock.Application.Jobs.Interfaces;
+using MediaBedrock.Application.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaBedrock.Infrastructure.Messaging.Bootstrap;

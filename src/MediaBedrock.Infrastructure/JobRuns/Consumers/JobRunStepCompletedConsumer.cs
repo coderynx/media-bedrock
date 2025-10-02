@@ -1,5 +1,7 @@
 using MediaBedrock.Application.JobRuns.Interfaces;
-using MediaBedrock.Application.JobRuns.Messages;
+using MediaBedrock.Contracts.JobRuns;
+using MediaBedrock.Domain.JobAssets;
+using MediaBedrock.Domain.JobRuns;
 using MediaBedrock.Infrastructure.Messaging;
 
 namespace MediaBedrock.Infrastructure.JobRuns.Consumers;
@@ -9,9 +11,24 @@ public sealed class JobRunStepCompletedConsumer(IJobRunStepsOrchestrator jobRunS
 {
     public async Task HandleAsync(JobRunStepCompleted message, CancellationToken cancellationToken = default)
     {
+        var createJobRunStepId = JobRunStepId.Create(message.JobRunId);
+        if (createJobRunStepId.IsFailure)
+        {
+            return;
+        }
+
+        var createUpdatedAssetNames = message.UpdatedAssetNames
+            .Select(JobAssetName.Create)
+            .ToList();
+
+        if (createUpdatedAssetNames.Any(x => x.IsFailure))
+        {
+            return;
+        }
+
         var completeStep = await jobRunStepsOrchestrator.CompleteAsync(
-            jobRunStepId: message.JobRunStepId,
-            updatedAssetNames: message.UpdatedAssetNames,
+            jobRunStepId: createJobRunStepId.Value,
+            updatedAssetNames: createUpdatedAssetNames.Select(x => x.Value).ToList(),
             cancellationToken: cancellationToken);
 
         if (completeStep.IsFailure)

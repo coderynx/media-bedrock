@@ -1,3 +1,5 @@
+using Coderynx.Functional.Results;
+
 namespace MediaBedrock.Domain.JobRuns;
 
 public sealed record JobRunId
@@ -17,6 +19,11 @@ public sealed record JobRunId
     public static JobRunId Create()
     {
         return new JobRunId(Guid.CreateVersion7());
+    }
+
+    public static Result<JobRunId> Create(Guid value)
+    {
+        return Result.TryCatch(() => new JobRunId(value));
     }
 
     public override string ToString()
