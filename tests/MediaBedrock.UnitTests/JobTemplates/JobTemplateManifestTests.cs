@@ -3,7 +3,7 @@ using MediaBedrock.Domain.JobTemplates.Manifests;
 using MediaBedrock.Domain.Processors;
 using Shouldly;
 
-namespace MediaBedrock.UnitTests.Jobs;
+namespace MediaBedrock.UnitTests.JobTemplates;
 
 public sealed class JobTemplateManifestTests
 {

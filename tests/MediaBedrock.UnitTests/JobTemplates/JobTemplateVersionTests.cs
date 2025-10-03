@@ -2,7 +2,7 @@ using Coderynx.Functional.Results.Errors;
 using MediaBedrock.Domain.JobTemplates;
 using Shouldly;
 
-namespace MediaBedrock.UnitTests.Jobs;
+namespace MediaBedrock.UnitTests.JobTemplates;
 
 public sealed class JobTemplateVersionTests
 {

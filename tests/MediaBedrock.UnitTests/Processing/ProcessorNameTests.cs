@@ -1,7 +1,7 @@
 using MediaBedrock.Domain.Processors;
 using Shouldly;
 
-namespace MediaBedrock.UnitTests.Jobs.Processors;
+namespace MediaBedrock.UnitTests.Processing;
 
 public sealed class ProcessorNameTests
 {

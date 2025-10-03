@@ -3,16 +3,16 @@ using Shouldly;
 
 namespace MediaBedrock.UnitTests.Jobs;
 
-public sealed class JobInputParameterTests
+public class JobOutputParametersTests
 {
     [Fact]
-    public void CreateMultiple_ReturnsJobInputParameters_WhenInputIsValid()
+    public void CreateMultiple_ReturnsJobOutputParameters_WhenInputIsValid()
     {
         // Arrange
         const string input = "name1=uri1,name2=uri2";
 
         // Act
-        var result = JobInputParameter.CreateMultiple(input);
+        var result = JobOutputParameter.CreateMultiple(input);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -24,16 +24,16 @@ public sealed class JobInputParameterTests
     }
 
     [Fact]
-    public void CreateMultiple_ThrowsArgumentException_WhenInputIsInvalid()
+    public void CreateMultiple_ReturnsError_WhenInputIsInvalid()
     {
         // Arrange
         const string input = "name1=uri1,name2";
 
         // Act
-        var result = JobInputParameter.CreateMultiple(input);
+        var result = JobOutputParameter.CreateMultiple(input);
 
         // Assert
         result.IsSuccess.ShouldBeFalse();
-        result.Error.ShouldBe(JobParameterErrors.InvalidInputParameter(input));
+        result.Error.ShouldBe(JobParameterErrors.InvalidOutputParameter(input));
     }
 }
