@@ -159,7 +159,7 @@ public sealed class ProcessorContextFactoryTests
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.Outputs.ShouldNotBeEmpty();
-        var output = result.Value.Outputs.First();
+        var output = result.Value.Outputs[0];
         output.GetAsFilePath().ShouldContain("temp");
         output.GetAsFilePath().ShouldContain(jobRun.Job.Id.ToString());
     }
@@ -225,7 +225,7 @@ public sealed class ProcessorContextFactoryTests
         return jobRun;
     }
 
-    private JobRun CreateJobRunWithMissingInputAsset()
+    private static JobRun CreateJobRunWithMissingInputAsset()
     {
         var job = CreateTestJob();
         var jobRun = JobRun.Create(job);
@@ -288,7 +288,7 @@ public sealed class ProcessorContextFactoryTests
         return jobRun;
     }
 
-    private JobRun CreateJobRunWithNoInputsOrOutputs()
+    private static JobRun CreateJobRunWithNoInputsOrOutputs()
     {
         var job = CreateTestJob();
         var jobRun = JobRun.Create(job);
@@ -300,7 +300,7 @@ public sealed class ProcessorContextFactoryTests
         return jobRun;
     }
 
-    private Job CreateTestJob()
+    private static Job CreateTestJob()
     {
         var template = JobTemplate.Create(
             name: new JobTemplateName("TestTemplate"),
@@ -320,7 +320,11 @@ public sealed class ProcessorContextFactoryTests
         return jobFactory.Create(template, parameters).Value;
     }
 
-    private JobStep CreateJobStep(string stepName, string[] inputNames, string[] outputNames, string[] properties)
+    private static JobStep CreateJobStep(
+        string stepName,
+        string[] inputNames,
+        string[] outputNames,
+        string[] properties)
     {
         var job = CreateTestJob();
 
