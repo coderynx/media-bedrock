@@ -34,8 +34,52 @@ public sealed class JobTemplateStepEntityConfiguration : IEntityTypeConfiguratio
             .HasMaxLength(500)
             .IsRequired(false);
 
-        builder.OwnsMany(jts => jts.Inputs, s => s.ToJson());
-        builder.OwnsMany(jts => jts.Outputs, s => s.ToJson());
-        builder.OwnsMany(jts => jts.Properties, s => s.ToJson());
+        builder.OwnsMany(jts => jts.Inputs, i =>
+        {
+            i.HasKey("Id");
+
+            i.Property<Guid>("Id")
+                .ValueGeneratedOnAdd();
+
+            i.Property(p => p.Name)
+                .IsRequired();
+
+            i.Property(p => p.Source)
+                .IsRequired();
+
+            i.ToJson();
+        });
+
+        builder.OwnsMany(jts => jts.Outputs, o =>
+        {
+            o.HasKey("Id");
+
+            o.Property<Guid>("Id")
+                .ValueGeneratedOnAdd();
+
+            o.Property(p => p.Name)
+                .IsRequired();
+
+            o.Property(p => p.Destination)
+                .IsRequired();
+
+            o.ToJson();
+        });
+
+        builder.OwnsMany(jts => jts.Properties, s =>
+        {
+            s.HasKey("Id");
+
+            s.Property<Guid>("Id")
+                .ValueGeneratedOnAdd();
+
+            s.Property(p => p.Name)
+                .IsRequired();
+
+            s.Property(p => p.Value)
+                .IsRequired();
+
+            s.ToJson();
+        });
     }
 }

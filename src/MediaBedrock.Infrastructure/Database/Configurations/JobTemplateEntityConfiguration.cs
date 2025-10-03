@@ -10,9 +10,8 @@ public sealed class JobTemplateEntityConfiguration : IEntityTypeConfiguration<Jo
     {
         builder.HasKey(jt => jt.Id);
 
-        builder.OwnsMany(jt => jt.Inputs, s => s.ToJson());
-        builder.OwnsMany(jt => jt.Outputs, s => s.ToJson());
-        builder.OwnsMany(jt => jt.Properties, s => s.ToJson());
+        builder.HasIndex(jt => jt.Name)
+            .IsUnique();
 
         builder.HasMany(jt => jt.Steps)
             .WithOne(jts => jts.Template)
@@ -44,5 +43,75 @@ public sealed class JobTemplateEntityConfiguration : IEntityTypeConfiguration<Jo
             .HasConversion(description => description.Value, value => new JobTemplateDescription(value))
             .HasMaxLength(500)
             .IsRequired(false);
+
+        builder.OwnsMany(jt => jt.Inputs, jti =>
+        {
+            jti.HasKey("Id");
+
+            jti.Property<Guid>("Id")
+                .ValueGeneratedOnAdd();
+
+            jti.Property(p => p.Name)
+                .IsRequired();
+
+            jti.Property(p => p.DisplayName)
+                .IsRequired(false)
+                .HasMaxLength(100);
+
+            jti.Property(p => p.Description)
+                .IsRequired(false)
+                .HasMaxLength(500);
+
+            jti.ToJson();
+        });
+
+        builder.OwnsMany(jt => jt.Outputs, jto =>
+        {
+            jto.HasKey("Id");
+
+            jto.Property<Guid>("Id")
+                .ValueGeneratedOnAdd();
+
+            jto.Property(p => p.Name)
+                .IsRequired();
+
+            jto.Property(p => p.DisplayName)
+                .IsRequired(false)
+                .HasDefaultValue(string.Empty)
+                .HasMaxLength(100);
+
+            jto.Property(p => p.Description)
+                .IsRequired(false)
+                .HasDefaultValue(string.Empty)
+                .HasMaxLength(500);
+
+            jto.ToJson();
+        });
+
+        builder.OwnsMany(jt => jt.Properties, jtp =>
+        {
+            jtp.HasKey("Id");
+
+            jtp.Property<Guid>("Id")
+                .ValueGeneratedOnAdd();
+
+            jtp.Property(p => p.Name)
+                .IsRequired();
+
+            jtp.Property(p => p.DefaultValue)
+                .IsRequired();
+
+            jtp.Property(p => p.DisplayName)
+                .IsRequired(false)
+                .HasDefaultValue(string.Empty)
+                .HasMaxLength(100);
+
+            jtp.Property(p => p.Description)
+                .IsRequired(false)
+                .HasDefaultValue(string.Empty)
+                .HasMaxLength(500);
+
+            jtp.ToJson();
+        });
     }
 }

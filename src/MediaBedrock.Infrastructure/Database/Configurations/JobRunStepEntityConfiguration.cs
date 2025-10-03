@@ -50,6 +50,11 @@ public sealed class JobRunStepEntityConfiguration : IEntityTypeConfiguration<Job
 
         builder.OwnsMany(jssm => jssm.StepInputs, i =>
         {
+            i.HasKey("Id");
+            
+            i.Property<Guid>("Id")
+                .ValueGeneratedOnAdd();
+            
             i.Property(p => p.AssetName)
                 .HasConversion(name => name.Value, value => new JobAssetName(value))
                 .IsRequired();
@@ -57,15 +62,28 @@ public sealed class JobRunStepEntityConfiguration : IEntityTypeConfiguration<Job
             i.ToJson();
         });
 
-        builder.OwnsMany(jssm => jssm.StepOutputs, s =>
+        builder.OwnsMany(jssm => jssm.StepOutputs, o =>
         {
-            s.Property(p => p.AssetName)
+            o.HasKey("Id");
+            
+            o.Property<Guid>("Id")
+                .ValueGeneratedOnAdd();
+            
+            o.Property(p => p.AssetName)
                 .HasConversion(name => name.Value, value => new JobAssetName(value))
                 .IsRequired();
 
-            s.ToJson();
+            o.ToJson();
         });
 
-        builder.OwnsMany(jssm => jssm.StepProperties, p => p.ToJson());
+        builder.OwnsMany(jssm => jssm.StepProperties, p =>
+        {
+            p.HasKey("Id");
+            
+            p.Property<Guid>("Id")
+                .ValueGeneratedOnAdd();
+            
+            p.ToJson();
+        });
     }
 }

@@ -16,18 +16,20 @@ public sealed class JobEntityConfiguration : IEntityTypeConfiguration<Job>
 
         builder.OwnsMany(j => j.Inputs, i =>
         {
-            i.Property(p => p.Id)
-                .HasConversion(id => id.Value, value => new JobInputId(value))
-                .ValueGeneratedNever();
+            i.HasKey("Id");
+
+            i.Property<Guid>("Id")
+                .ValueGeneratedOnAdd();
 
             i.ToJson();
         });
 
         builder.OwnsMany(j => j.Outputs, o =>
         {
-            o.Property(p => p.Id)
-                .HasConversion(id => id.Value, value => new JobOutputId(value))
-                .ValueGeneratedNever();
+            o.HasKey("Id");
+
+            o.Property<Guid>("Id")
+                .ValueGeneratedOnAdd();
 
             o.ToJson();
         });
