@@ -370,5 +370,13 @@ public sealed class ProcessorContextFactoryTests
         };
     }
 
-    private class TestProcessor;
+    private class TestProcessor : IProcessor
+    {
+        public Task<ProcessorResult> ProcessAsync(
+            ProcessorContext context,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(ProcessorResult.Success());
+        }
+    }
 }
