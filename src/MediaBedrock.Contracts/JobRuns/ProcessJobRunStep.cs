@@ -1,3 +1,3 @@
 namespace MediaBedrock.Contracts.JobRuns;
 
-public sealed record ProcessJobRunStep(Guid JobRunId, Guid JobRunStepId) : JobRunMessageBase(JobRunId);
+public sealed record ProcessJobRunStep(Guid JobRunId, Guid JobRunStepId);
