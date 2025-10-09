@@ -52,8 +52,7 @@ public sealed class JobAsset
         return Result.Created(jobAsset);
     }
 
-    public static Result<JobAsset> CreateOutput(JobRun jobRun, JobAssetName name,
-        string uri)
+    public static Result<JobAsset> CreateOutput(JobRun jobRun, JobAssetName name, string uri)
     {
         var jobAsset = new JobAsset
         {

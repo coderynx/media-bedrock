@@ -6,7 +6,7 @@ namespace MediaBedrock.Infrastructure.Database.Bootstrap;
 
 internal static class DependencyInjection
 {
-    public static void AddPersistence(this IServiceCollection services)
+    public static void AddDatabase(this IServiceCollection services)
     {
         var databasePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "persistence.db");
 
