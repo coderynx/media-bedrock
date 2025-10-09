@@ -1,4 +1,3 @@
-using Coderynx.Functional.Options;
 using Coderynx.Functional.Results;
 using MediaBedrock.Application.Database;
 using MediaBedrock.Application.JobRuns.Interfaces;
@@ -80,25 +79,5 @@ public sealed class JobRunService(
         logger.LogInformation("Deleted {JobRunCount} job runs for template {JobTemplateName}",
             jobRunCount,
             jobTemplateName);
-    }
-
-    public async Task<Option<JobRun>> GetAsync(JobId jobId, CancellationToken ct = default)
-    {
-        var jobRuns = await dbContext.JobRuns
-            .Include(j => j.AssetsPool)
-            .Include(j => j.Job)
-            .Include(j => j.Steps)
-            .ThenInclude(s => s.StepInputs)
-            .Include(j => j.Steps)
-            .ThenInclude(s => s.StepOutputs)
-            .SingleOrDefaultAsync(j => j.Job.Id.Equals(jobId), cancellationToken: ct);
-
-        if (jobRuns is null)
-        {
-            return Option.None<JobRun>();
-        }
-
-        logger.LogDebug("Retrieved job run with JobId {JobId} ", jobId);
-        return Option.Some(jobRuns);
     }
 }
