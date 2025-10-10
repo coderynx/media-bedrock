@@ -1,7 +1,8 @@
-using MediaBedrock.Cli.Application.Jobs;
-using MediaBedrock.Cli.Domain.Jobs.Parameters;
-using MediaBedrock.Cli.Domain.Jobs.Steps;
-using MediaBedrock.Cli.Domain.Jobs.Templates;
+using MediaBedrock.Domain.BatchJobs;
+using MediaBedrock.Domain.Jobs;
+using MediaBedrock.Domain.Jobs.Parameters;
+using MediaBedrock.Domain.JobTemplates;
+using MediaBedrock.Domain.Processors;
 using Shouldly;
 
 namespace MediaBedrock.UnitTests.Jobs;
@@ -11,79 +12,126 @@ public sealed class JobFactoryTests
     private readonly JobFactory _jobFactory = new();
 
     [Fact]
-    public void Create_ShouldReturnJob_WhenValidTemplateAndParameters()
+    public void Create_ShouldReturnError_WhenTemplateNameDoesNotMatch()
     {
         // Arrange
-        var template = new JobTemplate
-        {
-            Name = JobTemplateName.Create("TestTemplate").Value,
-            Version = "1.0",
-            Inputs = [new JobTemplateInput { Name = "Input1" }],
-            Outputs = [new JobTemplateOutput { Name = "Output1" }],
-            Steps = [new JobTemplateStep { Name = "Step1", ProcessorName = "namespace/processor" }]
-        };
+        var template = JobTemplate.Create(
+            name: new JobTemplateName("Template1"),
+            version: new JobTemplateVersion(),
+            author: new JobTemplateAuthor(),
+            properties: [],
+            inputs: [],
+            outputs: []);
+
+        var parameters = new JobParameters(new JobTemplateName("Template2"), [], [], []);
+
+        // Act
+        var result = _jobFactory.Create(template, parameters);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Error.Code.ShouldBe(JobTemplateErrorCodes.NotFound);
+    }
+
+    [Fact]
+    public void Create_ShouldReturnJob_WhenInputsOutputsAndStepsAreValid()
+    {
+        // Arrange
+        var template = JobTemplate.Create(
+            name: new JobTemplateName("Template1"),
+            version: new JobTemplateVersion(),
+            author: new JobTemplateAuthor(),
+            inputs: [new JobTemplateInput("Input1")],
+            outputs: [new JobTemplateOutput("Output1")],
+            properties: []);
+
+        var step = JobTemplateStep.Create(
+            template: template,
+            order: new JobTemplateStepOrder(1),
+            name: new JobTemplateStepName("Step1"),
+            processorName: ProcessorName.Create("namespace/processor").Value,
+            inputs: [],
+            outputs: [],
+            properties: []);
+
+        template.AddStepRange([step]);
 
         var parameters = new JobParameters(
-            Inputs: [new JobInputParameter("Input1", "uri1")],
-            Outputs: [new JobOutputParameter("Output1", "uri2")],
-            Properties: [new JobPropertyParameter("Property1", "Value1")]);
+            TemplateName: new JobTemplateName("Template1"),
+            Inputs: [new JobInputParameter("Input1", "Uri1")],
+            Outputs: [new JobOutputParameter("Output1", "Uri2")],
+            Properties: []);
 
         // Act
         var result = _jobFactory.Create(template, parameters);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        result.Value.TemplateName.ShouldBe(JobTemplateName.Create("TestTemplate").Value);
-        result.Value.Inputs.ShouldHaveSingleItem().Name.ShouldBe("Input1");
-        result.Value.Outputs.ShouldHaveSingleItem().Name.ShouldBe("Output1");
-        result.Value.Steps.ShouldHaveSingleItem().Name.ShouldBe(JobStepName.Create("Step1").Value);
+        result.Value.ShouldNotBeNull();
+        result.Value.TemplateId.ShouldBe(template.Id);
     }
 
     [Fact]
-    public void Create_ShouldReturnError_WhenInputParameterNotFound()
+    public void CreateBatch_ShouldReturnError_WhenTemplateNotFound()
     {
         // Arrange
-        var template = new JobTemplate
+        var templates = new List<JobTemplate>();
+        var parameters = new BatchJobParameters
         {
-            Name = JobTemplateName.Create("TestTemplate").Value,
-            Version = "1.0",
-            Inputs = [new JobTemplateInput { Name = "Input1" }]
+            Entries = [new JobParameters(new JobTemplateName("Template1"), [], [], [])]
         };
 
-        var parameters = new JobParameters(
-            Inputs: [new JobInputParameter("InvalidInput", "uri1")],
-            Outputs: [],
-            Properties: []);
-
         // Act
-        var result = _jobFactory.Create(template, parameters);
+        var result = _jobFactory.Create(templates, parameters);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        result.Error.ShouldBe(JobParameterErrors.InputParameterNotFound("InvalidInput"));
+        result.Error.Code.ShouldBe(JobTemplateErrorCodes.NotFound);
     }
 
     [Fact]
-    public void Create_ShouldReturnError_WhenOutputParameterNotFound()
+    public void CreateBatch_ShouldReturnBatchJob_WhenAllJobsAreValid()
     {
         // Arrange
-        var template = new JobTemplate
+        var template = JobTemplate.Create(
+            name: new JobTemplateName("Template1"),
+            version: new JobTemplateVersion(),
+            author: new JobTemplateAuthor(),
+            properties: [],
+            inputs: [new JobTemplateInput("Input1")],
+            outputs: [new JobTemplateOutput("Output1")]);
+
+        var step = JobTemplateStep.Create(
+            template: template,
+            order: new JobTemplateStepOrder(1),
+            name: new JobTemplateStepName("Step1"),
+            processorName: ProcessorName.Create("namespace/processor").Value,
+            inputs: [],
+            outputs: [],
+            properties: []);
+
+        template.AddStepRange([step]);
+
+        var templates = new List<JobTemplate> { template };
+        var parameters = new BatchJobParameters
         {
-            Name = JobTemplateName.Create("TestTemplate").Value,
-            Version = "1.0",
-            Outputs = [new JobTemplateOutput { Name = "Output1" }]
+            Entries =
+            [
+                new JobParameters(
+                    TemplateName: new JobTemplateName("Template1"),
+                    Inputs: [new JobInputParameter("Input1", "Uri1")],
+                    Outputs: [new JobOutputParameter("Output1", "Uri2")],
+                    Properties: [])
+            ]
         };
 
-        var parameters = new JobParameters(
-            Inputs: [],
-            Outputs: [new JobOutputParameter("InvalidOutput", "uri2")],
-            Properties: []);
-
         // Act
-        var result = _jobFactory.Create(template, parameters);
+        var result = _jobFactory.Create(templates, parameters);
 
         // Assert
-        result.IsFailure.ShouldBeTrue();
-        result.Error.ShouldBe(JobParameterErrors.OutputParameterNotFound("InvalidOutput"));
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ShouldNotBeNull();
+        result.Value.Jobs.Count().ShouldBe(1);
+        result.Value.Jobs.First().TemplateId.ShouldBe(template.Id);
     }
 }

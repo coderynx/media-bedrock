@@ -10,8 +10,8 @@ internal static class Mp4OutputExtensions
         {
             FileName = Path.GetFileName(output.FilePath),
             OutputFormat = output.OutputAsDash
-                ? "dash"
-                : "mp4",
+                ? Mp4OutputFormatDto.Dash
+                : Mp4OutputFormatDto.Mp4,
             Storage = new StorageDto
             {
                 Local = new LocalDto

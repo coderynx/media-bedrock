@@ -1,26 +1,34 @@
 ﻿using ATL;
 using MediaBedrock.Sdk.Processors;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBedrock.Plugins.Core;
 
-[Processor("core", "metadata-writer")]
-public sealed class MetadataWriter(ILogger<MetadataWriter> logger) : IProcessor
+[Processor("core", "metadata_writer")]
+public sealed class MetadataWriter : IProcessor
 {
-    public async Task<ProcessorResult> ProcessAsync(ProcessorContext context, CancellationToken ct = default)
+    public async Task<ProcessorResult> ProcessAsync(ProcessorContext context,
+        CancellationToken cancellationToken = default)
     {
-        var inputTrack = context.GetInput("input");
+        const string inputKey = "input";
+        const string outputKey = "output";
+        const string titleKey = "title";
+        const string artistKey = "artist";
+        const string albumKey = "album";
+        const string genreKey = "genre";
+        const string commentKey = "comment";
+        const string yearKey = "year";
+        const string trackNumberKey = "track-number";
+
+        var inputTrack = context.GetInput(inputKey);
         if (inputTrack is null)
         {
-            logger.LogError("Input track not found");
-            return ProcessorResult.Failure("Input track not found");
+            return ProcessorResult.Failure($"{inputKey} track not found");
         }
 
-        var outputTrack = context.GetOutput("output");
+        var outputTrack = context.GetOutput(outputKey);
         if (outputTrack is null)
         {
-            logger.LogError("Output track not found");
-            return ProcessorResult.Failure("Output track not found");
+            return ProcessorResult.Failure($"{outputKey} track not found");
         }
 
         await using var inputStream = inputTrack.GetAsStream();
@@ -28,23 +36,21 @@ public sealed class MetadataWriter(ILogger<MetadataWriter> logger) : IProcessor
 
         var track = new Track(inputStream)
         {
-            Title = context.GetProperty("Title")?.GetValue(string.Empty),
-            Artist = context.GetProperty("Artist")?.GetValue(string.Empty),
-            Album = context.GetProperty("Album")?.GetValue(string.Empty),
-            Genre = context.GetProperty("Genre")?.GetValue(string.Empty),
-            Comment = context.GetProperty("Comment")?.GetValue(string.Empty),
-            Year = context.GetProperty("Year")?
-                .Transform<int?>(input => int.TryParse(input, out var year) ? year : null)
+            Title = context.GetProperty(titleKey).GetValue(string.Empty),
+            Artist = context.GetProperty(artistKey).GetValue(string.Empty),
+            Album = context.GetProperty(albumKey).GetValue(string.Empty),
+            Genre = context.GetProperty(genreKey).GetValue(string.Empty),
+            Comment = context.GetProperty(commentKey).GetValue(string.Empty),
+            Year = context.GetProperty(yearKey).GetValue<int?>(input => int.TryParse(input, out var year) ? year : null)
         };
 
-        if (int.TryParse(context.GetProperty("TrackNumber")?.GetValue(), out var trackNumber))
+        if (int.TryParse(context.GetProperty(trackNumberKey)?.GetValue(), out var trackNumber))
         {
             track.TrackNumber = trackNumber;
         }
 
         await track.SaveToAsync(outputStream);
 
-        logger.LogInformation("Metadata written to {Input}", inputTrack);
         return ProcessorResult.Success();
     }
 }

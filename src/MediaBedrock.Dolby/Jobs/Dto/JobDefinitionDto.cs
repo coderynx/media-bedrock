@@ -23,6 +23,7 @@ internal sealed record AudioInputDto
     public AdmBwfInputDto? Adm { get; init; }
     public AtmosMezzanineInputDto? AtmosMezz { get; init; }
     public Ec3InputDto? Ec3 { get; init; }
+    public WavInputDto? Wav { get; init; }
 }
 
 internal sealed record StorageDto

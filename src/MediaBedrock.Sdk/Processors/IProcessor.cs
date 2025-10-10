@@ -4,6 +4,7 @@ public sealed record ProcessorResult
 {
     public bool IsSuccess { get; init; }
     public string Message { get; init; } = string.Empty;
+    public Exception? Exception { get; init; }
 
     public static ProcessorResult Success()
     {
@@ -13,17 +14,18 @@ public sealed record ProcessorResult
         };
     }
 
-    public static ProcessorResult Failure(string message)
+    public static ProcessorResult Failure(string message, Exception? exception = null)
     {
         return new ProcessorResult
         {
             IsSuccess = false,
-            Message = message
+            Message = message,
+            Exception = exception
         };
     }
 }
 
 public interface IProcessor
 {
-    Task<ProcessorResult> ProcessAsync(ProcessorContext context, CancellationToken ct = default);
+    Task<ProcessorResult> ProcessAsync(ProcessorContext context, CancellationToken cancellationToken = default);
 }

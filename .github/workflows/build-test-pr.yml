@@ -20,12 +20,12 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore
-        run: dotnet restore ./MediaBedrock.sln
+        run: dotnet restore ./MediaBedrock.slnx
         env:
           DOTNET_NOLOGO: "true"
 
       - name: Build
-        run: dotnet build ./MediaBedrock.sln --configuration Release --no-restore
+        run: dotnet build ./MediaBedrock.slnx --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test ./MediaBedrock.sln --configuration Release --no-build
+        run: dotnet test ./MediaBedrock.slnx --configuration Release --no-build

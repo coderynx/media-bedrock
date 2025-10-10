@@ -6,22 +6,25 @@ public sealed record ProcessorProperty(string Name, string? Value)
     {
         return Value;
     }
+}
 
-    public string GetValue(string defaultValue)
+public static class ProcessPropertyExtensions
+{
+    public static string GetValue(this ProcessorProperty? processorProperty, string defaultValue)
     {
-        return Value ?? defaultValue;
+        return processorProperty?.Value ?? defaultValue;
     }
 
-    public T? Transform<T>(Func<string?, T> func)
+    public static T? GetValue<T>(this ProcessorProperty? processorProperty, Func<string?, T> transform)
     {
-        if (Value is null)
+        if (processorProperty?.Value is null)
         {
             return default;
         }
 
         try
         {
-            return func(Value);
+            return transform(processorProperty.Value);
         }
         catch (Exception)
         {
