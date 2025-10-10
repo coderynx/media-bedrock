@@ -16,7 +16,7 @@ public sealed class JobRunFactory(
     /// <inheritdoc />
     public async Task<Result<JobRun>> CreateAsync(Job job)
     {
-        var jobRun = JobRun.Create(job);
+        var jobRun = JobRun.Create(job.Id);
 
         var createInputAssets = await CreateInputAssets(job, jobRun);
         if (createInputAssets.IsFailure)

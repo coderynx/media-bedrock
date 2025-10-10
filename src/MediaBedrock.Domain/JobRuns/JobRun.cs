@@ -15,18 +15,18 @@ public sealed class JobRun
     }
 
     public required JobRunId Id { get; init; }
-    public required Job Job { get; init; }
+    public required JobId JobId { get; init; }
     public JobRunStatus Status { get; private set; } = JobRunStatus.Pending;
     public JobRunError? Error { get; private set; }
     public IReadOnlyList<JobRunStep> Steps => _steps;
     public IReadOnlyList<JobAsset> AssetsPool => _assetsPool;
 
-    public static JobRun Create(Job job)
+    public static JobRun Create(JobId jobId)
     {
         var jobRun = new JobRun
         {
             Id = JobRunId.Create(),
-            Job = job
+            JobId = jobId
         };
 
         return jobRun;

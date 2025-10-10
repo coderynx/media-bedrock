@@ -18,11 +18,12 @@ public sealed class JobTemplatesService(IApplicationDbContext dbContext) : IJobT
 
         var doesExist = await dbContext.JobTemplates
             .AsNoTracking()
-            .AnyAsync(j => j.Name.Equals(template.Name) && j.Version.Equals(template.Version), cancellationToken);
+            .AnyAsync(j => j.Name.Equals(template.Name) &&
+                           j.Version.Equals(template.Version), cancellationToken);
 
         if (doesExist)
         {
-            return Result.Created(template);
+            return JobTemplateErrors.Conflict(template.Name, template.Version);
         }
 
         await dbContext.JobTemplates.AddAsync(template, cancellationToken);
@@ -32,17 +33,25 @@ public sealed class JobTemplatesService(IApplicationDbContext dbContext) : IJobT
             : Result.Created(template);
     }
 
-    public async Task<Option<JobTemplate>> GetAsync(string name, CancellationToken cancellationToken = new())
+    public async Task<Option<JobTemplate>> GetAsync(JobTemplateName name, CancellationToken cancellationToken = new())
     {
-        var createJobTemplateName = JobTemplateName.Create(name);
-        if (createJobTemplateName.IsFailure)
-        {
-            return Option.None<JobTemplate>();
-        }
-
         var template = await dbContext.JobTemplates
             .AsNoTracking()
-            .FirstOrDefaultAsync(j => j.Name.Equals(createJobTemplateName.Value), cancellationToken);
+            .FirstOrDefaultAsync(j => j.Name.Equals(name), cancellationToken);
+
+        return template is null
+            ? Option.None<JobTemplate>()
+            : Option.Some(template);
+    }
+    
+    public async Task<Option<JobTemplate>> GetAsync(
+        JobTemplateName name,
+        JobTemplateVersion version, 
+        CancellationToken cancellationToken = new())
+    {
+        var template = await dbContext.JobTemplates
+            .AsNoTracking()
+            .FirstOrDefaultAsync(j => j.Name.Equals(name) && j.Version.Equals(version), cancellationToken);
 
         return template is null
             ? Option.None<JobTemplate>()

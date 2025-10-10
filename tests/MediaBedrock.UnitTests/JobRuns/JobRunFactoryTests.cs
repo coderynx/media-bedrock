@@ -47,7 +47,7 @@ public sealed class JobRunFactoryTests
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldNotBeNull();
-        result.Value.Job.ShouldBe(job);
+        result.Value.JobId.ShouldBe(job.Id);
         result.Value.Status.ShouldBe(JobRunStatus.Pending);
         result.Value.AssetsPool.ShouldNotBeEmpty();
         result.Value.Steps.ShouldNotBeEmpty();

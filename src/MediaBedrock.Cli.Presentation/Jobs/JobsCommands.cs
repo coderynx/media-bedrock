@@ -9,8 +9,10 @@ using MediaBedrock.Cli.Presentation.Jobs.Mappers;
 using MediaBedrock.Cli.Presentation.JobTemplates.Contracts;
 using MediaBedrock.Cli.Presentation.JobTemplates.Converters;
 using MediaBedrock.Cli.Presentation.JobTemplates.Mappers;
+using MediaBedrock.Domain.Jobs;
 using MediaBedrock.Domain.Jobs.Parameters;
 using MediaBedrock.Domain.JobTemplates;
+using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -18,6 +20,7 @@ using YamlDotNet.Serialization.NamingConventions;
 namespace MediaBedrock.Cli.Presentation.Jobs;
 
 public sealed class JobsCommands(
+    IServiceScopeFactory serviceScopeFactory,
     IJobsService jobsService,
     IJobTemplatesService jobTemplatesService,
     IJobRunsOrchestrator jobRunsOrchestrator,
@@ -27,23 +30,6 @@ public sealed class JobsCommands(
         .WithTypeConverter(new ReadOnlyDictionaryStringStringYamlTypeConverter())
         .WithNamingConvention(UnderscoredNamingConvention.Instance)
         .Build();
-
-    [Command("executions")]
-    public async Task GetExecutions(
-        [Argument(Name = "template-name", Description = "The name of the job template")]
-        string templateName)
-    {
-        var jobTemplateName = new JobTemplateName(templateName);
-        foreach (var jobRun in await jobRunService.GetAsync(jobTemplateName))
-        {
-            var tree = new Tree("Job executions");
-            tree.AddNode($"Id: [purple_2]{jobRun.Id}[/]");
-            tree.AddNode($"Template name: [purple_2]{jobRun.Job.Template.Name}[/]");
-            tree.AddNode($"Status: [purple_2]{jobRun.Status.ToString()}[/]");
-
-            AnsiConsole.Write(tree);
-        }
-    }
 
     [Command("take-file")]
     public async Task TakeFile(
@@ -74,47 +60,85 @@ public sealed class JobsCommands(
         }
 
         var manifest = deserializeManifest.Value.ToDomain();
+        
+        JobTemplate? template;
 
-        var createTemplate = await jobTemplatesService.CreateAsync(manifest);
-        if (createTemplate.IsFailure)
+        using (var scope = serviceScopeFactory.CreateScope())
         {
-            AnsiConsole.MarkupLine($"[red]Failed to add the job template: {createTemplate.Error.Message}[/]");
-            return;
-        }
+            var jobTemplatesService = scope.ServiceProvider.GetRequiredService<IJobTemplatesService>();
 
+            var getTemplate = await jobTemplatesService.GetAsync(manifest.Name, manifest.Version);
+            if (getTemplate.IsSome)
+            {
+                template = getTemplate.ValueOrThrow();
+            }
+            else
+            {
+                AnsiConsole.MarkupLine($"Creating job template: {manifest.Name}");
+
+                var createTemplate = await jobTemplatesService.CreateAsync(manifest);
+                if (createTemplate.IsFailure)
+                {
+                    AnsiConsole.MarkupLine($"[red]Failed to add the job template: {createTemplate.Error.Message}[/]");
+                    return;
+                }
+
+                template = createTemplate.Value;
+            }
+        }
+        
         var jobParameters = await CreateParametersAsync(
-            templateName: createTemplate.Value.Name,
+            templateName: template.Name,
             inputs: inputs,
             outputs: outputs,
             properties: properties,
             parametersPath: parametersPath);
-
+        
         if (jobParameters is null)
         {
             AnsiConsole.MarkupLine("[red]Failed to create job parameters.[/]");
             return;
         }
 
-        var createJob = await jobsService.CreateAsync(createTemplate.Value, jobParameters);
-        if (createJob.IsFailure)
+        JobId? jobId;
+        using (var scope = serviceScopeFactory.CreateScope())
         {
-            AnsiConsole.MarkupLine($"[red]Failed to create the job: {createJob.Error.Message}[/]");
-            return;
+            var jobsService = scope.ServiceProvider.GetRequiredService<IJobsService>();
+            
+            var createJob = await jobsService.CreateAsync(template.Name, jobParameters);
+            if (createJob.IsFailure)
+            {
+                AnsiConsole.MarkupLine($"[red]Failed to create the job: {createJob.Error.Message}[/]");
+                return;
+            }
+            
+            jobId = createJob.Value.Id;       
         }
-
-        var startJobRun = await jobRunService.CreateAsync(createJob.Value.Id);
-        if (startJobRun.IsFailure)
+        
+        using (var scope = serviceScopeFactory.CreateScope())
         {
-            AnsiConsole.MarkupLine($"[red]Failed to run the job: {startJobRun.Error.Message}[/]");
-        }
+            var jobRunService = scope.ServiceProvider.GetRequiredService<IJobRunService>();
+            
+            var createJobRun = await jobRunService.CreateAsync(jobId);
+            if (createJobRun.IsFailure)
+            {
+                AnsiConsole.MarkupLine($"[red]Failed to run the job: {createJobRun.Error.Message}[/]");
+            }
+            
+            var startJobRun = await jobRunsOrchestrator.StartAsync(createJobRun.Value);
+            if (startJobRun.IsFailure)
+            {
+                AnsiConsole.MarkupLine($"[red]Failed to run the job: {startJobRun.Error.Message}[/]");
+            }
 
-        var waitForCompletion = await jobRunsOrchestrator.WaitForCompletionAsync(
-            runId: startJobRun.Value,
-            delayTime: TimeSpan.FromSeconds(5));
+            var waitForCompletion = await jobRunsOrchestrator.WaitForCompletionAsync(
+                runId: createJobRun.Value,
+                delayTime: TimeSpan.FromSeconds(5));
 
-        if (waitForCompletion.IsFailure)
-        {
-            AnsiConsole.MarkupLine($"[red]Failed to wait for job completion: {waitForCompletion.Error.Message}[/]");
+            if (waitForCompletion.IsFailure)
+            {
+                AnsiConsole.MarkupLine($"[red]Failed to wait for job completion: {waitForCompletion.Error.Message}[/]");
+            }
         }
     }
 
@@ -127,10 +151,17 @@ public sealed class JobsCommands(
         [Option("properties", ['p'])] string properties = "",
         [Option("parameters-path")] string? parametersPath = null)
     {
-        var getTemplate = await jobTemplatesService.GetAsync(templateName);
+        var createJobTemplateName = JobTemplateName.Create(templateName);
+        if (createJobTemplateName.IsFailure)
+        {
+            AnsiConsole.MarkupLine("Invalid template name.");
+            return;       
+        }
+        
+        var getTemplate = await jobTemplatesService.GetAsync(createJobTemplateName.Value);
         if (!getTemplate.IsSome)
         {
-            AnsiConsole.MarkupLine($"[red]Job template not found: {templateName}[/]");
+            AnsiConsole.MarkupLine($"[red]Job template not found: {createJobTemplateName}[/]");
             return;
         }
 
@@ -149,7 +180,7 @@ public sealed class JobsCommands(
             return;
         }
 
-        var createJob = await jobsService.CreateAsync(template, jobParameters);
+        var createJob = await jobsService.CreateAsync(template.Name, jobParameters);
         if (createJob.IsFailure)
         {
             AnsiConsole.MarkupLine($"[red]Failed to create the job: {createJob.Error.Message}[/]");
@@ -176,18 +207,6 @@ public sealed class JobsCommands(
         {
             AnsiConsole.MarkupLine($"[red]Failed to wait for job completion: {waitForCompletion.Error.Message}[/]");
         }
-    }
-
-    [Command("clear-pending-execution")]
-    public async Task ClearPendingExecution(
-        [Argument(Name = "template-name", Description = "The name of the job template")]
-        string templateName)
-    {
-        var jobTemplateName = new JobTemplateName(templateName);
-
-        await jobRunService.DeleteAsync(jobTemplateName);
-
-        AnsiConsole.MarkupLine($"[green]Cleared pending executions for template: {templateName}[/]");
     }
 
     private async Task<JobParameters?> CreateParametersAsync(

@@ -1,4 +1,5 @@
 using MediaBedrock.Domain.Jobs;
+using MediaBedrock.Domain.JobTemplates;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -10,29 +11,10 @@ public sealed class JobEntityConfiguration : IEntityTypeConfiguration<Job>
     {
         builder.HasKey(j => j.Id);
 
-        builder.HasOne(j => j.Template)
+        builder.HasOne<JobTemplate>()
             .WithMany()
+            .HasForeignKey(j => j.TemplateId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        builder.OwnsMany(j => j.Inputs, i =>
-        {
-            i.HasKey("Id");
-
-            i.Property<Guid>("Id")
-                .ValueGeneratedOnAdd();
-
-            i.ToJson();
-        });
-
-        builder.OwnsMany(j => j.Outputs, o =>
-        {
-            o.HasKey("Id");
-
-            o.Property<Guid>("Id")
-                .ValueGeneratedOnAdd();
-
-            o.ToJson();
-        });
 
         builder.HasMany(j => j.Steps)
             .WithOne(s => s.Job)
@@ -41,5 +23,25 @@ public sealed class JobEntityConfiguration : IEntityTypeConfiguration<Job>
         builder.Property(j => j.Id)
             .HasConversion(id => id.Value, value => new JobId(value))
             .ValueGeneratedNever();
+
+        builder.Property(j => j.TemplateId)
+            .HasConversion(id => id.Value, value => new JobTemplateId(value))
+            .IsRequired();
+
+        builder.OwnsMany(j => j.Inputs, i =>
+        {
+            i.Property(p => p.Name).IsRequired();
+            i.Property(p => p.Uri).IsRequired();
+
+            i.ToJson();
+        });
+
+        builder.OwnsMany(j => j.Outputs, o =>
+        {
+            o.Property(p => p.Name).IsRequired();
+            o.Property(p => p.FilePath).IsRequired();
+
+            o.ToJson();
+        });
     }
 }

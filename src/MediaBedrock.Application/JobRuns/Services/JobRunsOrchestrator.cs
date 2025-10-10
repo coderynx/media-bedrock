@@ -22,7 +22,6 @@ public sealed class JobRunsOrchestrator(
     {
         var jobRun = await dbContext.JobRuns
             .Include(j => j.AssetsPool)
-            .Include(j => j.Job)
             .Include(j => j.Steps)
             .ThenInclude(s => s.StepInputs)
             .Include(j => j.Steps)
@@ -39,16 +38,20 @@ public sealed class JobRunsOrchestrator(
 
         var processJobSteps = jobRun.Steps
             .Where(s => s.StepInputs.Any(a => inputAssets.Any(i => i.Name.Equals(a.AssetName))))
-            .Select(jobStep => new ProcessJobRunStep(jobRun.Id.Value, jobStep.Id.Value));
+            .Select(jobStep => new ProcessJobRunStep(jobRun.Id.Value, jobStep.Id.Value))
+            .ToList();
 
-        await messagePublisher.PublishAsync(processJobSteps, cancellationToken);
+        foreach (var processJobStep in processJobSteps)
+        {
+            await messagePublisher.PublishAsync(processJobStep, cancellationToken);
+        }
 
         jobRun.TransitionToRunning();
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        logger.LogInformation("Started job execution {JobRunId} for job {JobId}",
+        logger.LogInformation("Started job run {JobRunId} for job {JobId}",
             jobRun.Id,
-            jobRun.Job.Id);
+            jobRun.JobId);
 
         return Result.Accepted();
     }

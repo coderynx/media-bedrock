@@ -46,11 +46,6 @@ public sealed class JobTemplateEntityConfiguration : IEntityTypeConfiguration<Jo
 
         builder.OwnsMany(jt => jt.Inputs, jti =>
         {
-            jti.HasKey("Id");
-
-            jti.Property<Guid>("Id")
-                .ValueGeneratedOnAdd();
-
             jti.Property(p => p.Name)
                 .IsRequired();
 
@@ -67,22 +62,15 @@ public sealed class JobTemplateEntityConfiguration : IEntityTypeConfiguration<Jo
 
         builder.OwnsMany(jt => jt.Outputs, jto =>
         {
-            jto.HasKey("Id");
-
-            jto.Property<Guid>("Id")
-                .ValueGeneratedOnAdd();
-
             jto.Property(p => p.Name)
                 .IsRequired();
 
             jto.Property(p => p.DisplayName)
                 .IsRequired(false)
-                .HasDefaultValue(string.Empty)
                 .HasMaxLength(100);
 
             jto.Property(p => p.Description)
                 .IsRequired(false)
-                .HasDefaultValue(string.Empty)
                 .HasMaxLength(500);
 
             jto.ToJson();
@@ -90,11 +78,6 @@ public sealed class JobTemplateEntityConfiguration : IEntityTypeConfiguration<Jo
 
         builder.OwnsMany(jt => jt.Properties, jtp =>
         {
-            jtp.HasKey("Id");
-
-            jtp.Property<Guid>("Id")
-                .ValueGeneratedOnAdd();
-
             jtp.Property(p => p.Name)
                 .IsRequired();
 
@@ -103,12 +86,10 @@ public sealed class JobTemplateEntityConfiguration : IEntityTypeConfiguration<Jo
 
             jtp.Property(p => p.DisplayName)
                 .IsRequired(false)
-                .HasDefaultValue(string.Empty)
                 .HasMaxLength(100);
 
             jtp.Property(p => p.Description)
                 .IsRequired(false)
-                .HasDefaultValue(string.Empty)
                 .HasMaxLength(500);
 
             jtp.ToJson();

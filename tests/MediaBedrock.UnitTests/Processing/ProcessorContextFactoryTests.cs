@@ -161,7 +161,7 @@ public sealed class ProcessorContextFactoryTests
         result.Value.Outputs.ShouldNotBeEmpty();
         var output = result.Value.Outputs[0];
         output.GetAsFilePath().ShouldContain("temp");
-        output.GetAsFilePath().ShouldContain(jobRun.Job.Id.ToString());
+        output.GetAsFilePath().ShouldContain(jobRun.JobId.ToString());
     }
 
     [Fact]
@@ -212,7 +212,7 @@ public sealed class ProcessorContextFactoryTests
     private JobRun CreateJobRunWithValidStep()
     {
         var job = CreateTestJob();
-        var jobRun = JobRun.Create(job);
+        var jobRun = JobRun.Create(job.Id);
 
         // Create input asset
         var inputAsset = CreateInputAsset(jobRun, "input1", "test://input1.mp4");
@@ -228,7 +228,7 @@ public sealed class ProcessorContextFactoryTests
     private static JobRun CreateJobRunWithMissingInputAsset()
     {
         var job = CreateTestJob();
-        var jobRun = JobRun.Create(job);
+        var jobRun = JobRun.Create(job.Id);
 
         // Create job step with input that doesn't exist
         var jobStep = CreateJobStep("step1", ["nonexistent"], ["output1"], []);
@@ -240,7 +240,7 @@ public sealed class ProcessorContextFactoryTests
     private JobRun CreateJobRunWithStepProperties()
     {
         var job = CreateTestJob();
-        var jobRun = JobRun.Create(job);
+        var jobRun = JobRun.Create(job.Id);
 
         // Create input asset
         var inputAsset = CreateInputAsset(jobRun, "input1", "test://input1.mp4");
@@ -257,7 +257,7 @@ public sealed class ProcessorContextFactoryTests
     private JobRun CreateJobRunWithMissingOutputAsset()
     {
         var job = CreateTestJob();
-        var jobRun = JobRun.Create(job);
+        var jobRun = JobRun.Create(job.Id);
 
         // Create input asset
         var inputAsset = CreateInputAsset(jobRun, "input1", "test://input1.mp4");
@@ -273,7 +273,7 @@ public sealed class ProcessorContextFactoryTests
     private JobRun CreateJobRunWithMultipleInputsAndOutputs()
     {
         var job = CreateTestJob();
-        var jobRun = JobRun.Create(job);
+        var jobRun = JobRun.Create(job.Id);
 
         // Create multiple input assets
         var inputAsset1 = CreateInputAsset(jobRun, "input1", "test://input1.mp4");
@@ -291,7 +291,7 @@ public sealed class ProcessorContextFactoryTests
     private static JobRun CreateJobRunWithNoInputsOrOutputs()
     {
         var job = CreateTestJob();
-        var jobRun = JobRun.Create(job);
+        var jobRun = JobRun.Create(job.Id);
 
         // Create job step with no inputs or outputs
         var jobStep = CreateJobStep("step1", [], [], []);

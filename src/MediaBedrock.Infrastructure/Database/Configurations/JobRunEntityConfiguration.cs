@@ -1,4 +1,5 @@
 using MediaBedrock.Domain.JobRuns;
+using MediaBedrock.Domain.Jobs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -10,9 +11,24 @@ public sealed class JobRunEntityConfiguration : IEntityTypeConfiguration<JobRun>
     {
         builder.HasKey(jsm => jsm.Id);
 
-        builder.HasOne(jsm => jsm.Job)
+        builder.HasOne<Job>()
             .WithMany()
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(jsm => jsm.AssetsPool)
+            .WithOne(ja => ja.JobRun)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Property(jsm => jsm.Id)
+            .HasConversion(id => id.Value, value => new JobRunId(value))
+            .ValueGeneratedNever();
+
+        builder.Property(jsm => jsm.JobId)
+            .HasConversion(id => id.Value, value => new JobId(value))
+            .IsRequired();
+
+        builder.Property(jsm => jsm.Status)
+            .HasConversion<string>();
 
         builder.OwnsOne(jsm => jsm.Error, e =>
         {
@@ -24,16 +40,5 @@ public sealed class JobRunEntityConfiguration : IEntityTypeConfiguration<JobRun>
                 .HasMaxLength(500)
                 .IsRequired(false);
         });
-
-        builder.HasMany(jsm => jsm.AssetsPool)
-            .WithOne(ja => ja.JobRun)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.Property(jsm => jsm.Id)
-            .HasConversion(id => id.Value, value => new JobRunId(value))
-            .ValueGeneratedNever();
-
-        builder.Property(jsm => jsm.Status)
-            .HasConversion<string>();
     }
 }

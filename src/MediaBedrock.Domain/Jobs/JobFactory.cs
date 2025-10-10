@@ -33,7 +33,7 @@ public sealed partial class JobFactory : IJobFactory
             return createOutputs.Error;
         }
 
-        var job = Job.Create(template, createInputs.Value, createOutputs.Value);
+        var job = Job.Create(template.Id, createInputs.Value, createOutputs.Value);
 
         var createSteps = CreateSteps(job, template, parameters.Properties);
         if (createSteps.IsFailure)

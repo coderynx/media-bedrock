@@ -6,6 +6,7 @@ public static class JobTemplateErrorCodes
 {
     public const string ManifestNotFound = "JobTemplate.ManifestNotFound";
     public const string NotFound = "JobTemplate.NotFound";
+    public const string Conflict = "JobTemplate.Conflict";
     public const string ManifestDeserializationFailed = "JobTemplate.ManifestDeserializationFailed";
     public const string InvalidName = "JobTemplate.InvalidName";
     public const string ManifestSerializationFailed = "JobTemplate.ManifestSerializationFailed";
@@ -32,6 +33,13 @@ public static class JobTemplateErrors
         return Error.NotFound(
             code: JobTemplateErrorCodes.NotFound,
             message: $"The job template '{name}' was not found.");
+    }
+    
+    public static Error Conflict(JobTemplateName templateName, JobTemplateVersion templateVersion)
+    {
+        return Error.Conflict(
+            code: JobTemplateErrorCodes.Conflict,
+            message: $"The job template '{templateName}' with version '{templateVersion}' already exists.");
     }
 
     public static Error ManifestDeserializationFailed(string path)

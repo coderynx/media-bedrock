@@ -11,6 +11,10 @@ public sealed class JobTemplateStepEntityConfiguration : IEntityTypeConfiguratio
     {
         builder.HasKey(jts => jts.Id);
 
+        builder.HasOne(jts => jts.Template)
+            .WithMany(jt => jt.Steps)
+            .OnDelete(DeleteBehavior.Cascade);
+        
         builder.Property(jts => jts.Id)
             .HasConversion(id => id.Value, value => new JobTemplateStepId(value))
             .ValueGeneratedNever();
@@ -36,49 +40,22 @@ public sealed class JobTemplateStepEntityConfiguration : IEntityTypeConfiguratio
 
         builder.OwnsMany(jts => jts.Inputs, i =>
         {
-            i.HasKey("Id");
-
-            i.Property<Guid>("Id")
-                .ValueGeneratedOnAdd();
-
-            i.Property(p => p.Name)
-                .IsRequired();
-
-            i.Property(p => p.Source)
-                .IsRequired();
-
+            i.Property(p => p.Name).IsRequired();
+            i.Property(p => p.Source).IsRequired();
             i.ToJson();
         });
 
         builder.OwnsMany(jts => jts.Outputs, o =>
         {
-            o.HasKey("Id");
-
-            o.Property<Guid>("Id")
-                .ValueGeneratedOnAdd();
-
-            o.Property(p => p.Name)
-                .IsRequired();
-
-            o.Property(p => p.Destination)
-                .IsRequired();
-
+            o.Property(p => p.Name).IsRequired();
+            o.Property(p => p.Destination).IsRequired();
             o.ToJson();
         });
 
         builder.OwnsMany(jts => jts.Properties, s =>
         {
-            s.HasKey("Id");
-
-            s.Property<Guid>("Id")
-                .ValueGeneratedOnAdd();
-
-            s.Property(p => p.Name)
-                .IsRequired();
-
-            s.Property(p => p.Value)
-                .IsRequired();
-
+            s.Property(p => p.Name).IsRequired();
+            s.Property(p => p.Value).IsRequired();
             s.ToJson();
         });
     }

@@ -2,10 +2,13 @@ using Coderynx.MessagingKit.Abstractions;
 using MediaBedrock.Application.JobRuns.Interfaces;
 using MediaBedrock.Contracts.JobRuns;
 using MediaBedrock.Domain.JobRuns;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBedrock.Infrastructure.JobRuns.Consumers;
 
-public sealed class ProcessJobRunStepConsumer(IJobRunStepsOrchestrator jobRunStepsOrchestrator)
+public sealed class ProcessJobRunStepConsumer(
+    IJobRunStepsOrchestrator jobRunStepsOrchestrator,
+    ILogger<ProcessJobRunStepConsumer> logger)
     : IConsumer<ProcessJobRunStep>
 {
     public async Task ConsumeAsync(ConsumerContext<ProcessJobRunStep> context, CancellationToken ct = new())
@@ -15,12 +18,14 @@ public sealed class ProcessJobRunStepConsumer(IJobRunStepsOrchestrator jobRunSte
         var createJobRunId = JobRunId.Create(message.JobRunId);
         if (createJobRunId.IsFailure)
         {
+            logger.LogError("Failed to create job run id for job {JobId}", message.JobRunId);
             return;
         }
 
         var createJobRunStepId = JobRunStepId.Create(message.JobRunStepId);
         if (createJobRunStepId.IsFailure)
         {
+            logger.LogError("Failed to create job run step id for job {JobId}", message.JobRunId);
             return;
         }
 
@@ -31,8 +36,10 @@ public sealed class ProcessJobRunStepConsumer(IJobRunStepsOrchestrator jobRunSte
 
         if (startStep.IsFailure)
         {
-            throw new InvalidOperationException(
-                $"Failed to run job step {message.JobRunStepId} for job {message.JobRunId}");
+            logger.LogError("Failed to start job run step {JobRunStepId} for job run {JobRunId}: {Error}",
+                message.JobRunStepId,
+                message.JobRunId,
+                startStep.Error);
         }
     }
 }

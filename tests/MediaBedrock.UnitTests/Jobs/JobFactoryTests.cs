@@ -68,7 +68,7 @@ public sealed class JobFactoryTests
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldNotBeNull();
-        result.Value.Template.Name.ShouldBe(template.Name);
+        result.Value.TemplateId.ShouldBe(template.Id);
     }
 
     [Fact]
@@ -132,6 +132,6 @@ public sealed class JobFactoryTests
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldNotBeNull();
         result.Value.Jobs.Count().ShouldBe(1);
-        result.Value.Jobs.First().Template.Name.ShouldBe(template.Name);
+        result.Value.Jobs.First().TemplateId.ShouldBe(template.Id);
     }
 }

@@ -78,7 +78,7 @@ public sealed class ProcessorContextFactory(
             var tempPath = Path.Combine(
                 path1: AppDomain.CurrentDomain.BaseDirectory,
                 path2: "temp",
-                path3: jobRun.Job.Id.ToString());
+                path3: jobRun.JobId.ToString());
 
             Directory.CreateDirectory(tempPath);
 

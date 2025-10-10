@@ -35,7 +35,6 @@ public sealed class JobRunStepsOrchestrator(
 
         var jobRun = await dbContext.JobRuns
             .Include(j => j.AssetsPool)
-            .Include(j => j.Job)
             .Include(j => j.Steps)
             .ThenInclude(s => s.StepInputs)
             .Include(j => j.Steps)
@@ -55,7 +54,7 @@ public sealed class JobRunStepsOrchestrator(
         {
             logger.LogError("Job run step with id {JobRunStepId} not found for job {JobId}",
                 jobRunStepId,
-                jobRun.Job.Id);
+                jobRun.JobId);
 
             return JobRunErrors.NotFound(jobRunStepId);
         }
@@ -90,7 +89,7 @@ public sealed class JobRunStepsOrchestrator(
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        using (LogContext.PushProperty(jobIdPropertyName, jobRun.Job.Id))
+        using (LogContext.PushProperty(jobIdPropertyName, jobRun.JobId))
         using (LogContext.PushProperty(jobStepNamePropertyName, jobRunStep.StepName))
         using (LogContext.PushProperty(jobActivityIdPropertyName, jobRun.Id))
         using (LogContext.PushProperty(processorNamePropertyName, jobRunStep.ProcessorName))
@@ -120,7 +119,7 @@ public sealed class JobRunStepsOrchestrator(
 
                 logger.LogError("Failed to process job step {StepName} for job {JobId}: {ErrorMessage}",
                     jobRunStep.StepName,
-                    jobRun.Job.Id,
+                    jobRun.JobId,
                     processorResult.Error.Message);
 
                 return processorResult.Error;
@@ -143,7 +142,7 @@ public sealed class JobRunStepsOrchestrator(
             await messagPublisher.PublishAsync(jobStepFailed, cancellationToken);
 
             logger.LogError("Failed to update asset pool for job {JobId}: {ErrorMessage}",
-                jobRun.Job.Id,
+                jobRun.JobId,
                 updateAssetPool.Error.Message);
 
             return updateAssetPool.Error;
@@ -160,7 +159,7 @@ public sealed class JobRunStepsOrchestrator(
             jobRunStep.StepName,
             jobRun.Id);
 
-        logger.LogInformation("Job {JobId} completed successfully", jobRun.Job.Id);
+        logger.LogInformation("Job {JobId} completed successfully", jobRun.JobId);
         return Result.Accepted();
     }
 
@@ -171,7 +170,7 @@ public sealed class JobRunStepsOrchestrator(
     {
         var jobRunSteps = await dbContext.JobRunSteps
             .Include(jssm => jssm.JobRun)
-            .ThenInclude(jsm => jsm.Steps)
+            .ThenInclude(jsm => jsm.Steps.OrderBy(s => s.Order))
             .SingleOrDefaultAsync(jssm => jssm.Id.Equals(jobRunStepId), cancellationToken: cancellationToken);
 
         if (jobRunSteps is null)
@@ -201,9 +200,13 @@ public sealed class JobRunStepsOrchestrator(
         {
             var startJobStepMessages = jobRun.Steps
                 .Where(ssm => ssm.StepInputs.Any(ss => updatedAssetNames.Any(ua => ua.Equals(ss.AssetName))))
-                .Select(jobStep => new ProcessJobRunStep(jobRun.Id.Value, jobStep.Id.Value));
+                .Select(jobStep => new ProcessJobRunStep(jobRun.Id.Value, jobStep.Id.Value))
+                .ToList();
 
-            await messagPublisher.PublishAsync(startJobStepMessages, cancellationToken);
+            foreach (var startJobStepMessage in startJobStepMessages)
+            {
+                await messagPublisher.PublishAsync(startJobStepMessage, cancellationToken);
+            }
         }
 
         return Result.Updated();

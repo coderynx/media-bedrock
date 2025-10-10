@@ -15,20 +15,20 @@ public sealed class Job
     }
 
     public required JobId Id { get; init; }
-    public required JobTemplate Template { get; init; }
+    public required JobTemplateId TemplateId { get; init; }
     public IReadOnlyList<JobInput> Inputs => _inputs.AsReadOnly();
     public IReadOnlyList<JobOutput> Outputs => _outputs.AsReadOnly();
     public IReadOnlyList<JobStep> Steps => _steps.AsReadOnly();
 
     public static Job Create(
-        JobTemplate template,
+        JobTemplateId templateId,
         IEnumerable<JobInput> inputs,
         IEnumerable<JobOutput> outputs)
     {
         return new Job
         {
             Id = JobId.Create(),
-            Template = template,
+            TemplateId = templateId,
             _inputs = inputs.ToList(),
             _outputs = outputs.ToList()
         };

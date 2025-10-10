@@ -8,7 +8,7 @@ namespace MediaBedrock.Application.Jobs.Interfaces;
 public interface IJobsService
 {
     Task<Result<Job>> CreateAsync(
-        JobTemplate jobTemplate,
+        JobTemplateName jobTemplateName,
         JobParameters parameters,
         CancellationToken cancellationToken = new());
 }
