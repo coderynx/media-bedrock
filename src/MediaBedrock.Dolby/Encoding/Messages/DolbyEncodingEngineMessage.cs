@@ -2,7 +2,7 @@ namespace MediaBedrock.Dolby.Encoding.Messages;
 
 public abstract record DolbyEncodingEngineMessage
 {
-    internal DolbyEncodingEngineMessage(string message)
+    private protected DolbyEncodingEngineMessage(string message)
     {
         if (string.IsNullOrWhiteSpace(message))
         {

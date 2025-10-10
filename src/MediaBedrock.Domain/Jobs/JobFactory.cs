@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Coderynx.Functional.Results;
+using Coderynx.Functional.Results.Successes;
 using MediaBedrock.Domain.BatchJobs;
 using MediaBedrock.Domain.JobAssets;
 using MediaBedrock.Domain.Jobs.Interfaces;
@@ -106,31 +107,10 @@ public sealed partial class JobFactory : IJobFactory
     {
         foreach (var step in template.Steps)
         {
-            var stepProperties = new List<JobStepProperty>();
-            foreach (var parameter in step.Properties)
+            var createStepProperties = CreateStepProperties(template, step, properties);
+            if (createStepProperties.IsFailure)
             {
-                var value = parameter.Value;
-                foreach (Match match in EvaluateVariablesRegex().Matches(parameter.Value))
-                {
-                    var key = match.Groups[1].Value;
-
-                    var property = properties.SingleOrDefault(p => p.Name.Equals(key));
-                    if (property is not null)
-                    {
-                        value = value.Replace(match.Value, property.Value);
-                        continue;
-                    }
-
-                    var defaultValue = template.Properties.FirstOrDefault(p => p.Name.Equals(key));
-                    if (defaultValue is null)
-                    {
-                        return JobErrors.PropertyNotFound(key);
-                    }
-
-                    value = value.Replace(match.Value, defaultValue.DefaultValue);
-                }
-
-                stepProperties.Add(JobStepProperty.Create(parameter.Name, value));
+                return createStepProperties.Error;
             }
 
             var createStepInputs = step.Inputs
@@ -175,12 +155,47 @@ public sealed partial class JobFactory : IJobFactory
                 name: createJobStepName.Value,
                 order: createJobStepOrder.Value,
                 processorName: step.ProcessorName,
-                properties: stepProperties,
+                properties: createStepProperties.Value,
                 inputs: stepInputs,
                 outputs: stepOutputs);
         }
 
         return Result.Updated();
+    }
+
+    private static Result<List<JobStepProperty>> CreateStepProperties(
+        JobTemplate template,
+        JobTemplateStep step,
+        JobPropertyParameter[] parameters)
+    {
+        var stepProperties = new List<JobStepProperty>();
+        foreach (var parameter in step.Properties)
+        {
+            var value = parameter.Value;
+            foreach (Match match in EvaluateVariablesRegex().Matches(parameter.Value))
+            {
+                var key = match.Groups[1].Value;
+
+                var property = parameters.SingleOrDefault(p => p.Name.Equals(key));
+                if (property is not null)
+                {
+                    value = value.Replace(match.Value, property.Value);
+                    continue;
+                }
+
+                var defaultValue = template.Properties.FirstOrDefault(p => p.Name.Equals(key));
+                if (defaultValue is null)
+                {
+                    return JobErrors.PropertyNotFound(key);
+                }
+
+                value = value.Replace(match.Value, defaultValue.DefaultValue);
+            }
+
+            stepProperties.Add(JobStepProperty.Create(parameter.Name, value));
+        }
+
+        return Success.Created(stepProperties);
     }
 
     [GeneratedRegex(@"\$\{(\w+)\}")]

@@ -61,25 +61,6 @@ public sealed class BatchJobsCommands(
         AnsiConsole.MarkupLine($"[green]Batch job generated successfully and saved to {batchJobOutputPath}[/]");
     }
 
-    // [Command("take")]
-    // public async Task Take(string path)
-    // {
-    //     var batchJobJson = await File.ReadAllTextAsync(path);
-    //
-    //     var batchJob = batchJobSerializer.Deserialize(batchJobJson);
-    //     if (batchJob.IsFailure)
-    //     {
-    //         AnsiConsole.MarkupLine($"[red]Failed to deserialize batch job: {batchJob.Error.Message}[/]");
-    //         return;
-    //     }
-    //
-    //     var result = await jobService.RunAsync(batchJob.Value);
-    //     if (result.IsFailure)
-    //     {
-    //         AnsiConsole.MarkupLine($"[red]Failed to run the batch job: {result.Error.Message}[/]");
-    //     }
-    // }
-
     private static async Task<Result<List<JobTemplate>>> ReadTemplatesFromYamlAsync(IEnumerable<string> templatesPaths)
     {
         var templates = new List<JobTemplate>();
