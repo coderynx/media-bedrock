@@ -84,61 +84,26 @@ public sealed partial class JobFactory : IJobFactory
         return Result.Created(generatedInputs);
     }
 
-    private static Result<List<JobOutput>> CreateOutputs(JobTemplate template, JobOutputParameter[] outputs)
+    private static Result<List<JobOutput>> CreateOutputs(JobTemplate template, JobOutputParameter[] parameters)
     {
-        var generatedOutputs = new List<JobOutput>();
-        foreach (var o in outputs)
+        var outputs = new List<JobOutput>();
+        foreach (var o in parameters)
         {
             if (!template.Outputs.Any(tp => tp.Name.Equals(o.Name)))
             {
                 return JobParameterErrors.OutputParameterNotFound(o.Name);
             }
 
-            generatedOutputs.Add(JobOutput.Create(o.Name, o.Uri));
+            outputs.Add(JobOutput.Create(o.Name, o.Uri));
         }
 
-        return Result.Created(generatedOutputs);
+        return Result.Created(outputs);
     }
 
-    private static Result CreateSteps(
-        Job job,
-        JobTemplate template,
-        JobPropertyParameter[] properties)
+    private static Result CreateSteps(Job job, JobTemplate template, JobPropertyParameter[] parameters)
     {
         foreach (var step in template.Steps)
         {
-            var createStepProperties = CreateStepProperties(template, step, properties);
-            if (createStepProperties.IsFailure)
-            {
-                return createStepProperties.Error;
-            }
-
-            var createStepInputs = step.Inputs
-                .Select(im => JobStepInput.Create(im.Name, new JobAssetName(im.Source)))
-                .ToList();
-
-            if (createStepInputs.Any(i => i.IsFailure))
-            {
-                return createStepInputs.First(i => i.IsFailure);
-            }
-
-            var stepInputs = createStepInputs
-                .Select(i => i.Value)
-                .ToList();
-
-            var createStepOutputs = step.Outputs
-                .Select(om => JobStepOutput.Create(om.Name, new JobAssetName(om.Destination)))
-                .ToList();
-
-            if (createStepOutputs.Any(o => o.IsFailure))
-            {
-                return createStepOutputs.First(o => o.IsFailure);
-            }
-
-            var stepOutputs = createStepOutputs
-                .Select(o => o.Value)
-                .ToList();
-
             var createJobStepName = JobStepName.Create(step.Name.Value);
             if (createJobStepName.IsFailure)
             {
@@ -151,16 +116,62 @@ public sealed partial class JobFactory : IJobFactory
                 return createJobStepOrder.Error;
             }
 
+            var createStepProperties = CreateStepProperties(template, step, parameters);
+            if (createStepProperties.IsFailure)
+            {
+                return createStepProperties.Error;
+            }
+
+            var stepInputs = CreateStepInputs(step);
+            if (stepInputs.IsFailure)
+            {
+                return stepInputs.Error;
+            }
+
+            var stepOutputs = CreateStepOutputs(step);
+            if (stepOutputs.IsFailure)
+            {
+                return stepOutputs.Error;
+            }
+
             job.CreateStep(
                 name: createJobStepName.Value,
                 order: createJobStepOrder.Value,
                 processorName: step.ProcessorName,
                 properties: createStepProperties.Value,
-                inputs: stepInputs,
-                outputs: stepOutputs);
+                inputs: stepInputs.Value,
+                outputs: stepOutputs.Value);
         }
 
         return Result.Updated();
+    }
+
+    private static Result<List<JobStepInput>> CreateStepInputs(JobTemplateStep step)
+    {
+        var createStepInputs = step.Inputs
+            .Select(im => JobStepInput.Create(im.Name, new JobAssetName(im.Source)))
+            .ToList();
+
+        if (createStepInputs.Any(i => i.IsFailure))
+        {
+            return createStepInputs.First(i => i.IsFailure).Error;
+        }
+
+        return Success.Created(createStepInputs.Select(i => i.Value).ToList());
+    }
+
+    private static Result<List<JobStepOutput>> CreateStepOutputs(JobTemplateStep step)
+    {
+        var createStepOutputs = step.Outputs
+            .Select(om => JobStepOutput.Create(om.Name, new JobAssetName(om.Destination)))
+            .ToList();
+
+        if (createStepOutputs.Any(o => o.IsFailure))
+        {
+            return createStepOutputs.First(o => o.IsFailure).Error;
+        }
+
+        return Success.Created(createStepOutputs.Select(o => o.Value).ToList());
     }
 
     private static Result<List<JobStepProperty>> CreateStepProperties(
