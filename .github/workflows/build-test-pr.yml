@@ -20,7 +20,7 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore
-        run: dotnet restore ./MediaBedrock.slnx
+        run: dotnet restore ./MediaBedrock.sln
         env:
           DOTNET_NOLOGO: "true"
 
