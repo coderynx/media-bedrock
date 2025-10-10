@@ -34,6 +34,7 @@ public sealed class JobRunStepsOrchestrator(
         const string processorNamePropertyName = "ProcessorName";
 
         var jobRun = await dbContext.JobRuns
+            .AsSplitQuery()
             .Include(j => j.AssetsPool)
             .Include(j => j.Steps)
             .ThenInclude(s => s.StepInputs)

@@ -18,6 +18,7 @@ public sealed class JobsService(IJobFactory jobFactory, IApplicationDbContext db
     {
         var jobTemplate = await dbContext.JobTemplates
             .AsNoTracking()
+            .AsSplitQuery()
             .Include(jt => jt.Steps.OrderBy(s => s.Order))
             .Include(jt => jt.Inputs)
             .Include(jt => jt.Outputs)

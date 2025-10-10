@@ -21,12 +21,13 @@ public sealed class JobRunsOrchestrator(
         CancellationToken cancellationToken = new())
     {
         var jobRun = await dbContext.JobRuns
+            .AsSplitQuery()
+            .AsNoTracking()
             .Include(j => j.AssetsPool)
             .Include(j => j.Steps)
             .ThenInclude(s => s.StepInputs)
             .Include(j => j.Steps)
             .ThenInclude(s => s.StepOutputs)
-            .AsNoTracking()
             .SingleOrDefaultAsync(j => j.Id.Equals(jobRunId), cancellationToken);
 
         if (jobRun is null)
