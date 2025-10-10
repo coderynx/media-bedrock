@@ -3,6 +3,7 @@ using MediaBedrock.Domain.JobAssets;
 using MediaBedrock.Domain.JobAssets.Interfaces;
 using MediaBedrock.Domain.JobRuns.Interfaces;
 using MediaBedrock.Domain.Jobs;
+using MediaBedrock.Domain.Jobs.Steps;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBedrock.Domain.JobRuns;
@@ -91,39 +92,61 @@ public sealed class JobRunFactory(
     {
         foreach (var step in job.Steps)
         {
-            foreach (var input in step.Inputs)
+            var createStepInputAssets = PopulateStepInputAssets(step, jobRun);
+            if (createStepInputAssets.IsFailure)
             {
-                if (jobRun.DoesAssetExist(input.AssetName))
-                {
-                    continue;
-                }
-
-                var createMezzanine = JobAsset.CreateMezzanine(jobRun, input.AssetName);
-                if (createMezzanine.IsFailure)
-                {
-                    return createMezzanine.Error;
-                }
-
-                jobRun.AddAsset(createMezzanine.Value);
+                return createStepInputAssets.Error;
             }
 
-            foreach (var output in step.Outputs)
+            var createStepOutputAssets = PopulateStepOutputAssets(step, jobRun);
+            if (createStepOutputAssets.IsFailure)
             {
-                if (jobRun.DoesAssetExist(output.AssetName))
-                {
-                    continue;
-                }
-
-                var createMezzanine = JobAsset.CreateMezzanine(jobRun, output.AssetName);
-                if (createMezzanine.IsFailure)
-                {
-                    return createMezzanine.Error;
-                }
-
-                jobRun.AddAsset(createMezzanine.Value);
+                return createStepOutputAssets.Error;
             }
 
             jobRun.AddStep(step);
+        }
+
+        return Result.Created();
+    }
+
+    private static Result PopulateStepInputAssets(JobStep step, JobRun jobRun)
+    {
+        foreach (var inputAssetName in step.Inputs.Select(input => input.AssetName))
+        {
+            if (jobRun.DoesAssetExist(inputAssetName))
+            {
+                continue;
+            }
+
+            var createMezzanine = JobAsset.CreateMezzanine(jobRun, inputAssetName);
+            if (createMezzanine.IsFailure)
+            {
+                return createMezzanine.Error;
+            }
+
+            jobRun.AddAsset(createMezzanine.Value);
+        }
+
+        return Result.Created();
+    }
+
+    private static Result PopulateStepOutputAssets(JobStep step, JobRun jobRun)
+    {
+        foreach (var outputAssetName in step.Outputs.Select(output => output.AssetName))
+        {
+            if (jobRun.DoesAssetExist(outputAssetName))
+            {
+                continue;
+            }
+
+            var createMezzanine = JobAsset.CreateMezzanine(jobRun, outputAssetName);
+            if (createMezzanine.IsFailure)
+            {
+                return createMezzanine.Error;
+            }
+
+            jobRun.AddAsset(createMezzanine.Value);
         }
 
         return Result.Created();
