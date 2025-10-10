@@ -14,7 +14,7 @@ public sealed class JobTemplateStepEntityConfiguration : IEntityTypeConfiguratio
         builder.HasOne(jts => jts.Template)
             .WithMany(jt => jt.Steps)
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         builder.Property(jts => jts.Id)
             .HasConversion(id => id.Value, value => new JobTemplateStepId(value))
             .ValueGeneratedNever();

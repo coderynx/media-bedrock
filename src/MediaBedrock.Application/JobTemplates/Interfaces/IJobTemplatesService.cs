@@ -9,6 +9,7 @@ public interface IJobTemplatesService
 {
     Task<Result<JobTemplate>> CreateAsync(JobTemplateManifest manifest, CancellationToken cancellationToken = new());
     Task<Option<JobTemplate>> GetAsync(JobTemplateName name, CancellationToken cancellationToken = new());
+
     Task<Option<JobTemplate>> GetAsync(
         JobTemplateName name,
         JobTemplateVersion version,

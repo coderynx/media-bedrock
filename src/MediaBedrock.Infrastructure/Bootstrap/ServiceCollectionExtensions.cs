@@ -13,7 +13,7 @@ public static class ServiceCollectionExtensions
     public static void AddInfrastructure(this IServiceCollection services)
     {
         services.AddDatabase();
-        
+
         services.AddMessaging(messaging =>
             messaging.AddInMemory(inMemory =>
             {

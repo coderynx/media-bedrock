@@ -34,7 +34,7 @@ public static class JobTemplateErrors
             code: JobTemplateErrorCodes.NotFound,
             message: $"The job template '{name}' was not found.");
     }
-    
+
     public static Error Conflict(JobTemplateName templateName, JobTemplateVersion templateVersion)
     {
         return Error.Conflict(

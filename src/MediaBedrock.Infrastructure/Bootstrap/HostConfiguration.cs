@@ -28,7 +28,7 @@ public static class HostConfiguration
     private static void UseMessaging(this IServiceProvider services)
     {
         var busProvider = services.GetRequiredService<MessageBusManager>();
-        
+
         busProvider.InitializeBuses();
         busProvider.WaitForBusesInitialization();
     }

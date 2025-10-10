@@ -5,7 +5,7 @@ public sealed record JobInput
     private JobInput()
     {
     }
-    
+
     public required string Name { get; init; }
     public required string Uri { get; init; }
 

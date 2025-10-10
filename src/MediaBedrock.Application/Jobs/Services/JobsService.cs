@@ -28,7 +28,7 @@ public sealed class JobsService(IJobFactory jobFactory, IApplicationDbContext db
         {
             return JobTemplateErrors.NotFound(jobTemplateName);
         }
-        
+
         var createJob = jobFactory.Create(jobTemplate, parameters);
         if (createJob.IsFailure)
         {

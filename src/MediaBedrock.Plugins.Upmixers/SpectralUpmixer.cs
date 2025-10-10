@@ -28,7 +28,7 @@ public sealed class SpectralUpmixer : IProcessor
         var output = context.GetOutputRequired("output").GetAsFilePath();
 
         context.Logger.LogInformation("Running spectral upmixer");
-        
+
         try
         {
             var upmixer = environment.SpectralUpmix();

@@ -66,9 +66,6 @@ public sealed class JobRunStepEntityConfiguration : IEntityTypeConfiguration<Job
             o.ToJson();
         });
 
-        builder.OwnsMany(jssm => jssm.StepProperties, p =>
-        {
-            p.ToJson();
-        });
+        builder.OwnsMany(jssm => jssm.StepProperties, p => { p.ToJson(); });
     }
 }

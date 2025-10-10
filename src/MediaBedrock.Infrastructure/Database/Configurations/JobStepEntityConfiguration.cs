@@ -53,10 +53,10 @@ public sealed class JobStepEntityConfiguration : IEntityTypeConfiguration<JobSte
         {
             jsp.Property(p => p.Name)
                 .IsRequired();
-            
+
             jsp.Property(p => p.Value)
                 .IsRequired(false);
-            
+
             jsp.ToJson();
         });
     }

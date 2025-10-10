@@ -43,10 +43,10 @@ public sealed class JobTemplatesService(IApplicationDbContext dbContext) : IJobT
             ? Option.None<JobTemplate>()
             : Option.Some(template);
     }
-    
+
     public async Task<Option<JobTemplate>> GetAsync(
         JobTemplateName name,
-        JobTemplateVersion version, 
+        JobTemplateVersion version,
         CancellationToken cancellationToken = new())
     {
         var template = await dbContext.JobTemplates

@@ -4,16 +4,16 @@ namespace MediaBedrock.Sdk.Processors;
 
 public sealed record ProcessorContext
 {
-    private IEnumerable<ProcessorInput> _inputs = [];
-    private IEnumerable<ProcessorOutput> _outputs = [];
-    private IEnumerable<ProcessorProperty> _properties = [];
+    private List<ProcessorInput> _inputs = [];
+    private List<ProcessorOutput> _outputs = [];
+    private List<ProcessorProperty> _properties = [];
 
     public required ILogger Logger { get; init; }
     public required string PluginPath { get; init; }
 
-    public IReadOnlyList<ProcessorInput> Inputs => _inputs.ToArray();
-    public IReadOnlyList<ProcessorOutput> Outputs => _outputs.ToArray();
-    public IReadOnlyList<ProcessorProperty> Properties => _properties.ToArray();
+    public IReadOnlyList<ProcessorInput> Inputs => _inputs.AsReadOnly();
+    public IReadOnlyList<ProcessorOutput> Outputs => _outputs.AsReadOnly();
+    public IReadOnlyList<ProcessorProperty> Properties => _properties.AsReadOnly();
 
     public ProcessorInput GetInputRequired(string name)
     {
@@ -51,9 +51,9 @@ public sealed record ProcessorContext
     public static ProcessorContext Create(
         ILogger logger,
         string pluginPath,
-        IEnumerable<ProcessorInput> inputs,
-        IEnumerable<ProcessorOutput> outputs,
-        IEnumerable<ProcessorProperty> properties)
+        List<ProcessorInput> inputs,
+        List<ProcessorOutput> outputs,
+        List<ProcessorProperty> properties)
     {
         return new ProcessorContext
         {
