@@ -1,9 +1,6 @@
 using Coderynx.Functional.Results;
-using Coderynx.MessagingKit.Abstractions;
 using MediaBedrock.Application.Database;
 using MediaBedrock.Application.JobRuns.Interfaces;
-using MediaBedrock.Contracts.JobRuns;
-using MediaBedrock.Domain.JobAssets;
 using MediaBedrock.Domain.JobRuns;
 using MediaBedrock.Domain.Jobs;
 using Microsoft.EntityFrameworkCore;
@@ -11,43 +8,24 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBedrock.Application.JobRuns.Services;
 
-public sealed class JobRunsOrchestrator(
-    IApplicationDbContext dbContext,
-    IMessagePublisher messagePublisher,
-    ILogger<JobRunsOrchestrator> logger) : IJobRunsOrchestrator
+public sealed class JobRunsOrchestrator(IApplicationDbContext dbContext, ILogger<JobRunsOrchestrator> logger)
+    : IJobRunsOrchestrator
 {
-    public async Task<Result> StartAsync(
-        JobRunId jobRunId,
-        CancellationToken cancellationToken = new())
+    public async Task<Result> StartAsync(JobRunId jobRunId, CancellationToken cancellationToken = new())
     {
-        var jobRun = await dbContext.JobRuns
-            .AsSplitQuery()
-            .AsNoTracking()
-            .Include(j => j.AssetsPool)
-            .Include(j => j.Steps)
-            .ThenInclude(s => s.StepInputs)
-            .Include(j => j.Steps)
-            .ThenInclude(s => s.StepOutputs)
-            .SingleOrDefaultAsync(j => j.Id.Equals(jobRunId), cancellationToken);
+        var jobRun = await dbContext.JobRuns.SingleOrDefaultAsync(j => j.Id.Equals(jobRunId), cancellationToken);
 
         if (jobRun is null)
         {
             return JobRunErrors.NotFound(jobRunId);
         }
 
-        var inputAssets = jobRun.ResolveAssets(JobAssetKind.Input);
-
-        var processJobSteps = jobRun.Steps
-            .Where(s => s.StepInputs.Any(a => inputAssets.Any(i => i.Name.Equals(a.AssetName))))
-            .Select(jobStep => new ProcessJobRunStep(jobRun.Id.Value, jobStep.Id.Value))
-            .ToList();
-
-        foreach (var processJobStep in processJobSteps)
+        var startJobRun = jobRun.Start();
+        if (startJobRun.IsFailure)
         {
-            await messagePublisher.PublishAsync(processJobStep, cancellationToken);
+            return startJobRun.Error;
         }
 
-        jobRun.TransitionToRunning();
         await dbContext.SaveChangesAsync(cancellationToken);
 
         logger.LogInformation("Started job run {JobRunId} for job {JobId}",

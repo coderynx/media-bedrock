@@ -1,11 +1,14 @@
 using Coderynx.Functional.Options;
+using Coderynx.Functional.Results;
+using MediaBedrock.Domain.Abstractions;
 using MediaBedrock.Domain.JobAssets;
+using MediaBedrock.Domain.JobRuns.DomainEvents;
 using MediaBedrock.Domain.Jobs;
 using MediaBedrock.Domain.Jobs.Steps;
 
 namespace MediaBedrock.Domain.JobRuns;
 
-public sealed class JobRun
+public sealed class JobRun : Entity
 {
     private readonly List<JobAsset> _assetsPool = [];
     private readonly List<JobRunStep> _steps = [];
@@ -32,9 +35,19 @@ public sealed class JobRun
         return jobRun;
     }
 
-    public void TransitionToRunning()
+    public Result Start()
     {
+        if (Status is not JobRunStatus.Pending)
+        {
+            return JobRunErrors.InvalidStatusTransition(Status, JobRunStatus.Running);
+        }
+
         Status = JobRunStatus.Running;
+
+        var startedEvent = new JobRunStartedDomainEvent(Id);
+        Raise(startedEvent);
+
+        return Result.Updated();
     }
 
     public void TransitionToFailed(JobFailureReason failureReason, string message)

@@ -2,6 +2,7 @@ using Coderynx.MessagingKit;
 using Coderynx.MessagingKit.Transports.InMemory;
 using MediaBedrock.Contracts.JobRuns;
 using MediaBedrock.Infrastructure.Database.Bootstrap;
+using MediaBedrock.Infrastructure.DomainEvents;
 using MediaBedrock.Infrastructure.Media;
 using MediaBedrock.Infrastructure.Plugins;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +14,7 @@ public static class ServiceCollectionExtensions
     public static void AddInfrastructure(this IServiceCollection services)
     {
         services.AddDatabase();
+        services.AddDomainEvents();
 
         services.AddMessaging(messaging =>
             messaging.AddInMemory(inMemory =>

@@ -4,14 +4,15 @@ namespace MediaBedrock.Domain.JobRuns;
 
 public static class JobRunErrorCodes
 {
-    public const string InvalidId = "JobRune.InvalidId";
-    public const string InvalidStepId = "JobRune.InvalidStepId";
-    public const string InvalidTag = "JobRune.InvalidTag";
-    public const string NotFound = "JobRune.NotFound";
-    public const string NotFoundStep = "JobRune.NotFoundJobStep";
-    public const string InvalidStepStatusTransition = "JobRune.InvalidStepStatusTransition";
-    public const string UpdatedFailed = "JobRune.UpdateFailed";
-    public const string InvalidStepOrder = "JobRune.InvalidStepOrder";
+    public const string InvalidId = "JobRun.InvalidId";
+    public const string InvalidStepId = "JobRun.InvalidStepId";
+    public const string InvalidTag = "JobRun.InvalidTag";
+    public const string NotFound = "JobRun.NotFound";
+    public const string NotFoundStep = "JobRun.NotFoundJobStep";
+    public const string InvalidStatusTransition = "JobRun.InvalidStatusTransition";
+    public const string InvalidStepStatusTransition = "JobRun.InvalidStepStatusTransition";
+    public const string UpdatedFailed = "JobRun.UpdateFailed";
+    public const string InvalidStepOrder = "JobRun.InvalidStepOrder";
 }
 
 public static class JobRunErrors
@@ -42,6 +43,15 @@ public static class JobRunErrors
         return Error.InvalidInput(
             code: JobRunErrorCodes.InvalidStepId,
             message: "The job run step ID is invalid.");
+    }
+
+    public static Error InvalidStatusTransition(
+        JobRunStatus currentStatus,
+        JobRunStatus targetStatus)
+    {
+        return Error.InvalidInput(
+            code: JobRunErrorCodes.InvalidStatusTransition,
+            message: $"Cannot transition from {currentStatus} to {targetStatus}.");
     }
 
     public static Error InvalidStepStatusTransition(
