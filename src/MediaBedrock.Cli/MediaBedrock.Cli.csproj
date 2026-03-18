@@ -2,29 +2,29 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Cocona" Version="2.2.0"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.5">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.9"/>
-        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="9.0.9"/>
-        <PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0"/>
-        <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0"/>
-        <PackageReference Include="Spectre.Console" Version="0.51.1"/>
-        <PackageReference Include="Spectre.Console.Json" Version="0.51.1"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.5" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.5" />
+        <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+        <PackageReference Include="Spectre.Console" Version="0.54.0" />
+        <PackageReference Include="Spectre.Console.Json" Version="0.54.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\MediaBedrock.Infrastructure\MediaBedrock.Infrastructure.csproj"/>
-        <ProjectReference Include="..\MediaBedrock.Cli.Presentation\MediaBedrock.Cli.Presentation.csproj"/>
-        <ProjectReference Include="..\MediaBedrock.Dolby.Extensions.DependencyInjection\MediaBedrock.Dolby.Extensions.DependencyInjection.csproj"/>
+        <ProjectReference Include="..\MediaBedrock.Controller.Infrastructure\MediaBedrock.Controller.Infrastructure.csproj" />
+        <ProjectReference Include="..\MediaBedrock.Controller.Presentation\MediaBedrock.Controller.Presentation.csproj" />
+        <ProjectReference Include="..\MediaBedrock.Worker.Infrastructure\MediaBedrock.Worker.Infrastructure.csproj" />
     </ItemGroup>
 
     <ItemGroup>

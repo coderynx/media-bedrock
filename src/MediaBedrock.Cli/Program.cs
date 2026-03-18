@@ -1,8 +1,10 @@
 ﻿using Cocona;
-using MediaBedrock.Application.Bootstrap;
-using MediaBedrock.Cli.Presentation.Bootstrap;
-using MediaBedrock.Domain.Bootstrap;
-using MediaBedrock.Infrastructure.Bootstrap;
+using MediaBedrock.Controller.Application.Bootstrap;
+using MediaBedrock.Controller.Domain.Bootstrap;
+using MediaBedrock.Controller.Infrastructure.Bootstrap;
+using MediaBedrock.Controller.Presentation.Bootstrap;
+using MediaBedrock.Worker.Application;
+using MediaBedrock.Worker.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -22,13 +24,18 @@ builder.Services.Configure<HostOptions>(options =>
     options.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.StopHost;
 });
 
-builder.Services.AddDomain();
-builder.Services.AddApplication();
-builder.Services.AddInfrastructure();
+builder.Services.AddControllerDomain();
+builder.Services.AddControllerApplication();
+builder.Services.AddControllerInfrastructure();
+
+builder.Services.AddWorkerInfrastructure();
+builder.Services.AddWorkerApplication();
 
 var app = builder.Build();
 
-app.Services.UseInfrastructure(builder.Environment);
-app.UsePresentation();
+app.Services.UseWorkerInfrastructure(builder.Environment);
+
+app.Services.UseControllerInfrastructure(builder.Environment);
+app.UseControllerPresentation();
 
 await app.RunAsync();

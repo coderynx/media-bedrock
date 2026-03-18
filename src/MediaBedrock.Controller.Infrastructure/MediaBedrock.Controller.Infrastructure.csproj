@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\MediaBedrock.Controller.Application\MediaBedrock.Controller.Application.csproj" />
+        <ProjectReference Include="..\MediaBedrock.Core.Infrastructure\MediaBedrock.Core.Infrastructure.csproj" />
+        <ProjectReference Include="..\MediaBedrock.Controller.Domain\MediaBedrock.Controller.Domain.csproj" />
+        <ProjectReference Include="..\MediaBedrock.Worker.Sdk\MediaBedrock.Worker.Sdk.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="JobRuns\"/>
+    </ItemGroup>
+
+</Project>

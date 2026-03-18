@@ -1,4 +1,4 @@
-﻿using MediaBedrock.Sdk.Processors;
+﻿using MediaBedrock.Worker.Sdk.Processors;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBedrock.Plugins.FFmpeg;

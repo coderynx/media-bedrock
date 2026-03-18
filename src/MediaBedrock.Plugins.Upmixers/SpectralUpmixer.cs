@@ -1,6 +1,6 @@
 ﻿using CSnakes.Runtime;
 using CSnakes.Runtime.Python;
-using MediaBedrock.Sdk.Processors;
+using MediaBedrock.Worker.Sdk.Processors;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 

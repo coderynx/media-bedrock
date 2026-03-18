@@ -5,7 +5,7 @@ using MediaBedrock.Dolby.Jobs.Models;
 using MediaBedrock.Dolby.Jobs.Models.Filters;
 using MediaBedrock.Dolby.Jobs.Models.Inputs;
 using MediaBedrock.Dolby.Jobs.Models.Outputs;
-using MediaBedrock.Sdk.Processors;
+using MediaBedrock.Worker.Sdk.Processors;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBedrock.Plugins.Dolby;

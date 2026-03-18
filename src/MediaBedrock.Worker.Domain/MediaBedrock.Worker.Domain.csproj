@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MediaBedrock.Core.Domain\MediaBedrock.Core.Domain.csproj" />
+      <ProjectReference Include="..\MediaBedrock.Worker.Sdk\MediaBedrock.Worker.Sdk.csproj" />
+    </ItemGroup>
+
+</Project>

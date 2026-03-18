@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <EnableDynamicLoading>true</EnableDynamicLoading>
@@ -9,7 +9,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\MediaBedrock.Dolby\MediaBedrock.Dolby.csproj"/>
-        <ProjectReference Include="..\MediaBedrock.Sdk\MediaBedrock.Sdk.csproj"/>
+        <ProjectReference Include="..\MediaBedrock.Worker.Sdk\MediaBedrock.Worker.Sdk.csproj" />
     </ItemGroup>
 
 </Project>

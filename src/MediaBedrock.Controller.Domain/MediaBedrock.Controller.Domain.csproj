@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="MediaBedrock.Controller.UnitTests"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\MediaBedrock.Core.Domain\MediaBedrock.Core.Domain.csproj"/>
+        <ProjectReference Include="..\MediaBedrock.Worker.Sdk\MediaBedrock.Worker.Sdk.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="JobAssets\Interfaces\"/>
+    </ItemGroup>
+
+</Project>
